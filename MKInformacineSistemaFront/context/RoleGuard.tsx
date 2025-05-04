@@ -22,14 +22,20 @@ const RoleGuard: React.FC<RoleGuardProps> = ({ children, requiredRoles }) => {
   useEffect(() => {
     // Check if the user is authenticated
     if (!isAuthenticated) {
+      console.log('Not authenticated, redirecting to login');
       router.push('/auth/login');
       return;
     }
-
+  
+    // Log for debugging
+    console.log('Current user roles:', userRoles);
+    console.log('Required roles:', requiredRoles);
+  
     // Check if the user has any of the required roles
     const hasRequiredRole = requiredRoles.some(role => userRoles.includes(role));
     
     if (!hasRequiredRole) {
+      console.log('Missing required role, redirecting to access denied');
       router.push('/auth/access');
     }
   }, [isAuthenticated, userRoles, requiredRoles, router]);

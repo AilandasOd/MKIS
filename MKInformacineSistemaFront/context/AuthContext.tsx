@@ -48,7 +48,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     try {
       const decoded = jwtDecode<JwtPayload>(token);
       
-      // Extract roles from token
+      // Extract roles from token - more robust handling
       let roles: string[] = [];
       if (typeof decoded.role === 'string') {
         roles = [decoded.role];
@@ -56,10 +56,14 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         roles = decoded.role;
       }
       
-      // Map to our UserRole type and filter out any invalid roles
-      const validRoles = roles
-        .map(role => role as UserRole)
-        .filter(role => role === 'Admin' || role === 'User' || role === 'Hunter');
+      // For debugging - log the roles found in token
+      console.log('Roles from token:', roles);
+      
+      // Normalize role case to match your expected UserRole type
+      const validRoles = roles.map(role => {
+        // Ensure first letter is uppercase, rest lowercase
+        return role.charAt(0).toUpperCase() + role.slice(1).toLowerCase() as UserRole;
+      }).filter(role => role === 'Admin' || role === 'User' || role === 'Hunter');
       
       setUserRoles(validRoles);
       setUserName(decoded.name || '');

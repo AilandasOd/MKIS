@@ -4,6 +4,8 @@ import { Button } from 'primereact/button';
 import { Column } from 'primereact/column';
 import { DataTable } from 'primereact/datatable';
 import { Dialog } from 'primereact/dialog';
+import RoleGuard from '../../../../context/RoleGuard';
+
 import { InputText } from 'primereact/inputtext';
 import { Toast } from 'primereact/toast';
 import { Toolbar } from 'primereact/toolbar';
@@ -138,6 +140,8 @@ const MembersCrud = () => {
     );
 
     return (
+        <RoleGuard requiredRoles={['Admin']}>
+
         <div className="grid crud-demo">
             <div className="col-12">
                 <div className="card">
@@ -208,6 +212,7 @@ const MembersCrud = () => {
                 </div>
             </div>
         </div>
+        </RoleGuard>
     );
 };
 

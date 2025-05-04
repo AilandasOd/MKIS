@@ -126,8 +126,7 @@
               "RelativeToolTip": "Models\\Member.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-04-26T15:16:37.24Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-04-26T15:16:37.24Z"
             },
             {
               "$type": "Document",
@@ -307,8 +306,7 @@
               "RelativeToolTip": "Auth\\AuthSeeder.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAACUAAAARAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-03-23T10:05:51.321Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-03-23T10:05:51.321Z"
             },
             {
               "$type": "Document",
@@ -320,8 +318,7 @@
               "RelativeToolTip": "Auth\\JwtTokenService.cs",
               "ViewState": "AgIAABAAAAAAAAAAAAAgwB4AAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-03-23T10:06:46.487Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-03-23T10:06:46.487Z"
             },
             {
               "$type": "Document",
@@ -333,8 +330,7 @@
               "RelativeToolTip": "Auth\\SessionService.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAACEAAABIAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-03-23T10:06:54.305Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-03-23T10:06:54.305Z"
             },
             {
               "$type": "Document",

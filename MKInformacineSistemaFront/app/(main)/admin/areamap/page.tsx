@@ -1,5 +1,6 @@
 'use client';
 import React, { useEffect, useRef, useState } from 'react';
+import RoleGuard from '../../../../context/RoleGuard';
 import { Toast } from 'primereact/toast';
 import { Button } from 'primereact/button';
 
@@ -172,6 +173,8 @@ const MapLineDrawing: React.FC = () => {
   }, []);
 
   return (
+    <RoleGuard requiredRoles={['Admin']}>
+
     <div>
       <Toast ref={toast} />
       <h2 className="text-xl font-bold mb-4">Medžioklės ribų braižymas</h2>
@@ -180,6 +183,8 @@ const MapLineDrawing: React.FC = () => {
         <Button label="Saugoti pakeitimus" icon="pi pi-save" onClick={saveOrUpdateLine} disabled={!polyline} />
       </div>
     </div>
+    </RoleGuard>
+
   );
 };
 
