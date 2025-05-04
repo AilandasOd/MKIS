@@ -1,0 +1,425 @@
+{
+  "Version": 1,
+  "WorkspaceRootPath": "C:\\Users\\ailan\\Desktop\\Bakalauro darbas\\MKISCODE\\MKInformacineSistemaBack\\",
+  "Documents": [
+    {
+      "AbsoluteMoniker": "D:0:0:{BB196FBF-95A5-425A-AAF9-168F42ABE859}|MKInformacineSistemaBack.csproj|c:\\users\\ailan\\desktop\\bakalauro darbas\\mkiscode\\mkinformacinesistemaback\\models\\member.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{BB196FBF-95A5-425A-AAF9-168F42ABE859}|MKInformacineSistemaBack.csproj|solutionrelative:models\\member.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{BB196FBF-95A5-425A-AAF9-168F42ABE859}|MKInformacineSistemaBack.csproj|c:\\users\\ailan\\desktop\\bakalauro darbas\\mkiscode\\mkinformacinesistemaback\\controllers\\memberscontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{BB196FBF-95A5-425A-AAF9-168F42ABE859}|MKInformacineSistemaBack.csproj|solutionrelative:controllers\\memberscontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{BB196FBF-95A5-425A-AAF9-168F42ABE859}|MKInformacineSistemaBack.csproj|c:\\users\\ailan\\desktop\\bakalauro darbas\\mkiscode\\mkinformacinesistemaback\\controllers\\huntingareascontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{BB196FBF-95A5-425A-AAF9-168F42ABE859}|MKInformacineSistemaBack.csproj|solutionrelative:controllers\\huntingareascontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{BB196FBF-95A5-425A-AAF9-168F42ABE859}|MKInformacineSistemaBack.csproj|c:\\users\\ailan\\desktop\\bakalauro darbas\\mkiscode\\mkinformacinesistemaback\\controllers\\clubscontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{BB196FBF-95A5-425A-AAF9-168F42ABE859}|MKInformacineSistemaBack.csproj|solutionrelative:controllers\\clubscontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{BB196FBF-95A5-425A-AAF9-168F42ABE859}|MKInformacineSistemaBack.csproj|c:\\users\\ailan\\desktop\\bakalauro darbas\\mkiscode\\mkinformacinesistemaback\\helpers\\dtos\\clubdto.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{BB196FBF-95A5-425A-AAF9-168F42ABE859}|MKInformacineSistemaBack.csproj|solutionrelative:helpers\\dtos\\clubdto.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{BB196FBF-95A5-425A-AAF9-168F42ABE859}|MKInformacineSistemaBack.csproj|c:\\users\\ailan\\desktop\\bakalauro darbas\\mkiscode\\mkinformacinesistemaback\\helpers\\dtos\\huntinareadto.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{BB196FBF-95A5-425A-AAF9-168F42ABE859}|MKInformacineSistemaBack.csproj|solutionrelative:helpers\\dtos\\huntinareadto.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{BB196FBF-95A5-425A-AAF9-168F42ABE859}|MKInformacineSistemaBack.csproj|c:\\users\\ailan\\desktop\\bakalauro darbas\\mkiscode\\mkinformacinesistemaback\\helpers\\dtos\\memberdto.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{BB196FBF-95A5-425A-AAF9-168F42ABE859}|MKInformacineSistemaBack.csproj|solutionrelative:helpers\\dtos\\memberdto.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{BB196FBF-95A5-425A-AAF9-168F42ABE859}|MKInformacineSistemaBack.csproj|c:\\users\\ailan\\desktop\\bakalauro darbas\\mkiscode\\mkinformacinesistemaback\\helpers\\dtos\\polygondto.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{BB196FBF-95A5-425A-AAF9-168F42ABE859}|MKInformacineSistemaBack.csproj|solutionrelative:helpers\\dtos\\polygondto.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{BB196FBF-95A5-425A-AAF9-168F42ABE859}|MKInformacineSistemaBack.csproj|c:\\users\\ailan\\desktop\\bakalauro darbas\\mkiscode\\mkinformacinesistemaback\\models\\session.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{BB196FBF-95A5-425A-AAF9-168F42ABE859}|MKInformacineSistemaBack.csproj|solutionrelative:models\\session.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{BB196FBF-95A5-425A-AAF9-168F42ABE859}|MKInformacineSistemaBack.csproj|c:\\users\\ailan\\desktop\\bakalauro darbas\\mkiscode\\mkinformacinesistemaback\\models\\polygon.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{BB196FBF-95A5-425A-AAF9-168F42ABE859}|MKInformacineSistemaBack.csproj|solutionrelative:models\\polygon.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{BB196FBF-95A5-425A-AAF9-168F42ABE859}|MKInformacineSistemaBack.csproj|c:\\users\\ailan\\desktop\\bakalauro darbas\\mkiscode\\mkinformacinesistemaback\\models\\huntingarea.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{BB196FBF-95A5-425A-AAF9-168F42ABE859}|MKInformacineSistemaBack.csproj|solutionrelative:models\\huntingarea.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{BB196FBF-95A5-425A-AAF9-168F42ABE859}|MKInformacineSistemaBack.csproj|c:\\users\\ailan\\desktop\\bakalauro darbas\\mkiscode\\mkinformacinesistemaback\\models\\club.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{BB196FBF-95A5-425A-AAF9-168F42ABE859}|MKInformacineSistemaBack.csproj|solutionrelative:models\\club.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{BB196FBF-95A5-425A-AAF9-168F42ABE859}|MKInformacineSistemaBack.csproj|c:\\users\\ailan\\desktop\\bakalauro darbas\\mkiscode\\mkinformacinesistemaback\\data\\applicationdbcontext.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{BB196FBF-95A5-425A-AAF9-168F42ABE859}|MKInformacineSistemaBack.csproj|solutionrelative:data\\applicationdbcontext.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{BB196FBF-95A5-425A-AAF9-168F42ABE859}|MKInformacineSistemaBack.csproj|c:\\users\\ailan\\desktop\\bakalauro darbas\\mkiscode\\mkinformacinesistemaback\\controllers\\polygonscontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{BB196FBF-95A5-425A-AAF9-168F42ABE859}|MKInformacineSistemaBack.csproj|solutionrelative:controllers\\polygonscontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{BB196FBF-95A5-425A-AAF9-168F42ABE859}|MKInformacineSistemaBack.csproj|c:\\users\\ailan\\desktop\\bakalauro darbas\\mkiscode\\mkinformacinesistemaback\\auth\\authseeder.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{BB196FBF-95A5-425A-AAF9-168F42ABE859}|MKInformacineSistemaBack.csproj|solutionrelative:auth\\authseeder.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{BB196FBF-95A5-425A-AAF9-168F42ABE859}|MKInformacineSistemaBack.csproj|c:\\users\\ailan\\desktop\\bakalauro darbas\\mkiscode\\mkinformacinesistemaback\\auth\\jwttokenservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{BB196FBF-95A5-425A-AAF9-168F42ABE859}|MKInformacineSistemaBack.csproj|solutionrelative:auth\\jwttokenservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{BB196FBF-95A5-425A-AAF9-168F42ABE859}|MKInformacineSistemaBack.csproj|c:\\users\\ailan\\desktop\\bakalauro darbas\\mkiscode\\mkinformacinesistemaback\\auth\\sessionservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{BB196FBF-95A5-425A-AAF9-168F42ABE859}|MKInformacineSistemaBack.csproj|solutionrelative:auth\\sessionservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{BB196FBF-95A5-425A-AAF9-168F42ABE859}|MKInformacineSistemaBack.csproj|c:\\users\\ailan\\desktop\\bakalauro darbas\\mkiscode\\mkinformacinesistemaback\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{BB196FBF-95A5-425A-AAF9-168F42ABE859}|MKInformacineSistemaBack.csproj|solutionrelative:program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{BB196FBF-95A5-425A-AAF9-168F42ABE859}|MKInformacineSistemaBack.csproj|c:\\users\\ailan\\desktop\\bakalauro darbas\\mkiscode\\mkinformacinesistemaback\\properties\\launchsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}",
+      "RelativeMoniker": "D:0:0:{BB196FBF-95A5-425A-AAF9-168F42ABE859}|MKInformacineSistemaBack.csproj|solutionrelative:properties\\launchsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{BB196FBF-95A5-425A-AAF9-168F42ABE859}|MKInformacineSistemaBack.csproj|c:\\users\\ailan\\desktop\\bakalauro darbas\\mkiscode\\mkinformacinesistemaback\\auth\\authendpoints.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{BB196FBF-95A5-425A-AAF9-168F42ABE859}|MKInformacineSistemaBack.csproj|solutionrelative:auth\\authendpoints.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{BB196FBF-95A5-425A-AAF9-168F42ABE859}|MKInformacineSistemaBack.csproj|c:\\users\\ailan\\desktop\\bakalauro darbas\\mkiscode\\mkinformacinesistemaback\\mkinformacinesistemaback.http||{5703B403-55E7-4C63-8C88-A8F52C7A45C5}",
+      "RelativeMoniker": "D:0:0:{BB196FBF-95A5-425A-AAF9-168F42ABE859}|MKInformacineSistemaBack.csproj|solutionrelative:mkinformacinesistemaback.http||{5703B403-55E7-4C63-8C88-A8F52C7A45C5}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{BB196FBF-95A5-425A-AAF9-168F42ABE859}|MKInformacineSistemaBack.csproj|c:\\users\\ailan\\desktop\\bakalauro darbas\\mkiscode\\mkinformacinesistemaback\\helpers\\extensions.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{BB196FBF-95A5-425A-AAF9-168F42ABE859}|MKInformacineSistemaBack.csproj|solutionrelative:helpers\\extensions.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{BB196FBF-95A5-425A-AAF9-168F42ABE859}|MKInformacineSistemaBack.csproj|c:\\users\\ailan\\desktop\\bakalauro darbas\\mkiscode\\mkinformacinesistemaback\\auth\\models\\user.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{BB196FBF-95A5-425A-AAF9-168F42ABE859}|MKInformacineSistemaBack.csproj|solutionrelative:auth\\models\\user.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{BB196FBF-95A5-425A-AAF9-168F42ABE859}|MKInformacineSistemaBack.csproj|c:\\users\\ailan\\desktop\\bakalauro darbas\\mkiscode\\mkinformacinesistemaback\\auth\\models\\roles.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{BB196FBF-95A5-425A-AAF9-168F42ABE859}|MKInformacineSistemaBack.csproj|solutionrelative:auth\\models\\roles.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{BB196FBF-95A5-425A-AAF9-168F42ABE859}|MKInformacineSistemaBack.csproj|c:\\users\\ailan\\desktop\\bakalauro darbas\\mkiscode\\mkinformacinesistemaback\\mkinformacinesistemaback.csproj||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|",
+      "RelativeMoniker": "D:0:0:{BB196FBF-95A5-425A-AAF9-168F42ABE859}|MKInformacineSistemaBack.csproj|solutionrelative:mkinformacinesistemaback.csproj||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|"
+    }
+  ],
+  "DocumentGroupContainers": [
+    {
+      "Orientation": 0,
+      "VerticalTabListWidth": 256,
+      "DocumentGroups": [
+        {
+          "DockedWidth": 200,
+          "SelectedChildIndex": 1,
+          "Children": [
+            {
+              "$type": "Bookmark",
+              "Name": "ST:0:0:{1c4feeaa-4718-4aa9-859d-94ce25d182ba}"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "Member.cs",
+              "DocumentMoniker": "C:\\Users\\ailan\\Desktop\\Bakalauro darbas\\MKISCODE\\MKInformacineSistemaBack\\Models\\Member.cs",
+              "RelativeDocumentMoniker": "Models\\Member.cs",
+              "ToolTip": "C:\\Users\\ailan\\Desktop\\Bakalauro darbas\\MKISCODE\\MKInformacineSistemaBack\\Models\\Member.cs",
+              "RelativeToolTip": "Models\\Member.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-04-26T15:16:37.24Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 3,
+              "Title": "ClubsController.cs",
+              "DocumentMoniker": "C:\\Users\\ailan\\Desktop\\Bakalauro darbas\\MKISCODE\\MKInformacineSistemaBack\\Controllers\\ClubsController.cs",
+              "RelativeDocumentMoniker": "Controllers\\ClubsController.cs",
+              "ToolTip": "C:\\Users\\ailan\\Desktop\\Bakalauro darbas\\MKISCODE\\MKInformacineSistemaBack\\Controllers\\ClubsController.cs",
+              "RelativeToolTip": "Controllers\\ClubsController.cs",
+              "ViewState": "AgIAABsAAAAAAAAAAAAowAMAAAAmAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-03-23T08:25:08.355Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 10,
+              "Title": "HuntingArea.cs",
+              "DocumentMoniker": "C:\\Users\\ailan\\Desktop\\Bakalauro darbas\\MKISCODE\\MKInformacineSistemaBack\\Models\\HuntingArea.cs",
+              "RelativeDocumentMoniker": "Models\\HuntingArea.cs",
+              "ToolTip": "C:\\Users\\ailan\\Desktop\\Bakalauro darbas\\MKISCODE\\MKInformacineSistemaBack\\Models\\HuntingArea.cs",
+              "RelativeToolTip": "Models\\HuntingArea.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAoAAAABAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-04-13T19:50:45.213Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 9,
+              "Title": "Polygon.cs",
+              "DocumentMoniker": "C:\\Users\\ailan\\Desktop\\Bakalauro darbas\\MKISCODE\\MKInformacineSistemaBack\\Models\\Polygon.cs",
+              "RelativeDocumentMoniker": "Models\\Polygon.cs",
+              "ToolTip": "C:\\Users\\ailan\\Desktop\\Bakalauro darbas\\MKISCODE\\MKInformacineSistemaBack\\Models\\Polygon.cs",
+              "RelativeToolTip": "Models\\Polygon.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAwAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-03-22T21:13:47.773Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 8,
+              "Title": "Session.cs",
+              "DocumentMoniker": "C:\\Users\\ailan\\Desktop\\Bakalauro darbas\\MKISCODE\\MKInformacineSistemaBack\\Models\\Session.cs",
+              "RelativeDocumentMoniker": "Models\\Session.cs",
+              "ToolTip": "C:\\Users\\ailan\\Desktop\\Bakalauro darbas\\MKISCODE\\MKInformacineSistemaBack\\Models\\Session.cs",
+              "RelativeToolTip": "Models\\Session.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAMAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-03-23T10:10:48.162Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 7,
+              "Title": "PolygonDto.cs",
+              "DocumentMoniker": "C:\\Users\\ailan\\Desktop\\Bakalauro darbas\\MKISCODE\\MKInformacineSistemaBack\\Helpers\\Dtos\\PolygonDto.cs",
+              "RelativeDocumentMoniker": "Helpers\\Dtos\\PolygonDto.cs",
+              "ToolTip": "C:\\Users\\ailan\\Desktop\\Bakalauro darbas\\MKISCODE\\MKInformacineSistemaBack\\Helpers\\Dtos\\PolygonDto.cs",
+              "RelativeToolTip": "Helpers\\Dtos\\PolygonDto.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-03-22T21:15:15.972Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 6,
+              "Title": "MemberDto.cs",
+              "DocumentMoniker": "C:\\Users\\ailan\\Desktop\\Bakalauro darbas\\MKISCODE\\MKInformacineSistemaBack\\Helpers\\Dtos\\MemberDto.cs",
+              "RelativeDocumentMoniker": "Helpers\\Dtos\\MemberDto.cs",
+              "ToolTip": "C:\\Users\\ailan\\Desktop\\Bakalauro darbas\\MKISCODE\\MKInformacineSistemaBack\\Helpers\\Dtos\\MemberDto.cs",
+              "RelativeToolTip": "Helpers\\Dtos\\MemberDto.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAsAAAAFAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-04-26T15:16:06.777Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 5,
+              "Title": "HuntinAreaDto.cs",
+              "DocumentMoniker": "C:\\Users\\ailan\\Desktop\\Bakalauro darbas\\MKISCODE\\MKInformacineSistemaBack\\Helpers\\Dtos\\HuntinAreaDto.cs",
+              "RelativeDocumentMoniker": "Helpers\\Dtos\\HuntinAreaDto.cs",
+              "ToolTip": "C:\\Users\\ailan\\Desktop\\Bakalauro darbas\\MKISCODE\\MKInformacineSistemaBack\\Helpers\\Dtos\\HuntinAreaDto.cs",
+              "RelativeToolTip": "Helpers\\Dtos\\HuntinAreaDto.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAA8AAAAFAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-04-13T19:54:41.129Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 4,
+              "Title": "ClubDto.cs",
+              "DocumentMoniker": "C:\\Users\\ailan\\Desktop\\Bakalauro darbas\\MKISCODE\\MKInformacineSistemaBack\\Helpers\\Dtos\\ClubDto.cs",
+              "RelativeDocumentMoniker": "Helpers\\Dtos\\ClubDto.cs",
+              "ToolTip": "C:\\Users\\ailan\\Desktop\\Bakalauro darbas\\MKISCODE\\MKInformacineSistemaBack\\Helpers\\Dtos\\ClubDto.cs",
+              "RelativeToolTip": "Helpers\\Dtos\\ClubDto.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAoAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-03-23T09:03:29.619Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
+              "Title": "HuntingAreasController.cs",
+              "DocumentMoniker": "C:\\Users\\ailan\\Desktop\\Bakalauro darbas\\MKISCODE\\MKInformacineSistemaBack\\Controllers\\HuntingAreasController.cs",
+              "RelativeDocumentMoniker": "Controllers\\HuntingAreasController.cs",
+              "ToolTip": "C:\\Users\\ailan\\Desktop\\Bakalauro darbas\\MKISCODE\\MKInformacineSistemaBack\\Controllers\\HuntingAreasController.cs",
+              "RelativeToolTip": "Controllers\\HuntingAreasController.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-04-13T19:51:05.325Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "MembersController.cs",
+              "DocumentMoniker": "C:\\Users\\ailan\\Desktop\\Bakalauro darbas\\MKISCODE\\MKInformacineSistemaBack\\Controllers\\MembersController.cs",
+              "RelativeDocumentMoniker": "Controllers\\MembersController.cs",
+              "ToolTip": "C:\\Users\\ailan\\Desktop\\Bakalauro darbas\\MKISCODE\\MKInformacineSistemaBack\\Controllers\\MembersController.cs",
+              "RelativeToolTip": "Controllers\\MembersController.cs",
+              "ViewState": "AgIAACkAAAAAAAAAAAAwwDgAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-04-26T15:56:33.645Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 11,
+              "Title": "Club.cs",
+              "DocumentMoniker": "C:\\Users\\ailan\\Desktop\\Bakalauro darbas\\MKISCODE\\MKInformacineSistemaBack\\Models\\Club.cs",
+              "RelativeDocumentMoniker": "Models\\Club.cs",
+              "ToolTip": "C:\\Users\\ailan\\Desktop\\Bakalauro darbas\\MKISCODE\\MKInformacineSistemaBack\\Models\\Club.cs",
+              "RelativeToolTip": "Models\\Club.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAABYAAAABAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-03-23T08:18:23.958Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 12,
+              "Title": "ApplicationDbContext.cs",
+              "DocumentMoniker": "C:\\Users\\ailan\\Desktop\\Bakalauro darbas\\MKISCODE\\MKInformacineSistemaBack\\Data\\ApplicationDbContext.cs",
+              "RelativeDocumentMoniker": "Data\\ApplicationDbContext.cs",
+              "ToolTip": "C:\\Users\\ailan\\Desktop\\Bakalauro darbas\\MKISCODE\\MKInformacineSistemaBack\\Data\\ApplicationDbContext.cs",
+              "RelativeToolTip": "Data\\ApplicationDbContext.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAA0AAAAyAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-03-22T21:16:02.098Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 13,
+              "Title": "PolygonsController.cs",
+              "DocumentMoniker": "C:\\Users\\ailan\\Desktop\\Bakalauro darbas\\MKISCODE\\MKInformacineSistemaBack\\Controllers\\PolygonsController.cs",
+              "RelativeDocumentMoniker": "Controllers\\PolygonsController.cs",
+              "ToolTip": "C:\\Users\\ailan\\Desktop\\Bakalauro darbas\\MKISCODE\\MKInformacineSistemaBack\\Controllers\\PolygonsController.cs",
+              "RelativeToolTip": "Controllers\\PolygonsController.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-03-22T21:13:15.748Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 17,
+              "Title": "Program.cs",
+              "DocumentMoniker": "C:\\Users\\ailan\\Desktop\\Bakalauro darbas\\MKISCODE\\MKInformacineSistemaBack\\Program.cs",
+              "RelativeDocumentMoniker": "Program.cs",
+              "ToolTip": "C:\\Users\\ailan\\Desktop\\Bakalauro darbas\\MKISCODE\\MKInformacineSistemaBack\\Program.cs",
+              "RelativeToolTip": "Program.cs",
+              "ViewState": "AgIAAA8AAAAAAAAAAAAAADYAAAADAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-03-22T21:19:02.114Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 14,
+              "Title": "AuthSeeder.cs",
+              "DocumentMoniker": "C:\\Users\\ailan\\Desktop\\Bakalauro darbas\\MKISCODE\\MKInformacineSistemaBack\\Auth\\AuthSeeder.cs",
+              "RelativeDocumentMoniker": "Auth\\AuthSeeder.cs",
+              "ToolTip": "C:\\Users\\ailan\\Desktop\\Bakalauro darbas\\MKISCODE\\MKInformacineSistemaBack\\Auth\\AuthSeeder.cs",
+              "RelativeToolTip": "Auth\\AuthSeeder.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAACUAAAARAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-03-23T10:05:51.321Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 15,
+              "Title": "JwtTokenService.cs",
+              "DocumentMoniker": "C:\\Users\\ailan\\Desktop\\Bakalauro darbas\\MKISCODE\\MKInformacineSistemaBack\\Auth\\JwtTokenService.cs",
+              "RelativeDocumentMoniker": "Auth\\JwtTokenService.cs",
+              "ToolTip": "C:\\Users\\ailan\\Desktop\\Bakalauro darbas\\MKISCODE\\MKInformacineSistemaBack\\Auth\\JwtTokenService.cs",
+              "RelativeToolTip": "Auth\\JwtTokenService.cs",
+              "ViewState": "AgIAADIAAAAAAAAAAAAmwEYAAAAqAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-03-23T10:06:46.487Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 16,
+              "Title": "SessionService.cs",
+              "DocumentMoniker": "C:\\Users\\ailan\\Desktop\\Bakalauro darbas\\MKISCODE\\MKInformacineSistemaBack\\Auth\\SessionService.cs",
+              "RelativeDocumentMoniker": "Auth\\SessionService.cs",
+              "ToolTip": "C:\\Users\\ailan\\Desktop\\Bakalauro darbas\\MKISCODE\\MKInformacineSistemaBack\\Auth\\SessionService.cs",
+              "RelativeToolTip": "Auth\\SessionService.cs",
+              "ViewState": "AgIAABYAAAAAAAAAAAA3wCEAAABIAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-03-23T10:06:54.305Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 19,
+              "Title": "AuthEndpoints.cs",
+              "DocumentMoniker": "C:\\Users\\ailan\\Desktop\\Bakalauro darbas\\MKISCODE\\MKInformacineSistemaBack\\Auth\\AuthEndpoints.cs",
+              "RelativeDocumentMoniker": "Auth\\AuthEndpoints.cs",
+              "ToolTip": "C:\\Users\\ailan\\Desktop\\Bakalauro darbas\\MKISCODE\\MKInformacineSistemaBack\\Auth\\AuthEndpoints.cs",
+              "RelativeToolTip": "Auth\\AuthEndpoints.cs",
+              "ViewState": "AgIAADQAAAAAAAAAAAAgwJQAAAAhAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-03-23T10:04:14.094Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 20,
+              "Title": "MKInformacineSistemaBack.http",
+              "DocumentMoniker": "C:\\Users\\ailan\\Desktop\\Bakalauro darbas\\MKISCODE\\MKInformacineSistemaBack\\MKInformacineSistemaBack.http",
+              "RelativeDocumentMoniker": "MKInformacineSistemaBack.http",
+              "ToolTip": "C:\\Users\\ailan\\Desktop\\Bakalauro darbas\\MKISCODE\\MKInformacineSistemaBack\\MKInformacineSistemaBack.http",
+              "RelativeToolTip": "MKInformacineSistemaBack.http",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003502|",
+              "WhenOpened": "2025-03-29T19:50:49.339Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 18,
+              "Title": "launchSettings.json",
+              "DocumentMoniker": "C:\\Users\\ailan\\Desktop\\Bakalauro darbas\\MKISCODE\\MKInformacineSistemaBack\\Properties\\launchSettings.json",
+              "RelativeDocumentMoniker": "Properties\\launchSettings.json",
+              "ToolTip": "C:\\Users\\ailan\\Desktop\\Bakalauro darbas\\MKISCODE\\MKInformacineSistemaBack\\Properties\\launchSettings.json",
+              "RelativeToolTip": "Properties\\launchSettings.json",
+              "ViewState": "AgIAAAMAAAAAAAAAAAAmwBQAAAAGAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001642|",
+              "WhenOpened": "2025-03-29T19:55:08.214Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 21,
+              "Title": "Extensions.cs",
+              "DocumentMoniker": "C:\\Users\\ailan\\Desktop\\Bakalauro darbas\\MKISCODE\\MKInformacineSistemaBack\\Helpers\\Extensions.cs",
+              "RelativeDocumentMoniker": "Helpers\\Extensions.cs",
+              "ToolTip": "C:\\Users\\ailan\\Desktop\\Bakalauro darbas\\MKISCODE\\MKInformacineSistemaBack\\Helpers\\Extensions.cs",
+              "RelativeToolTip": "Helpers\\Extensions.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAwAAAA1AAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-03-23T13:02:28.96Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 22,
+              "Title": "User.cs",
+              "DocumentMoniker": "C:\\Users\\ailan\\Desktop\\Bakalauro darbas\\MKISCODE\\MKInformacineSistemaBack\\Auth\\Models\\User.cs",
+              "RelativeDocumentMoniker": "Auth\\Models\\User.cs",
+              "ToolTip": "C:\\Users\\ailan\\Desktop\\Bakalauro darbas\\MKISCODE\\MKInformacineSistemaBack\\Auth\\Models\\User.cs",
+              "RelativeToolTip": "Auth\\Models\\User.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAcAAAABAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-03-23T09:53:19.595Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 23,
+              "Title": "Roles.cs",
+              "DocumentMoniker": "C:\\Users\\ailan\\Desktop\\Bakalauro darbas\\MKISCODE\\MKInformacineSistemaBack\\Auth\\Models\\Roles.cs",
+              "RelativeDocumentMoniker": "Auth\\Models\\Roles.cs",
+              "ToolTip": "C:\\Users\\ailan\\Desktop\\Bakalauro darbas\\MKISCODE\\MKInformacineSistemaBack\\Auth\\Models\\Roles.cs",
+              "RelativeToolTip": "Auth\\Models\\Roles.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAoAAAABAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-03-23T09:56:26.991Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 24,
+              "Title": "MKInformacineSistemaBack.csproj",
+              "DocumentMoniker": "C:\\Users\\ailan\\Desktop\\Bakalauro darbas\\MKISCODE\\MKInformacineSistemaBack\\MKInformacineSistemaBack.csproj",
+              "RelativeDocumentMoniker": "MKInformacineSistemaBack.csproj",
+              "ToolTip": "C:\\Users\\ailan\\Desktop\\Bakalauro darbas\\MKISCODE\\MKInformacineSistemaBack\\MKInformacineSistemaBack.csproj",
+              "RelativeToolTip": "MKInformacineSistemaBack.csproj",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAABcAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000758|",
+              "WhenOpened": "2025-03-22T21:11:19.289Z"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
