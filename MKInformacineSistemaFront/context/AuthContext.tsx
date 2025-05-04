@@ -158,22 +158,32 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     }
   };
 
-  const logout = () => {
-    // Call logout endpoint to invalidate session on server
-    fetch('https://localhost:7091/api/logout', {
-      method: 'POST',
-      credentials: 'include'
-    }).catch(err => {
+  const logout = async () => {
+    try {
+      // Call logout endpoint to invalidate session on server
+      const response = await fetch('https://localhost:7091/api/logout', {
+        method: 'POST',
+        credentials: 'include', // important for cookies
+        headers: {
+          'Authorization': `Bearer ${sessionStorage.getItem("accessToken")}`
+        }
+      });
+      
+      if (!response.ok) {
+        console.warn("Server logout failed with status:", response.status);
+      }
+    } catch (err) {
       console.error("Error during logout:", err);
-    }).finally(() => {
-      // Always clear local session data regardless of backend response
+    } finally {
+      // Clear local session data
       sessionStorage.removeItem("accessToken");
       setIsAuthenticated(false);
       setUserRoles([]);
       setUserName('');
       setUserId('');
+      // Only redirect after everything is cleared
       router.push('/auth/login');
-    });
+    }
   };
 
   return (

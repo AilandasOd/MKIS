@@ -27,7 +27,7 @@ namespace MKInformacineSistemaBack.Auth
             new Claim(JwtRegisteredClaimNames.Sub, userId),
         };
 
-            authClaims.AddRange(roles.Select(o => new Claim(ClaimTypes.Role, o)));
+            authClaims.AddRange(roles.Select(o => new Claim("role", o)));
 
             var token = new JwtSecurityToken(
                 issuer: _issuer,

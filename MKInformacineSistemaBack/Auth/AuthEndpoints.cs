@@ -160,28 +160,52 @@ namespace MKInformacineSistemaBack.Auth
             {
                 if (!httpContext.Request.Cookies.TryGetValue("RefreshToken", out var refreshToken))
                 {
-                    return Results.UnprocessableEntity();
+                    // Even if refresh token is not found, delete any cookie that might exist
+                    DeleteRefreshTokenCookie(httpContext);
+                    return Results.Ok(); // Return OK instead of error
                 }
 
                 if (!jwtTokenService.TryParseRefreshToken(refreshToken, out var claims))
                 {
-                    return Results.UnprocessableEntity();
+                    // Even if token is invalid, delete cookie
+                    DeleteRefreshTokenCookie(httpContext);
+                    return Results.Ok(); // Return OK instead of error
                 }
 
                 var sessionId = claims.FindFirstValue("SessionId");
                 if (string.IsNullOrWhiteSpace(sessionId))
                 {
-                    return Results.UnprocessableEntity();
+                    // Even if session ID is missing, delete cookie
+                    DeleteRefreshTokenCookie(httpContext);
+                    return Results.Ok(); // Return OK instead of error
                 }
 
-                await sessionService.InvalidateSessionAsync(Guid.Parse(sessionId));
-                httpContext.Response.Cookies.Delete("RefreshToken");
+                try
+                {
+                    await sessionService.InvalidateSessionAsync(Guid.Parse(sessionId));
+                }
+                catch
+                {
+                    // Log exception but continue to delete cookie
+                }
 
+                DeleteRefreshTokenCookie(httpContext);
                 return Results.Ok();
             });
 
         }
+        private static void DeleteRefreshTokenCookie(HttpContext httpContext)
+        {
+            var cookieOptions = new CookieOptions
+            {
+                HttpOnly = true,
+                SameSite = SameSiteMode.None,
+                Secure = true,
+                Expires = DateTime.Now.AddDays(-1), // Expire immediately
+            };
 
+            httpContext.Response.Cookies.Delete("RefreshToken", cookieOptions);
+        }
         public record RegisterUserDto(string UserName, string Email, string Password);
         public record LoginDto(string UserName, string Password);
         public record SuccessfulLoginDto(string AccessToken);

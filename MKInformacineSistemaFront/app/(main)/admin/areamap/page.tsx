@@ -68,7 +68,7 @@ const MapLineDrawing: React.FC = () => {
 
   const loadGoogleMapsScript = (): Promise<void> => {
     return new Promise((resolve, reject) => {
-      if (window.google && window.google.maps) return resolve();
+      if (window.google && window.google.maps && window.google.maps.drawing) return resolve();
 
       const existingScript = document.querySelector(`script[src*="maps.googleapis.com"]`);
       if (existingScript) {
@@ -86,9 +86,23 @@ const MapLineDrawing: React.FC = () => {
     });
   };
 
+  const waitForDrawingLibrary = (): Promise<void> => {
+    return new Promise((resolve) => {
+      const check = () => {
+        if (window.google && window.google.maps?.drawing?.DrawingManager) {
+          resolve();
+        } else {
+          setTimeout(check, 100);
+        }
+      };
+      check();
+    });
+  };
+
   useEffect(() => {
     const initMap = async () => {
       await loadGoogleMapsScript();
+      await waitForDrawingLibrary();
 
       if (!mapRef.current) return;
 
