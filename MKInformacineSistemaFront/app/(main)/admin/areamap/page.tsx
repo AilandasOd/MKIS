@@ -4,7 +4,7 @@ import { Toast } from 'primereact/toast';
 import { Button } from 'primereact/button';
 
 const API_URL = 'https://localhost:7091/api/HuntingAreas';
-const apiKey = process.env.GOOGLE_MAPS_API_KEY;
+const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
 
 const MapLineDrawing: React.FC = () => {
   const mapRef = useRef<HTMLDivElement>(null);
@@ -66,29 +66,30 @@ const MapLineDrawing: React.FC = () => {
     }
   };
 
+  const loadGoogleMapsScript = (): Promise<void> => {
+    return new Promise((resolve, reject) => {
+      if (window.google && window.google.maps) return resolve();
+
+      const existingScript = document.querySelector(`script[src*="maps.googleapis.com"]`);
+      if (existingScript) {
+        existingScript.addEventListener("load", () => resolve());
+        return;
+      }
+
+      const script = document.createElement("script");
+      script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&libraries=drawing`;
+      script.async = true;
+      script.defer = true;
+      script.onload = () => resolve();
+      script.onerror = reject;
+      document.head.appendChild(script);
+    });
+  };
+
   useEffect(() => {
-    const loadGoogleMapsScript = (): Promise<void> => {
-      return new Promise((resolve, reject) => {
-        if (window.google && window.google.maps) return resolve();
+    const initMap = async () => {
+      await loadGoogleMapsScript();
 
-        const existingScript = document.querySelector(`script[src*="maps.googleapis.com"]`);
-        if (existingScript) {
-          existingScript.addEventListener("load", () => resolve());
-          return;
-        }
-
-        window.initMap = () => resolve();
-
-        const script = document.createElement("script");
-        script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&libraries=drawing&callback=initMap`;
-        script.async = true;
-        script.defer = true;
-        script.onerror = reject;
-        document.head.appendChild(script);
-      });
-    };
-
-    window.initMap = () => {
       if (!mapRef.current) return;
 
       const newMap = new google.maps.Map(mapRef.current, {
@@ -153,11 +154,7 @@ const MapLineDrawing: React.FC = () => {
       });
     };
 
-    if (!window.google || !window.google.maps) {
-      loadGoogleMapsScript();
-    } else {
-      window.initMap();
-    }
+    initMap();
   }, []);
 
   return (

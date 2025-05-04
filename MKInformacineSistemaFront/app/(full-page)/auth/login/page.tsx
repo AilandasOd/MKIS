@@ -1,4 +1,4 @@
-/* eslint-disable @next/next/no-img-element */
+// MKInformacineSistemaFront/app/(full-page)/auth/login/page.tsx
 'use client';
 import { useRouter } from 'next/navigation';
 import React, { useContext, useState } from 'react';
@@ -8,13 +8,17 @@ import { Password } from 'primereact/password';
 import { LayoutContext } from '../../../../layout/context/layoutcontext';
 import { InputText } from 'primereact/inputtext';
 import { classNames } from 'primereact/utils';
+import { useAuth } from '../../../../context/AuthContext';
+import { Toast } from 'primereact/toast';
 
 const LoginPage = () => {
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
     const [checked, setChecked] = useState(false);
     const { layoutConfig } = useContext(LayoutContext);
+    const { login } = useAuth();
     const router = useRouter();
+    const toast = React.useRef<Toast>(null);
 
     const containerClassName = classNames(
         'surface-ground flex align-items-center justify-content-center min-h-screen min-w-screen overflow-hidden',
@@ -36,22 +40,35 @@ const LoginPage = () => {
             });
 
             if (res.ok) {
-                // Optional: parse access token if needed
+                // Parse access token
                 const data = await res.json();
-                sessionStorage.setItem('accessToken', data.accessToken); // if you want to use it
-                router.push('/dashboard');
+                // Use the auth context to handle login
+                login(data.accessToken);
+                
+                // Navigation is handled by the auth context
             } else {
                 const errorText = await res.text();
-                alert(`Login failed: ${errorText}`);
+                toast.current?.show({ 
+                    severity: 'error', 
+                    summary: 'Login Failed', 
+                    detail: errorText || 'Invalid credentials', 
+                    life: 3000 
+                });
             }
         } catch (err) {
             console.error('Login error:', err);
-            alert('Something went wrong.');
+            toast.current?.show({ 
+                severity: 'error', 
+                summary: 'Error', 
+                detail: 'Something went wrong. Please try again.', 
+                life: 3000 
+            });
         }
     };
 
     return (
         <div className={containerClassName}>
+            <Toast ref={toast} />
             <div className="flex flex-column align-items-center justify-content-center">
                 <img src={`/layout/images/logo-${layoutConfig.colorScheme === 'light' ? 'dark' : 'white'}.svg`} alt="Sakai logo" className="mb-5 w-6rem flex-shrink-0" />
                 <div

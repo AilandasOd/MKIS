@@ -5,7 +5,7 @@ import { InputText } from 'primereact/inputtext';
 import { useRouter } from 'next/navigation';
 import { Button } from 'primereact/button';
 
-const apiKey = process.env.GOOGLE_MAPS_API_KEY;
+const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
 
 interface Polygon {
   id: number;
@@ -31,7 +31,7 @@ const PolygonsWithMapAndList: React.FC = () => {
   useEffect(() => {
     const loadGoogleMapsScript = () => {
       const script = document.createElement("script");
-      script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&callback=initMap`;
+      script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&callback=initMap&loading=async`;
       script.async = true;
       script.defer = true;
       document.head.appendChild(script);

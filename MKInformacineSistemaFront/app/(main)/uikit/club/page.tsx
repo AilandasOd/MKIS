@@ -3,7 +3,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Card } from 'primereact/card';
 
-const apiKey = process.env.GOOGLE_MAPS_API_KEY;
+const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
 interface HuntingArea {
   id: number;
   name: string;

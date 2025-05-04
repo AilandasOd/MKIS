@@ -11,7 +11,7 @@ declare global {
   }
 }
 
-const apiKey = process.env.GOOGLE_MAPS_API_KEY;
+const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
 
 const MapWithDrawing: React.FC = () => {
   const mapRef = useRef<HTMLDivElement>(null);
@@ -107,7 +107,7 @@ const MapWithDrawing: React.FC = () => {
         window.initMap = () => resolve();
 
         const script = document.createElement("script");
-        script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&libraries=drawing&callback=initMap`;
+        script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&libraries=drawing&callback=initMap&loading=async`;
         script.async = true;
         script.defer = true;
         script.onerror = reject;

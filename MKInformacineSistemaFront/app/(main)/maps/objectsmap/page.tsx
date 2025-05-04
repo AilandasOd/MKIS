@@ -8,15 +8,9 @@ import { Button } from 'primereact/button';
 
 const API_URL = 'https://localhost:7091/api/HuntingAreas';
 
-declare global {
-  interface Window {
-    initMap: () => void;
-  }
-}
-
 const TOWER_ICON = '/layout/images/Tower.png';
 const EATING_ICON = '/layout/images/Corn.png';
-const apiKey = process.env.GOOGLE_MAPS_API_KEY;
+const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
 
 type MarkerType = 'Tower' | 'EatingZone';
 
@@ -38,12 +32,10 @@ const MapWithCustomMarkers: React.FC = () => {
   const [nameInput, setNameInput] = useState('');
   const [isDrawingActive, setIsDrawingActive] = useState(false);
 
-  const getIconForType = (type: MarkerType) => {
-    return {
-      url: type === 'Tower' ? TOWER_ICON : EATING_ICON,
-      scaledSize: new google.maps.Size(32, 32),
-    };
-  };
+  const getIconForType = (type: MarkerType) => ({
+    url: type === 'Tower' ? TOWER_ICON : EATING_ICON,
+    scaledSize: new google.maps.Size(32, 32),
+  });
 
   const seedInitialMarkers = (mapInstance: google.maps.Map) => {
     const baseLat = 56.1286255021102;
@@ -98,82 +90,75 @@ const MapWithCustomMarkers: React.FC = () => {
       });
   };
 
-  const initDrawingManager = (mapInstance: google.maps.Map, markerType: MarkerType) => {
-    if (drawingManager) {
-      drawingManager.setMap(null);
-    }
+  const initMap = () => {
+    if (!mapRef.current) return;
 
-    const manager = new google.maps.drawing.DrawingManager({
-      drawingMode: google.maps.drawing.OverlayType.MARKER,
-      drawingControl: false,
-      markerOptions: {
-        icon: getIconForType(markerType),
-        draggable: true,
-      },
+    const newMap = new google.maps.Map(mapRef.current, {
+      center: { lat: 56.10857764750518, lng: 23.349903007765427 },
+      zoom: 12,
+      mapTypeId: google.maps.MapTypeId.HYBRID,
+      streetViewControl: false,
     });
 
-    manager.setMap(mapInstance);
-    setDrawingManager(manager);
+    setMap(newMap);
+    seedInitialMarkers(newMap);
+    drawHuntingArea(newMap);
+  };
 
-    google.maps.event.addListener(manager, 'overlaycomplete', (event: google.maps.drawing.OverlayCompleteEvent) => {
-      if (event.type === google.maps.drawing.OverlayType.MARKER) {
-        const marker = event.overlay as google.maps.Marker;
-        marker.setIcon(getIconForType(markerType));
-        marker.setDraggable(true);
-
-        setNewMarker(marker);
-        setNameDialogVisible(true);
+  const loadGoogleMapsScript = (): Promise<void> => {
+    return new Promise((resolve, reject) => {
+      if (window.google && window.google.maps) {
+        resolve();
+        return;
       }
+
+      const existingScript = document.querySelector(`script[src*="maps.googleapis.com"]`);
+      if (existingScript) {
+        existingScript.addEventListener("load", () => resolve());
+        return;
+      }
+
+      const script = document.createElement("script");
+      script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&libraries=drawing`;
+      script.async = true;
+      script.defer = true;
+      script.onload = () => resolve();
+      script.onerror = reject;
+      document.head.appendChild(script);
     });
   };
 
   useEffect(() => {
-    const loadGoogleMapsScript = (): Promise<void> => {
-      return new Promise((resolve, reject) => {
-        if (window.google && window.google.maps) return resolve();
-
-        const existingScript = document.querySelector(`script[src*="maps.googleapis.com"]`);
-        if (existingScript) {
-          existingScript.addEventListener("load", () => resolve());
-          return;
-        }
-
-        window.initMap = () => resolve();
-
-        const script = document.createElement("script");
-        script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&libraries=drawing&callback=initMap`;
-        script.async = true;
-        script.defer = true;
-        script.onerror = reject;
-        document.head.appendChild(script);
-      });
-    };
-
-    window.initMap = () => {
-      if (!mapRef.current) return;
-
-      const newMap = new google.maps.Map(mapRef.current, {
-        center: { lat: 56.10857764750518, lng: 23.349903007765427 },
-        zoom: 12,
-        mapTypeId: google.maps.MapTypeId.HYBRID,
-        streetViewControl: false,
-      });
-
-      setMap(newMap);
-      seedInitialMarkers(newMap);
-      drawHuntingArea(newMap);
-    };
-
-    if (!window.google || !window.google.maps) {
-      loadGoogleMapsScript();
-    } else {
-      window.initMap();
-    }
+    loadGoogleMapsScript().then(() => {
+      initMap();
+    });
   }, []);
 
   useEffect(() => {
     if (map && isDrawingActive) {
-      initDrawingManager(map, selectedType);
+      if (drawingManager) drawingManager.setMap(null);
+
+      const manager = new google.maps.drawing.DrawingManager({
+        drawingMode: google.maps.drawing.OverlayType.MARKER,
+        drawingControl: false,
+        markerOptions: {
+          icon: getIconForType(selectedType),
+          draggable: true,
+        },
+      });
+
+      manager.setMap(map);
+      setDrawingManager(manager);
+
+      google.maps.event.addListener(manager, 'overlaycomplete', (event: google.maps.drawing.OverlayCompleteEvent) => {
+        if (event.type === google.maps.drawing.OverlayType.MARKER) {
+          const marker = event.overlay as google.maps.Marker;
+          marker.setIcon(getIconForType(selectedType));
+          marker.setDraggable(true);
+          setNewMarker(marker);
+          setNameDialogVisible(true);
+        }
+      });
     } else if (drawingManager) {
       drawingManager.setMap(null);
     }
@@ -186,7 +171,6 @@ const MapWithCustomMarkers: React.FC = () => {
       });
 
       newMarker.addListener('click', () => infoWindow.open(map, newMarker));
-
       newMarker.addListener('rightclick', () => {
         if (isDrawingActive) {
           newMarker.setMap(null);
@@ -201,7 +185,6 @@ const MapWithCustomMarkers: React.FC = () => {
       });
 
       newMarker.setDraggable(isDrawingActive);
-
       setMarkers(prev => [...prev, { marker: newMarker, type: selectedType, name: nameInput.trim() }]);
 
       toast.current?.show({

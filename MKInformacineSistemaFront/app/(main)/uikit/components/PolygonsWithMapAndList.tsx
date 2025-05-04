@@ -3,7 +3,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { DataView } from 'primereact/dataview';
 import { InputText } from 'primereact/inputtext';
 
-const apiKey = process.env.GOOGLE_MAPS_API_KEY;
+const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
 
 interface Polygon {
   id: number;
