@@ -1,9 +1,12 @@
-/* eslint-disable @next/next/no-img-element */
 'use client';
+import React, { useEffect, useState } from 'react';
 import { DataTable } from 'primereact/datatable';
 import { Column } from 'primereact/column';
 import { InputText } from 'primereact/inputtext';
-import React, { useEffect, useState } from 'react';
+import { Avatar } from 'primereact/avatar';
+import { Card } from 'primereact/card';
+import { Tag } from 'primereact/tag';
+import { useRouter } from 'next/navigation';
 
 interface Member {
     id: string;
@@ -13,99 +16,185 @@ interface Member {
     activity: number;
     huntingSince: string;
     status: string;
+    email: string;
+    phoneNumber: string;
+    age: number;
 }
 
-const MemberTable = () => {
+const nameBodyTemplate = (rowData: Member) => {
+    const router = useRouter();
+
+    return (
+        <a 
+            className="text-primary cursor-pointer hover:underline" 
+            onClick={() => router.push(`/members/${rowData.id}`)}
+        >
+            {rowData.name}
+        </a>
+    );
+};
+
+const MembersView = () => {
     const [members, setMembers] = useState<Member[]>([]);
-    const [globalFilterValue, setGlobalFilterValue] = useState('');
+    const [globalFilter, setGlobalFilter] = useState('');
+    const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        setMembers([
-            {
-                id: '1',
-                name: 'Rimas Rimauskas',
-                birthDate: '1990-05-15',
-                photo: 'https://randomuser.me/api/portraits/men/1.jpg',
-                activity: 75,
-                huntingSince: '2015-06-01',
-                status: 'Medžiotojas'
-            },
-            {
-                id: '2',
-                name: 'Kotryna Kotrynaite',
-                birthDate: '1985-11-22',
-                photo: 'https://randomuser.me/api/portraits/women/2.jpg',
-                activity: 55,
-                huntingSince: '2017-03-14',
-                status: 'Medžiotojas'
-            },
-            {
-                id: '3',
-                name: 'Tomas Tomauskas',
-                birthDate: '1993-01-10',
-                photo: 'https://randomuser.me/api/portraits/men/3.jpg',
-                activity: 90,
-                huntingSince: '2019-09-20',
-                status: 'Medžiotojas'
-            }
-        ]);
+        fetchMembers();
     }, []);
 
-    const calculateAge = (birthDate: string) => {
-        const birth = new Date(birthDate);
-        const today = new Date();
-        let age = today.getFullYear() - birth.getFullYear();
-        const m = today.getMonth() - birth.getMonth();
-        if (m < 0 || (m === 0 && today.getDate() < birth.getDate())) {
-            age--;
+    const fetchMembers = async () => {
+        try {
+            const res = await fetch('https://localhost:7091/api/Members', {
+                headers: {
+                    'Authorization': `Bearer ${sessionStorage.getItem('accessToken')}`
+                }
+            });
+            const data = await res.json();
+            setMembers(data);
+        } catch (error) {
+            console.error('Error fetching members:', error);
+        } finally {
+            setLoading(false);
         }
-        return age;
+    };
+
+    const formatDate = (dateString: string) => {
+        return new Date(dateString).toLocaleDateString('lt-LT');
     };
 
     const photoBodyTemplate = (rowData: Member) => {
-        return <img src={rowData.photo} alt={rowData.name} width={50} height={50} style={{ borderRadius: '50%' }} />;
-    };
-
-    const ageBodyTemplate = (rowData: Member) => {
-        return <span>{calculateAge(rowData.birthDate)} years</span>;
+        return rowData.photo ? (
+            <img 
+                src={`https://localhost:7091${rowData.photo}`} 
+                alt={rowData.name} 
+                width="50" 
+                height="50" 
+                style={{ borderRadius: '50%', objectFit: 'cover' }} 
+            />
+        ) : (
+            <Avatar 
+                icon="pi pi-user" 
+                size="large" 
+                shape="circle" 
+            />
+        );
     };
 
     const activityBodyTemplate = (rowData: Member) => {
-        return <div className="flex align-items-center">
-            <span className="font-bold mr-2">{rowData.activity}%</span>
-            <div style={{ height: '6px', background: '#ccc', width: '100px', borderRadius: '4px' }}>
-                <div style={{ width: `${rowData.activity}%`, background: '#4caf50', height: '100%', borderRadius: '4px' }}></div>
-            </div>
-        </div>;
-    };
+        let severity = 'info';
+        if (rowData.activity > 75) severity = 'success';
+        else if (rowData.activity < 25) severity = 'danger';
+        else severity = 'warning';
 
-    const renderHeader = () => {
         return (
-            <div className="flex justify-content-between">
-                <h5 className="m-0">Klubo nariai</h5>
-                <span className="p-input-icon-left">
-                    <i className="pi pi-search" />
-                    <InputText value={globalFilterValue} onChange={(e) => setGlobalFilterValue(e.target.value)} placeholder="Ieškoti pagal vardą" />
-                </span>
+            <div className="flex align-items-center">
+                <div className="relative h-1.5 w-24 bg-gray-200 rounded">
+                    <div 
+                        className={`absolute h-1.5 rounded`} 
+                        style={{ 
+                            width: `${rowData.activity}%`,
+                            backgroundColor: severity === 'success' ? 'var(--green-500)' : 
+                                            severity === 'warning' ? 'var(--yellow-500)' : 
+                                            severity === 'danger' ? 'var(--red-500)' : 
+                                            'var(--primary-color)'
+                        }}
+                    ></div>
+                </div>
+                <span className="ml-2">{rowData.activity}%</span>
             </div>
         );
     };
 
-    const filteredMembers = members.filter((m) => m.name.toLowerCase().includes(globalFilterValue.toLowerCase()));
+    const statusBodyTemplate = (rowData: Member) => {
+        return (
+            <Tag 
+                value={rowData.status} 
+                severity={rowData.status === 'Administratorius' ? 'danger' : 'success'}
+            />
+        );
+    };
+
+    const header = (
+        <div className="flex flex-column md:flex-row md:justify-content-between md:align-items-center">
+            <h5 className="m-0">Club Members</h5>
+            <span className="block mt-2 md:mt-0 p-input-icon-left">
+                <i className="pi pi-search" />
+                <InputText 
+                    type="search" 
+                    onInput={(e) => setGlobalFilter(e.currentTarget.value)} 
+                    placeholder="Search..." 
+                />
+            </span>
+        </div>
+    );
 
     return (
         <div className="card">
-            <DataTable value={filteredMembers} paginator rows={10} header={renderHeader()} responsiveLayout="scroll">
-                <Column header="Photo" body={photoBodyTemplate} style={{ width: '80px' }}></Column>
-                <Column field="name" header="Vardas Pavardė" sortable></Column>
-                <Column field="birthDate" header="Gimimo data" sortable></Column>
-                <Column header="Metai" body={ageBodyTemplate}></Column>
-                <Column header="Aktyvumas varyminėse medžioklėse" body={activityBodyTemplate}></Column>
-                <Column field="huntingSince" header="Medžioklės bilieto išdavimo data" sortable></Column>
-                <Column field="status" header="Statusas" sortable></Column>
+            <DataTable 
+                value={members} 
+                header={header}
+                globalFilter={globalFilter}
+                emptyMessage="No members found."
+                loading={loading}
+                paginator 
+                rows={10}
+                rowsPerPageOptions={[5, 10, 25]}
+                dataKey="id"
+                responsiveLayout="scroll"
+                rowHover
+                stripedRows
+            >
+                <Column header="Name" body={nameBodyTemplate} field="name" sortable />
+                <Column header="Photo" body={photoBodyTemplate} style={{ width: '70px' }} />
+                <Column field="age" header="Age" sortable style={{ width: '70px' }} />
+                <Column 
+                    field="huntingSince" 
+                    header="Hunter Since" 
+                    body={(rowData) => formatDate(rowData.huntingSince)} 
+                    sortable 
+                />
+                <Column header="Activity" body={activityBodyTemplate} field="activity" sortable />
+                <Column header="Status" body={statusBodyTemplate} field="status" sortable style={{ width: '120px' }} />
             </DataTable>
+
+            <div className="mt-4">
+                <h5>Activity Legend</h5>
+                <div className="grid">
+                    <div className="col-12 md:col-4">
+                        <Card className="p-3">
+                            <div className="flex align-items-center">
+                                <div className="relative h-1.5 w-24 bg-gray-200 rounded mr-3">
+                                    <div className="absolute h-1.5 rounded bg-green-500" style={{ width: '90%' }}></div>
+                                </div>
+                                <span>High Activity (75%)</span>
+                            </div>
+                        </Card>
+                    </div>
+                    <div className="col-12 md:col-4">
+                        <Card className="p-3">
+                            <div className="flex align-items-center">
+                                <div className="relative h-1.5 w-24 bg-gray-200 rounded mr-3">
+                                    <div className="absolute h-1.5 rounded bg-yellow-500" style={{ width: '50%' }}></div>
+                                </div>
+                                <span>Medium Activity (25-75%)</span>
+                            </div>
+                        </Card>
+                    </div>
+                    <div className="col-12 md:col-4">
+                        <Card className="p-3">
+                            <div className="flex align-items-center">
+                                <div className="relative h-1.5 w-24 bg-gray-200 rounded mr-3">
+                                    <div className="absolute h-1.5 rounded bg-red-500" style={{ width: '15%' }}></div>
+                                </div>
+                                <span>Low Activity (25%)</span>
+                            </div>
+                        </Card>
+                    </div>
+                </div>
+            </div>
         </div>
     );
 };
 
-export default MemberTable;
+export default MembersView;

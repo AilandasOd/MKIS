@@ -8,6 +8,7 @@ using MKInformacineSistemaBack.Server.Auth;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
+using MKInformacineSistemaBack.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -36,6 +37,7 @@ builder.Services.AddCors(options =>
 builder.Services.AddTransient<JwtTokenService>();
 builder.Services.AddTransient<SessionService>();
 builder.Services.AddScoped<AuthSeeder>();
+builder.Services.AddScoped<MemberActivityService>();
 
 builder.Services.AddIdentity<User, IdentityRole>()
     .AddEntityFrameworkStores<ApplicationDbContext>()
@@ -54,6 +56,17 @@ builder.Services.AddAuthentication(options =>
     options.TokenValidationParameters.IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["JWT:Secret"]));
 });
 
+builder.Services.Configure<IdentityOptions>(options =>
+{
+    // Password settings
+    options.Password.RequireDigit = true;
+    options.Password.RequireLowercase = true;
+    options.Password.RequireNonAlphanumeric = false; // Make this less strict
+    options.Password.RequireUppercase = true;
+    options.Password.RequiredLength = 6; // Reduce this from the default
+    options.Password.RequiredUniqueChars = 1;
+});
+
 builder.Services.AddAuthorization();
 
 var app = builder.Build();
@@ -66,6 +79,21 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
+if (string.IsNullOrEmpty(builder.Environment.WebRootPath))
+{
+    builder.Environment.WebRootPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot");
+    // Create the wwwroot directory if it doesn't exist
+    Directory.CreateDirectory(builder.Environment.WebRootPath);
+}
+
+app.UseStaticFiles();
+
+var uploadsDir = Path.Combine(builder.Environment.WebRootPath, "uploads", "avatars");
+if (!Directory.Exists(uploadsDir))
+{
+    Directory.CreateDirectory(uploadsDir);
+}
+
 using (var scope = app.Services.CreateScope())
 {
     var services = scope.ServiceProvider;
@@ -75,6 +103,7 @@ using (var scope = app.Services.CreateScope())
 
     //await SeedData.Seed(context);
 }
+
 
 app.AddAuthApi();
 

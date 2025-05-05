@@ -1,25 +1,27 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿// First, let's modify the Member model to ensure future entries will have unique UserIds
+using MKInformacineSistemaBack.Auth.Models;
+using System.ComponentModel.DataAnnotations.Schema;
+using System.ComponentModel.DataAnnotations;
 
-namespace MKInformacineSistemaBack.Models
+public class Member
 {
-    public class Member
-    {
-        [Key]
-        public Guid Id { get; set; }
+    [Key]
+    public Guid Id { get; set; }
 
-        [Required]
-        public string Name { get; set; }
+    // Reference to User - making it unique but allowing for the migration to handle existing data
+    public string UserId { get; set; }
 
-        [Required]
-        public DateTime BirthDate { get; set; }
+    [ForeignKey("UserId")]
+    public User User { get; set; }
 
-        public string Photo { get; set; }
+    // Additional member-specific fields
+    public string Status { get; set; } = "Medžiotojas"; // "Administratorius" or "Medžiotojas"
 
-        public int Activity { get; set; }
+    public int Activity { get; set; } // Calculated from driven hunts participation
 
-        public DateTime HuntingSince { get; set; }
-
-        [Required]
-        public string Status { get; set; }
-    }
+    // Note: These fields might be redundant with User properties but kept for backward compatibility
+    public string Name { get; set; }
+    public DateTime BirthDate { get; set; }
+    public string Photo { get; set; }
+    public DateTime HuntingSince { get; set; }
 }

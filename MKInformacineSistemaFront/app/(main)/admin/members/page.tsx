@@ -5,7 +5,7 @@ import { Column } from 'primereact/column';
 import { DataTable } from 'primereact/datatable';
 import { Dialog } from 'primereact/dialog';
 import RoleGuard from '../../../../context/RoleGuard';
-
+import { Dropdown } from 'primereact/dropdown';
 import { InputText } from 'primereact/inputtext';
 import { Toast } from 'primereact/toast';
 import { Toolbar } from 'primereact/toolbar';
@@ -19,24 +19,29 @@ interface Member {
     activity: number;
     huntingSince: string;
     status: string;
+    email: string;
+    phoneNumber: string;
+    age: number;
+}
+
+interface User {
+    id: string;
+    userName: string;
+    firstName: string;
+    lastName: string;
+    email: string;
 }
 
 const MembersCrud = () => {
-    const emptyMember: Member = {
-        id: '',
-        name: '',
-        birthDate: '',
-        photo: '',
-        activity: 0,
-        huntingSince: '',
-        status: 'Medziotojas'
-    };
-
     const [members, setMembers] = useState<Member[]>([]);
+    const [nonMemberUsers, setNonMemberUsers] = useState<User[]>([]);
     const [memberDialog, setMemberDialog] = useState(false);
     const [deleteMemberDialog, setDeleteMemberDialog] = useState(false);
-    const [selectedMembers, setSelectedMembers] = useState<Member[]>([]);
-    const [member, setMember] = useState<Member>(emptyMember);
+    const [selectedMember, setSelectedMember] = useState<Member | null>(null);
+    const [newMember, setNewMember] = useState({
+        userId: '',
+        status: 'Medžiotojas'
+    });
     const [submitted, setSubmitted] = useState(false);
     const [globalFilter, setGlobalFilter] = useState('');
     const toast = useRef<Toast>(null);
@@ -44,16 +49,44 @@ const MembersCrud = () => {
 
     useEffect(() => {
         fetchMembers();
+        fetchNonMemberUsers();
     }, []);
 
     const fetchMembers = async () => {
-      const res = await fetch('https://localhost:7091/api/Member');
-      const data = await res.json();
-        setMembers(data);
+        try {
+            const res = await fetch('https://localhost:7091/api/Members', {
+                headers: {
+                    'Authorization': `Bearer ${sessionStorage.getItem('accessToken')}`
+                }
+            });
+            const data = await res.json();
+            setMembers(data);
+        } catch (error) {
+            console.error('Error fetching members:', error);
+            toast.current?.show({ severity: 'error', summary: 'Error', detail: 'Failed to fetch members', life: 3000 });
+        }
+    };
+
+    const fetchNonMemberUsers = async () => {
+        try {
+            const res = await fetch('https://localhost:7091/api/Users/NonMembers', {
+                headers: {
+                    'Authorization': `Bearer ${sessionStorage.getItem('accessToken')}`
+                }
+            });
+            const data = await res.json();
+            setNonMemberUsers(data);
+        } catch (error) {
+            console.error('Error fetching non-member users:', error);
+            toast.current?.show({ severity: 'error', summary: 'Error', detail: 'Failed to fetch users', life: 3000 });
+        }
     };
 
     const openNew = () => {
-        setMember(emptyMember);
+        setNewMember({
+            userId: '',
+            status: 'Medžiotojas'
+        });
         setSubmitted(false);
         setMemberDialog(true);
     };
@@ -70,148 +103,246 @@ const MembersCrud = () => {
     const saveMember = async () => {
         setSubmitted(true);
 
-        if (member.name.trim()) {
-            if (!member.id) {
-              const res = await fetch('https://localhost:7091/api/Member', {
+        if (!newMember.userId) {
+            toast.current?.show({ severity: 'error', summary: 'Error', detail: 'Please select a user', life: 3000 });
+            return;
+        }
+
+        try {
+            const res = await fetch('https://localhost:7091/api/Members', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(member)
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${sessionStorage.getItem('accessToken')}`
+                },
+                body: JSON.stringify(newMember)
             });
-                const newMember = await res.json();
-                setMembers((prev) => [...prev, newMember]);
-                toast.current?.show({ severity: 'success', summary: 'Successful', detail: 'Member Created', life: 3000 });
+
+            if (res.ok) {
+                toast.current?.show({ severity: 'success', summary: 'Success', detail: 'Member Created', life: 3000 });
+                fetchMembers();
+                fetchNonMemberUsers();
+                setMemberDialog(false);
+            } else {
+                const error = await res.text();
+                toast.current?.show({ severity: 'error', summary: 'Error', detail: error || 'Failed to create member', life: 3000 });
             }
-            setMemberDialog(false);
-            setMember(emptyMember);
+        } catch (error) {
+            console.error('Error creating member:', error);
+            toast.current?.show({ severity: 'error', summary: 'Error', detail: 'Failed to create member', life: 3000 });
         }
     };
 
     const confirmDeleteMember = (member: Member) => {
-        setMember(member);
+        setSelectedMember(member);
         setDeleteMemberDialog(true);
     };
 
     const deleteMember = async () => {
-        if (member.id) {
-          await fetch(`https://localhost:7091/api/Member/${member.id}`, { method: 'DELETE' });
-          setMembers(members.filter(m => m.id !== member.id));
-            setDeleteMemberDialog(false);
-            toast.current?.show({ severity: 'success', summary: 'Successful', detail: 'Member Deleted', life: 3000 });
-        }
-    };
+        if (!selectedMember) return;
 
-    const onInputChange = (e: React.ChangeEvent<HTMLInputElement>, field: keyof Member) => {
-        const val = e.target.value || '';
-        setMember({ ...member, [field]: val });
+        try {
+            const res = await fetch(`https://localhost:7091/api/Members/${selectedMember.id}`, {
+                method: 'DELETE',
+                headers: {
+                    'Authorization': `Bearer ${sessionStorage.getItem('accessToken')}`
+                }
+            });
+
+            if (res.ok) {
+                setMembers(members.filter(m => m.id !== selectedMember.id));
+                setDeleteMemberDialog(false);
+                toast.current?.show({ severity: 'success', summary: 'Success', detail: 'Member Deleted', life: 3000 });
+                fetchNonMemberUsers(); // Refresh available users
+            } else {
+                toast.current?.show({ severity: 'error', summary: 'Error', detail: 'Failed to delete member', life: 3000 });
+            }
+        } catch (error) {
+            console.error('Error deleting member:', error);
+            toast.current?.show({ severity: 'error', summary: 'Error', detail: 'Failed to delete member', life: 3000 });
+        }
     };
 
     const leftToolbarTemplate = () => {
         return (
-            <Button label="Naujas narys" icon="pi pi-plus" severity="success" className="mr-2" onClick={openNew} />
+            <Button label="Add New Member" icon="pi pi-plus" severity="success" onClick={openNew} />
         );
     };
 
     const header = (
         <div className="flex flex-column md:flex-row md:justify-content-between md:align-items-center">
-            <h5 className="m-0">Klubo narių administravimas</h5>
+            <h5 className="m-0">Manage Club Members</h5>
             <span className="block mt-2 md:mt-0 p-input-icon-left">
                 <i className="pi pi-search" />
-                <InputText type="search" onInput={(e) => setGlobalFilter(e.currentTarget.value)} placeholder="Paieška..." />
+                <InputText type="search" onInput={(e) => setGlobalFilter(e.currentTarget.value)} placeholder="Search..." />
             </span>
         </div>
     );
 
     const formatDate = (dateString: string) => {
-      return new Date(dateString).toLocaleDateString('lt-LT'); // or 'en-GB' if you want dd/mm/yyyy
-  };
+        return new Date(dateString).toLocaleDateString('lt-LT');
+    };
+
+    const photoBodyTemplate = (rowData: Member) => {
+        return rowData.photo ? (
+            <img 
+                src={`https://localhost:7091${rowData.photo}`} 
+                alt={rowData.name} 
+                width="50" 
+                height="50" 
+                style={{ borderRadius: '50%', objectFit: 'cover' }} 
+            />
+        ) : (
+            <div 
+                className="flex align-items-center justify-content-center bg-primary" 
+                style={{ width: '50px', height: '50px', borderRadius: '50%' }}
+            >
+                <i className="pi pi-user text-white" style={{ fontSize: '1.5rem' }}></i>
+            </div>
+        );
+    };
+
+    const activityTemplate = (rowData: Member) => {
+        return (
+            <div className="flex align-items-center">
+                <div className="relative h-1.5 w-24 bg-gray-200 rounded">
+                    <div 
+                        className="absolute h-1.5 bg-primary rounded" 
+                        style={{ width: `${rowData.activity}%` }}
+                    ></div>
+                </div>
+                <span className="ml-2">{rowData.activity}%</span>
+            </div>
+        );
+    };
+
+    const actionBodyTemplate = (rowData: Member) => {
+        return (
+            <Button 
+                icon="pi pi-trash" 
+                rounded 
+                severity="danger" 
+                onClick={() => confirmDeleteMember(rowData)} 
+                tooltip="Remove Member" 
+                tooltipOptions={{ position: 'top' }}
+            />
+        );
+    };
 
     const memberDialogFooter = (
         <>
-            <Button label="Atšaukti" icon="pi pi-times" text onClick={hideDialog} />
-            <Button label="Išsaugoti" icon="pi pi-check" text onClick={saveMember} />
+            <Button label="Cancel" icon="pi pi-times" outlined onClick={hideDialog} />
+            <Button label="Save" icon="pi pi-check" onClick={saveMember} />
         </>
     );
 
-    const deleteMemberDialogFooter = (
+    const deleteDialogFooter = (
         <>
-            <Button label="Ne" icon="pi pi-times" text onClick={hideDeleteMemberDialog} />
-            <Button label="Taip" icon="pi pi-check" text onClick={deleteMember} />
+            <Button label="No" icon="pi pi-times" outlined onClick={hideDeleteMemberDialog} />
+            <Button label="Yes" icon="pi pi-check" severity="danger" onClick={deleteMember} />
         </>
     );
 
     return (
         <RoleGuard requiredRoles={['Admin']}>
+            <div className="grid crud-demo">
+                <div className="col-12">
+                    <div className="card">
+                        <Toast ref={toast} />
+                        <Toolbar className="mb-4" left={leftToolbarTemplate}></Toolbar>
 
-        <div className="grid crud-demo">
-            <div className="col-12">
-                <div className="card">
-                    <Toast ref={toast} />
-                    <Toolbar className="mb-4" left={leftToolbarTemplate}></Toolbar>
+                        <DataTable
+                            ref={dt}
+                            value={members}
+                            dataKey="id"
+                            paginator
+                            rows={10}
+                            rowsPerPageOptions={[5, 10, 25]}
+                            className="datatable-responsive"
+                            globalFilter={globalFilter}
+                            emptyMessage="No members found."
+                            header={header}
+                            responsiveLayout="scroll"
+                        >
+                            <Column field="name" header="Name" sortable></Column>
+                            <Column header="Photo" body={photoBodyTemplate}></Column>
+                            <Column field="email" header="Email" sortable></Column>
+                            <Column field="phoneNumber" header="Phone" sortable></Column>
+                            <Column field="age" header="Age" sortable></Column>
+                            <Column 
+                                field="huntingSince" 
+                                header="Hunter Since" 
+                                sortable 
+                                body={(rowData) => formatDate(rowData.huntingSince)}
+                            ></Column>
+                            <Column field="status" header="Status" sortable></Column>
+                            <Column header="Activity" body={activityTemplate} sortable field="activity"></Column>
+                            <Column body={actionBodyTemplate}></Column>
+                        </DataTable>
 
-                    <DataTable
-                        ref={dt}
-                        value={members}
-                        selection={selectedMembers}
-                        onSelectionChange={(e) => setSelectedMembers(e.value as Member[])}
-                        dataKey="id"
-                        paginator
-                        rows={10}
-                        rowsPerPageOptions={[5, 10, 25]}
-                        className="datatable-responsive"
-                        globalFilter={globalFilter}
-                        emptyMessage="No members found."
-                        header={header}
-                        responsiveLayout="scroll"
-                    >
-                        <Column field="name" header="Vardas Pavardė" sortable></Column>
-                        <Column field="birthDate" header="Gimimo data" sortable body={(rowData) => formatDate(rowData.birthDate)}></Column>                        
-                        <Column field="photo" header="Nuotrauka" body={(rowData) => <img src={rowData.photo} alt={rowData.name} width="50" height="50" style={{ borderRadius: '50%' }} />} />
-                        <Column field="activity" header="Aktyvumas (%)" sortable></Column>
-                        <Column field="huntingSince" header="Medžioja nuo" sortable body={(rowData) => formatDate(rowData.huntingSince)}></Column>
-                        <Column field="status" header="Statusas" sortable></Column>
-                        <Column body={(rowData) => (
-                            <>
-                                <Button icon="pi pi-trash" severity="danger" onClick={() => confirmDeleteMember(rowData)} />
-                            </>
-                        )}></Column>
-                    </DataTable>
+                        {/* Add New Member Dialog */}
+                        <Dialog 
+                            visible={memberDialog} 
+                            style={{ width: '450px' }} 
+                            header="Add New Member" 
+                            modal 
+                            className="p-fluid" 
+                            footer={memberDialogFooter} 
+                            onHide={hideDialog}
+                        >
+                            <div className="field">
+                                <label htmlFor="user">Select User</label>
+                                <Dropdown
+                                    id="user"
+                                    value={newMember.userId}
+                                    options={nonMemberUsers.map(user => ({
+                                        label: `${user.firstName} ${user.lastName} (${user.email})`,
+                                        value: user.id
+                                    }))}
+                                    onChange={(e) => setNewMember({...newMember, userId: e.value})}
+                                    placeholder="Select a User"
+                                    className={submitted && !newMember.userId ? 'p-invalid' : ''}
+                                />
+                                {submitted && !newMember.userId && (
+                                    <small className="p-error">User is required.</small>
+                                )}
+                            </div>
+                            <div className="field">
+                                <label htmlFor="status">Status</label>
+                                <Dropdown
+                                    id="status"
+                                    value={newMember.status}
+                                    options={[
+                                        { label: 'Member', value: 'Medžiotojas' },
+                                        { label: 'Administrator', value: 'Administratorius' }
+                                    ]}
+                                    onChange={(e) => setNewMember({...newMember, status: e.value})}
+                                />
+                            </div>
+                        </Dialog>
 
-                    <Dialog visible={memberDialog} style={{ width: '450px' }} header="Nario informacija" modal className="p-fluid" footer={memberDialogFooter} onHide={hideDialog}>
-                        <div className="field">
-                            <label htmlFor="name">Vardas Pavardė</label>
-                            <InputText id="name" value={member.name} onChange={(e) => onInputChange(e, 'name')} required autoFocus />
-                        </div>
-                        <div className="field">
-                            <label htmlFor="birthDate">Gimimo data</label>
-                            <InputText id="birthDate" value={member.birthDate} onChange={(e) => onInputChange(e, 'birthDate')} placeholder="yyyy-mm-dd" required />
-                        </div>
-                        <div className="field">
-                            <label htmlFor="photo">Nuotrauka</label>
-                            <InputText id="photo" value={member.photo} onChange={(e) => onInputChange(e, 'photo')} />
-                        </div>
-                        <div className="field">
-                            <label htmlFor="activity">Aktyvumas</label>
-                            <InputText id="activity" value={member.activity.toString()} onChange={(e) => onInputChange(e, 'activity')} />
-                        </div>
-                        <div className="field">
-                            <label htmlFor="huntingSince">Medžioja nuo</label>
-                            <InputText id="huntingSince" value={member.huntingSince} onChange={(e) => onInputChange(e, 'huntingSince')} placeholder="yyyy-mm-dd" />
-                        </div>
-                        <div className="field">
-                            <label htmlFor="status">Statusas</label>
-                            <InputText id="status" value={member.status} onChange={(e) => onInputChange(e, 'status')} />
-                        </div>
-                    </Dialog>
-
-                    <Dialog visible={deleteMemberDialog} style={{ width: '450px' }} header="Confirm" modal footer={deleteMemberDialogFooter} onHide={hideDeleteMemberDialog}>
-                        <div className="flex align-items-center justify-content-center">
-                            <i className="pi pi-exclamation-triangle mr-3" style={{ fontSize: '2rem' }} />
-                            {member && (<span>Ar tikrai norite ištrinti <b>{member.name}</b>?</span>)}
-                        </div>
-                    </Dialog>
+                        {/* Delete Confirmation Dialog */}
+                        <Dialog 
+                            visible={deleteMemberDialog} 
+                            style={{ width: '450px' }} 
+                            header="Confirm" 
+                            modal 
+                            footer={deleteDialogFooter} 
+                            onHide={hideDeleteMemberDialog}
+                        >
+                            <div className="flex align-items-center justify-content-center">
+                                <i className="pi pi-exclamation-triangle mr-3" style={{ fontSize: '2rem' }} />
+                                {selectedMember && (
+                                    <span>
+                                        Are you sure you want to remove <b>{selectedMember.name}</b> from the club? 
+                                        This will not delete the user account, only remove their membership.
+                                    </span>
+                                )}
+                            </div>
+                        </Dialog>
+                    </div>
                 </div>
             </div>
-        </div>
         </RoleGuard>
     );
 };

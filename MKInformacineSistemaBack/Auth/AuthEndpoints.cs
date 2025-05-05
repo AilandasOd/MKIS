@@ -12,7 +12,7 @@ namespace MKInformacineSistemaBack.Auth
             // register
             app.MapPost("api/accounts", async (UserManager<User> userManager, RegisterUserDto dto) =>
             {
-                // check user exists
+                // Check user exists
                 var user = await userManager.FindByNameAsync(dto.UserName);
                 if (user != null)
                     return Results.UnprocessableEntity("Username already taken");
@@ -21,12 +21,21 @@ namespace MKInformacineSistemaBack.Auth
                 {
                     Email = dto.Email,
                     UserName = dto.UserName,
+                    FirstName = dto.FirstName ?? string.Empty, // Handle possible null values
+                    LastName = dto.LastName ?? string.Empty,
+                    PhoneNumber = dto.PhoneNumber,
+                    DateOfBirth = dto.DateOfBirth,
+                    HuntingTicketIssueDate = dto.HuntingTicketIssueDate
                 };
 
-                // TODO: wrap in transaction
+                // Try to create the user
                 var createUserResult = await userManager.CreateAsync(newUser, dto.Password);
                 if (!createUserResult.Succeeded)
-                    return Results.UnprocessableEntity();
+                {
+                    // Return the specific errors instead of a generic 422
+                    var errors = createUserResult.Errors.Select(e => e.Description);
+                    return Results.UnprocessableEntity(errors);
+                }
 
                 await userManager.AddToRoleAsync(newUser, Roles.User);
 
@@ -206,7 +215,16 @@ namespace MKInformacineSistemaBack.Auth
 
             httpContext.Response.Cookies.Delete("RefreshToken", cookieOptions);
         }
-        public record RegisterUserDto(string UserName, string Email, string Password);
+        public record RegisterUserDto(
+            string UserName,
+            string Email,
+            string Password,
+            string FirstName,
+            string LastName,
+            string PhoneNumber,
+            DateTime DateOfBirth,
+            DateTime HuntingTicketIssueDate
+        );
         public record LoginDto(string UserName, string Password);
         public record SuccessfulLoginDto(string AccessToken);
     }
