@@ -48,6 +48,47 @@ namespace MKInformacineSistemaBack.Services
             }
         }
 
+        public async Task UpdateClubMembersActivityAsync(int clubId)
+        {
+            // Get all members for this club
+            var clubMembers = await _context.ClubMemberships
+                .Where(cm => cm.ClubId == clubId && cm.IsActive)
+                .Select(cm => cm.MemberId)
+                .ToListAsync();
+
+            // Get the total number of driven hunts for this club
+            var totalDrivenHunts = await _context.DrivenHunts
+                .CountAsync(h => h.ClubId == clubId);
+
+            if (totalDrivenHunts == 0)
+            {
+                // No hunts yet, set activity to 0 for all members
+                foreach (var memberId in clubMembers)
+                {
+                    await UpdateActivityPercentage(memberId, 0);
+                }
+                return;
+            }
+
+            // Update activity for each club member
+            foreach (var memberId in clubMembers)
+            {
+                // Get the number of hunts this member participated in for this club
+                var participatedHunts = await _context.DrivenHuntParticipants
+                    .Include(p => p.DrivenHunt)
+                    .CountAsync(p => p.MemberId == memberId && p.DrivenHunt.ClubId == clubId);
+
+                // Calculate the percentage (0-100)
+                int activityPercentage = (int)Math.Round((double)participatedHunts / totalDrivenHunts * 100);
+
+                // Cap at 100%
+                activityPercentage = Math.Min(activityPercentage, 100);
+
+                // Update the member's activity
+                await UpdateActivityPercentage(memberId, activityPercentage);
+            }
+        }
+
         public async Task UpdateAllMembersActivityAsync()
         {
             var members = await _context.Members.Select(m => m.Id).ToListAsync();

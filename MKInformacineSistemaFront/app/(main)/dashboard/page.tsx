@@ -19,6 +19,9 @@ import { ProductService } from '../../../demo/service/ProductService';
 import { LayoutContext } from '../../../layout/context/layoutcontext';
 import { Demo, CustomEvent } from '@/types';
 import { ChartData, ChartOptions } from 'chart.js';
+import { useRouter } from 'next/navigation';
+import { useClub } from '../../../context/ClubContext';
+import ClubGuard from '../../../context/ClubGuard';
 
 const animalsList = ['Elnias', 'Lapė', 'Vilkas', 'Briedis', 'Šernas', 'Stirna'];
 
@@ -38,6 +41,7 @@ const Dashboard = () => {
     const [endDate, setEndDate] = useState<Date | null>(null);
     const [isMounted, setIsMounted] = useState(false);
     const { layoutConfig } = useContext(LayoutContext);
+    const { selectedClub } = useClub();
     const menu1 = useRef<Menu>(null);
     const menu2 = useRef<Menu>(null);
     const [lineOptions, setLineOptions] = useState<ChartOptions>({});
@@ -55,6 +59,33 @@ const Dashboard = () => {
             scales: { x: { ticks: { color: '#ebedef' }, grid: { color: 'rgba(160, 167, 181, .3)' } }, y: { ticks: { color: '#ebedef' }, grid: { color: 'rgba(160, 167, 181, .3)' } } }
         });
     };
+
+    useEffect(() => {
+        if (selectedClub) {
+          // Fetch data specific to the selected club
+          // Example: Fetch posts for this club
+          const fetchClubPosts = async () => {
+            try {
+              const response = await fetch(`https://localhost:7091/api/posts?clubId=${selectedClub.id}`, {
+                headers: {
+                  'Authorization': `Bearer ${sessionStorage.getItem('accessToken')}`
+                }
+              });
+              
+              if (response.ok) {
+                const data = await response.json();
+                // Update your state with the club-specific data
+                // setHuntingPosts(data);
+              }
+            } catch (error) {
+              console.error('Error fetching club posts:', error);
+            }
+          };
+          fetchClubPosts();
+      
+      // Fetch other club-specific data similarly
+    }
+  }, [selectedClub]);
 
     useEffect(() => {
         ProductService.getProductsSmall().then((data) => setProducts(data));
@@ -186,6 +217,40 @@ const Dashboard = () => {
     };
 
     return (
+        <ClubGuard>
+            <div className="grid">
+        {/* Add club header */}
+        {selectedClub && (
+          <div className="col-12">
+            <Card className="mb-4">
+              <div className="flex align-items-center">
+                {selectedClub.logoUrl ? (
+                  <img 
+                    src={`https://localhost:7091${selectedClub.logoUrl}`} 
+                    alt={selectedClub.name} 
+                    className="mr-4" 
+                    style={{ width: '64px', height: '64px', borderRadius: '50%', objectFit: 'cover' }} 
+                  />
+                ) : (
+                  <div className="flex align-items-center justify-content-center bg-primary border-circle mr-4" style={{ width: '64px', height: '64px' }}>
+                    <i className="pi pi-users text-2xl text-white" />
+                  </div>
+                )}
+                <div>
+                  <h2 className="text-2xl font-bold m-0">{selectedClub.name}</h2>
+                  <p className="text-sm text-gray-400 m-0">{selectedClub.membersCount} members</p>
+                </div>
+                <Button 
+                  label="Club Details" 
+                  icon="pi pi-info-circle" 
+                  className="ml-auto p-button-outlined" 
+                  onClick={() => router.push(`/clubs/${selectedClub.id}`)} 
+                />
+              </div>
+            </Card>
+          </div>
+        )}
+        </div>
         <div className="grid">
             {/* Left Side: Posts List */}
             <div className="col-12 xl:col-6">
@@ -269,6 +334,7 @@ const Dashboard = () => {
                 {selectedImage && <img src={selectedImage} alt="Preview" style={{ width: '100%', borderRadius: '8px' }} />}
             </Dialog>
         </div>
+        </ClubGuard>
     );
 };
 

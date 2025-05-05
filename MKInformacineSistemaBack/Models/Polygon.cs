@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace MKInformacineSistemaBack.Models
 {
@@ -14,5 +15,9 @@ namespace MKInformacineSistemaBack.Models
         public string CoordinatesJson { get; set; } = string.Empty;
 
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+
+        public int ClubId { get; set; }
+        [ForeignKey("ClubId")]
+        public virtual Club Club { get; set; } = null!;
     }
 }

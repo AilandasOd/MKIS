@@ -31,6 +31,9 @@ namespace MKInformacineSistemaBack.Models
         public DateTime? CompletedDate { get; set; }
 
         // Navigation property
+        public int ClubId { get; set; }
+        [ForeignKey("ClubId")]
+        public virtual Club Club { get; set; } = null!;
         public virtual ICollection<DrivenHuntParticipant> Participants { get; set; } = new List<DrivenHuntParticipant>();
     }
 }
