@@ -78,54 +78,74 @@ namespace MKInformacineSistemaBack.Controllers
         [Authorize(Roles = "Admin")]
         public async Task<ActionResult<MemberDto>> CreateMember([FromBody] CreateMemberDto dto)
         {
-            // Check if user exists
-            var user = await _userManager.FindByIdAsync(dto.UserId);
-            if (user == null)
+            try
             {
-                return NotFound("User not found");
+                // Check if user exists
+                var user = await _userManager.FindByIdAsync(dto.UserId);
+                if (user == null)
+                {
+                    return NotFound("User not found");
+                }
+
+                // Check if user is already a member
+                var existingMember = await _context.Members.FirstOrDefaultAsync(m => m.UserId == dto.UserId);
+                if (existingMember != null)
+                {
+                    return BadRequest("User is already a member");
+                }
+
+                var member = new Member
+                {
+                    Id = Guid.NewGuid(),
+                    UserId = dto.UserId,
+                    Status = dto.Status,
+                    Activity = 0, // Initial activity
+
+                    // Add these fields to fix the error:
+                    Name = $"{user.FirstName} {user.LastName}",
+                    BirthDate = user.DateOfBirth,
+                    Photo = user.AvatarPhoto,
+                    HuntingSince = user.HuntingTicketIssueDate
+                };
+
+                _context.Members.Add(member);
+                await _context.SaveChangesAsync();
+
+                // Add role based on status
+                if (dto.Status == "Administratorius")
+                {
+                    await _userManager.AddToRoleAsync(user, Roles.Admin);
+                }
+                else
+                {
+                    await _userManager.AddToRoleAsync(user, Roles.Hunter);
+                }
+
+                return CreatedAtAction(nameof(GetMember), new { id = member.Id }, new MemberDto
+                {
+                    Id = member.Id,
+                    Name = $"{user.FirstName} {user.LastName}",
+                    BirthDate = user.DateOfBirth,
+                    Photo = user.AvatarPhoto,
+                    Activity = member.Activity,
+                    HuntingSince = user.HuntingTicketIssueDate,
+                    Status = member.Status,
+                    Email = user.Email,
+                    PhoneNumber = user.PhoneNumber,
+                    Age = CalculateAge(user.DateOfBirth)
+                });
             }
-
-            // Check if user is already a member
-            var existingMember = await _context.Members.FirstOrDefaultAsync(m => m.UserId == dto.UserId);
-            if (existingMember != null)
+            catch (Exception ex)
             {
-                return BadRequest("User is already a member");
+                // Log the exception
+                Console.WriteLine($"Error creating member: {ex.Message}");
+                if (ex.InnerException != null)
+                {
+                    Console.WriteLine($"Inner exception: {ex.InnerException.Message}");
+                }
+
+                return StatusCode(500, $"Internal server error: {ex.Message}");
             }
-
-            var member = new Member
-            {
-                Id = Guid.NewGuid(),
-                UserId = dto.UserId,
-                Status = dto.Status,
-                Activity = 0 // Initial activity
-            };
-
-            _context.Members.Add(member);
-            await _context.SaveChangesAsync();
-
-            // Add role based on status
-            if (dto.Status == "Administratorius")
-            {
-                await _userManager.AddToRoleAsync(user, Roles.Admin);
-            }
-            else
-            {
-                await _userManager.AddToRoleAsync(user, Roles.Hunter);
-            }
-
-            return CreatedAtAction(nameof(GetMember), new { id = member.Id }, new MemberDto
-            {
-                Id = member.Id,
-                Name = $"{user.FirstName} {user.LastName}",
-                BirthDate = user.DateOfBirth,
-                Photo = user.AvatarPhoto,
-                Activity = member.Activity,
-                HuntingSince = user.HuntingTicketIssueDate,
-                Status = member.Status,
-                Email = user.Email,
-                PhoneNumber = user.PhoneNumber,
-                Age = CalculateAge(user.DateOfBirth)
-            });
         }
 
         [HttpDelete("{id}")]

@@ -69,11 +69,37 @@ const MembersCrud = () => {
 
     const fetchNonMemberUsers = async () => {
         try {
+            const token = sessionStorage.getItem('accessToken');
+            
+            // Log the token to see if it exists and is correctly formatted
+            console.log('Token being sent:', token);
+            
             const res = await fetch('https://localhost:7091/api/Users/NonMembers', {
                 headers: {
-                    'Authorization': `Bearer ${sessionStorage.getItem('accessToken')}`
-                }
+                    // Make sure the format is exactly "Bearer [token]" with a space in between
+                    'Authorization': `Bearer ${token}`
+                },
+                // Add credentials inclusion for cookies if needed
+                credentials: 'include'
             });
+    
+            // Add error handling for different status codes
+            if (res.status === 401) {
+                console.error('Unauthorized: Token missing or invalid');
+                toast.current?.show({ severity: 'error', summary: 'Error', detail: 'Your session has expired. Please log in again.', life: 3000 });
+                return;
+            }
+            
+            if (res.status === 403) {
+                console.error('Forbidden: You do not have permission to access this resource');
+                toast.current?.show({ severity: 'error', summary: 'Error', detail: 'You do not have permission to access this page.', life: 3000 });
+                return;
+            }
+    
+            if (!res.ok) {
+                throw new Error(`Server responded with ${res.status}`);
+            }
+    
             const data = await res.json();
             setNonMemberUsers(data);
         } catch (error) {

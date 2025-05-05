@@ -50,10 +50,21 @@ builder.Services.AddAuthentication(options =>
     options.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
 }).AddJwtBearer(options =>
 {
+    // Make sure MapInboundClaims is set to false if you're using custom claim types
     options.MapInboundClaims = false;
-    options.TokenValidationParameters.ValidAudience = builder.Configuration["Jwt:ValidAudience"];
-    options.TokenValidationParameters.ValidIssuer = builder.Configuration["Jwt:ValidIssuer"];
-    options.TokenValidationParameters.IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["JWT:Secret"]));
+
+    options.TokenValidationParameters = new TokenValidationParameters
+    {
+        ValidateIssuer = true,
+        ValidateAudience = true,
+        ValidateLifetime = true,
+        ValidateIssuerSigningKey = true,
+        ValidIssuer = builder.Configuration["JWT:ValidIssuer"],
+        ValidAudience = builder.Configuration["JWT:ValidAudience"],
+        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["JWT:Secret"])),
+        // This part is important for role-based authorization
+        RoleClaimType = "role"  // Ensure this matches the claim type used in JwtTokenService
+    };
 });
 
 builder.Services.Configure<IdentityOptions>(options =>

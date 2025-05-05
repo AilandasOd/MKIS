@@ -21,12 +21,13 @@ namespace MKInformacineSistemaBack.Auth
         public string CreateAccessToken(string userName, string userId, IEnumerable<string> roles)
         {
             var authClaims = new List<Claim>
-        {
-            new(ClaimTypes.Name, userName),
-            new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
-            new Claim(JwtRegisteredClaimNames.Sub, userId),
-        };
+            {
+                new(ClaimTypes.Name, userName),
+                new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
+                new Claim(JwtRegisteredClaimNames.Sub, userId),
+            };
 
+            // This line is important - ensure it's using the correct claim type for roles
             authClaims.AddRange(roles.Select(o => new Claim("role", o)));
 
             var token = new JwtSecurityToken(
