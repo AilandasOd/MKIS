@@ -21,14 +21,14 @@
         public DateTime Date { get; set; }
         public string Game { get; set; } = string.Empty;
         public string LeaderId { get; set; } = string.Empty;
-        public List<Guid> MemberIds { get; set; } = new List<Guid>();
+        public List<string> ParticipantIds { get; set; } = new List<string>();
     }
 
     public class DrivenHuntParticipantDto
     {
         public int Id { get; set; }
-        public Guid MemberId { get; set; }
-        public string MemberName { get; set; } = string.Empty;
+        public string UserId { get; set; } = string.Empty; // Changed from MemberId to UserId
+        public string UserName { get; set; } = string.Empty; // Changed from MemberName to UserName
         public int ShotsTaken { get; set; }
         public int ShotsHit { get; set; }
         public List<HuntedAnimalDto> HuntedAnimals { get; set; } = new List<HuntedAnimalDto>();

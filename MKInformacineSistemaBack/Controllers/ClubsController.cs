@@ -1,4 +1,4 @@
-using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using MKInformacineSistemaBack.Data;
@@ -17,10 +17,12 @@ namespace MKInformacineSistemaBack.Controllers
     {
         private readonly ApplicationDbContext _context;
         private readonly GeometryFactory _geometryFactory;
+        private readonly IWebHostEnvironment _hostEnvironment;
 
-        public ClubsController(ApplicationDbContext context)
+        public ClubsController(ApplicationDbContext context, IWebHostEnvironment hostEnvironment)
         {
             _context = context;
+            _hostEnvironment = hostEnvironment;
             _geometryFactory = NtsGeometryServices.Instance.CreateGeometryFactory(srid: 4326);
         }
 
@@ -30,16 +32,6 @@ namespace MKInformacineSistemaBack.Controllers
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             if (string.IsNullOrEmpty(userId))
                 return Unauthorized();
-
-            // Find the member record for this user
-            var member = await _context.Members
-                .FirstOrDefaultAsync(m => m.UserId == userId);
-
-            if (member == null)
-            {
-                // Return empty list as the user is not a member yet
-                return Ok(new List<ClubDto>());
-            }
 
             // Get all clubs and mark which ones the user is a member of
             var clubs = await _context.Clubs
@@ -59,7 +51,7 @@ namespace MKInformacineSistemaBack.Controllers
                     ContactEmail = c.ContactEmail,
                     ContactPhone = c.ContactPhone,
                     MembersCount = c.Memberships.Count(cm => cm.IsActive),
-                    IsUserMember = c.Memberships.Any(cm => cm.MemberId == member.Id && cm.IsActive)
+                    IsUserMember = c.Memberships.Any(cm => cm.UserId == userId && cm.IsActive)
                 })
                 .ToListAsync();
 
@@ -73,18 +65,9 @@ namespace MKInformacineSistemaBack.Controllers
             if (string.IsNullOrEmpty(userId))
                 return Unauthorized();
 
-            // Find the member record for this user
-            var member = await _context.Members
-                .FirstOrDefaultAsync(m => m.UserId == userId);
-
-            if (member == null)
-            {
-                return Ok(new List<ClubDto>());
-            }
-
             // Get only clubs the user is a member of
             var clubs = await _context.ClubMemberships
-                .Where(cm => cm.MemberId == member.Id && cm.IsActive)
+                .Where(cm => cm.UserId == userId && cm.IsActive)
                 .Select(cm => new ClubDto
                 {
                     Id = cm.Club.Id,
@@ -115,18 +98,9 @@ namespace MKInformacineSistemaBack.Controllers
             if (string.IsNullOrEmpty(userId))
                 return Unauthorized();
 
-            // Find the member record for this user
-            var member = await _context.Members
-                .FirstOrDefaultAsync(m => m.UserId == userId);
-
-            if (member == null)
-            {
-                return Unauthorized("User is not a member of any club");
-            }
-
             // Check if user is a member of this club
             var isMember = await _context.ClubMemberships
-                .AnyAsync(cm => cm.ClubId == id && cm.MemberId == member.Id && cm.IsActive);
+                .AnyAsync(cm => cm.ClubId == id && cm.UserId == userId && cm.IsActive);
 
             if (!isMember)
             {
@@ -156,10 +130,11 @@ namespace MKInformacineSistemaBack.Controllers
                         .Where(cm => cm.IsActive)
                         .Select(cm => new MemberBasicDto
                         {
-                            Id = cm.Member.Id,
-                            Name = cm.Member.Name,
+                            Id = cm.Id,
+                            UserId = cm.UserId,
+                            Name = $"{cm.User.FirstName} {cm.User.LastName}",
                             Role = cm.Role,
-                            AvatarPhoto = cm.Member.User.AvatarPhoto
+                            AvatarPhoto = cm.User.AvatarPhoto
                         })
                         .ToList()
                 })
@@ -208,15 +183,12 @@ namespace MKInformacineSistemaBack.Controllers
 
             // Add the current user as club owner
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            var member = await _context.Members
-                .FirstOrDefaultAsync(m => m.UserId == userId);
-
-            if (member != null)
+            if (!string.IsNullOrEmpty(userId))
             {
                 var membership = new ClubMembership
                 {
                     ClubId = club.Id,
-                    MemberId = member.Id,
+                    UserId = userId,
                     Role = "Owner",
                     JoinDate = DateTime.UtcNow,
                     IsActive = true
@@ -250,17 +222,15 @@ namespace MKInformacineSistemaBack.Controllers
                 return BadRequest();
 
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            var member = await _context.Members
-                .FirstOrDefaultAsync(m => m.UserId == userId);
-
-            if (member == null)
+            if (string.IsNullOrEmpty(userId))
                 return Unauthorized();
 
             // Check if user is admin or owner of the club
             var membership = await _context.ClubMemberships
-                .FirstOrDefaultAsync(cm => cm.ClubId == id && cm.MemberId == member.Id && cm.IsActive);
+                .FirstOrDefaultAsync(cm => cm.ClubId == id && cm.UserId == userId && cm.IsActive &&
+                                           (cm.Role == "Admin" || cm.Role == "Owner"));
 
-            if (membership == null || (membership.Role != "Admin" && membership.Role != "Owner"))
+            if (membership == null)
                 return Forbid();
 
             var club = await _context.Clubs.FindAsync(id);
@@ -284,36 +254,87 @@ namespace MKInformacineSistemaBack.Controllers
             return NoContent();
         }
 
-        [HttpPost("members")]
-        public async Task<IActionResult> AddMember([FromBody] AddClubMemberDto dto)
+        [HttpPost("{id}/logo")]
+        public async Task<IActionResult> UploadLogo(int id, IFormFile file)
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            var currentMember = await _context.Members
-                .FirstOrDefaultAsync(m => m.UserId == userId);
-
-            if (currentMember == null)
+            if (string.IsNullOrEmpty(userId))
                 return Unauthorized();
 
             // Check if user is admin or owner of the club
             var membership = await _context.ClubMemberships
-                .FirstOrDefaultAsync(cm => cm.ClubId == dto.ClubId && cm.MemberId == currentMember.Id && cm.IsActive);
+                .FirstOrDefaultAsync(cm => cm.ClubId == id && cm.UserId == userId && cm.IsActive &&
+                                           (cm.Role == "Admin" || cm.Role == "Owner"));
 
-            if (membership == null || (membership.Role != "Admin" && membership.Role != "Owner"))
+            if (membership == null)
                 return Forbid();
 
-            // Check if the member to add exists
-            var memberToAdd = await _context.Members.FindAsync(dto.MemberId);
-            if (memberToAdd == null)
-                return NotFound("Member not found");
+            var club = await _context.Clubs.FindAsync(id);
+            if (club == null)
+                return NotFound();
 
-            // Check if member is already in the club
+            if (file == null || file.Length == 0)
+                return BadRequest("No file was uploaded");
+
+            // Create uploads directory if it doesn't exist
+            var uploadsFolder = Path.Combine(_hostEnvironment.WebRootPath, "uploads", "clubs");
+            Directory.CreateDirectory(uploadsFolder);
+
+            // Generate unique filename
+            var fileName = $"{id}_{DateTime.Now.Ticks}{Path.GetExtension(file.FileName)}";
+            var filePath = Path.Combine(uploadsFolder, fileName);
+
+            // Save file
+            using (var stream = new FileStream(filePath, FileMode.Create))
+            {
+                await file.CopyToAsync(stream);
+            }
+
+            // Delete old logo if exists
+            if (!string.IsNullOrEmpty(club.LogoUrl))
+            {
+                var oldLogoPath = Path.Combine(_hostEnvironment.WebRootPath, club.LogoUrl.TrimStart('/'));
+                if (System.IO.File.Exists(oldLogoPath))
+                {
+                    System.IO.File.Delete(oldLogoPath);
+                }
+            }
+
+            // Update logo path
+            club.LogoUrl = $"/uploads/clubs/{fileName}";
+            await _context.SaveChangesAsync();
+
+            return Ok(new { logoUrl = club.LogoUrl });
+        }
+
+        [HttpPost("members")]
+        public async Task<IActionResult> AddMember([FromBody] AddClubMemberDto dto)
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(userId))
+                return Unauthorized();
+
+            // Check if user is admin or owner of the club
+            var membership = await _context.ClubMemberships
+                .FirstOrDefaultAsync(cm => cm.ClubId == dto.ClubId && cm.UserId == userId && cm.IsActive &&
+                                           (cm.Role == "Admin" || cm.Role == "Owner"));
+
+            if (membership == null)
+                return Forbid();
+
+            // Check if the user to add exists
+            var userToAdd = await _context.Users.FindAsync(dto.UserId);
+            if (userToAdd == null)
+                return NotFound("User not found");
+
+            // Check if user is already in the club
             var existingMembership = await _context.ClubMemberships
-                .FirstOrDefaultAsync(cm => cm.ClubId == dto.ClubId && cm.MemberId == dto.MemberId);
+                .FirstOrDefaultAsync(cm => cm.ClubId == dto.ClubId && cm.UserId == dto.UserId);
 
             if (existingMembership != null)
             {
                 if (existingMembership.IsActive)
-                    return BadRequest("Member is already in the club");
+                    return BadRequest("User is already in the club");
 
                 // Reactivate membership
                 existingMembership.IsActive = true;
@@ -326,7 +347,7 @@ namespace MKInformacineSistemaBack.Controllers
             var newMembership = new ClubMembership
             {
                 ClubId = dto.ClubId,
-                MemberId = dto.MemberId,
+                UserId = dto.UserId,
                 Role = dto.Role,
                 JoinDate = DateTime.UtcNow,
                 IsActive = true
@@ -341,10 +362,7 @@ namespace MKInformacineSistemaBack.Controllers
         public async Task<IActionResult> UpdateMembership(int membershipId, [FromBody] string role)
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            var currentMember = await _context.Members
-                .FirstOrDefaultAsync(m => m.UserId == userId);
-
-            if (currentMember == null)
+            if (string.IsNullOrEmpty(userId))
                 return Unauthorized();
 
             var membershipToUpdate = await _context.ClubMemberships
@@ -358,10 +376,11 @@ namespace MKInformacineSistemaBack.Controllers
             var membership = await _context.ClubMemberships
                 .FirstOrDefaultAsync(cm =>
                     cm.ClubId == membershipToUpdate.ClubId &&
-                    cm.MemberId == currentMember.Id &&
-                    cm.IsActive);
+                    cm.UserId == userId &&
+                    cm.IsActive &&
+                    (cm.Role == "Admin" || cm.Role == "Owner"));
 
-            if (membership == null || (membership.Role != "Admin" && membership.Role != "Owner"))
+            if (membership == null)
                 return Forbid();
 
             // Update role
@@ -374,10 +393,7 @@ namespace MKInformacineSistemaBack.Controllers
         public async Task<IActionResult> RemoveMember(int membershipId)
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            var currentMember = await _context.Members
-                .FirstOrDefaultAsync(m => m.UserId == userId);
-
-            if (currentMember == null)
+            if (string.IsNullOrEmpty(userId))
                 return Unauthorized();
 
             var membershipToRemove = await _context.ClubMemberships
@@ -391,11 +407,12 @@ namespace MKInformacineSistemaBack.Controllers
             var membership = await _context.ClubMemberships
                 .FirstOrDefaultAsync(cm =>
                     cm.ClubId == membershipToRemove.ClubId &&
-                    cm.MemberId == currentMember.Id &&
-                    cm.IsActive);
+                    cm.UserId == userId &&
+                    cm.IsActive &&
+                    (cm.Role == "Admin" || cm.Role == "Owner"));
 
-            bool isSelfRemoval = membershipToRemove.MemberId == currentMember.Id;
-            bool isAuthorized = membership != null && (membership.Role == "Admin" || membership.Role == "Owner");
+            bool isSelfRemoval = membershipToRemove.UserId == userId;
+            bool isAuthorized = membership != null;
 
             if (!isSelfRemoval && !isAuthorized)
                 return Forbid();

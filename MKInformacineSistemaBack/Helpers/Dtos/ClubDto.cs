@@ -40,7 +40,8 @@
 
     public class MemberBasicDto
     {
-        public Guid Id { get; set; }
+        public int Id { get; set; }
+        public string UserId { get; set; } = string.Empty;
         public string Name { get; set; } = string.Empty;
         public string Role { get; set; } = string.Empty;
         public string AvatarPhoto { get; set; } = string.Empty;
@@ -61,7 +62,7 @@
     public class AddClubMemberDto
     {
         public int ClubId { get; set; }
-        public Guid MemberId { get; set; }
+        public string UserId { get; set; } = string.Empty;
         public string Role { get; set; } = "Member";
     }
 }

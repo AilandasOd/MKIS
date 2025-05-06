@@ -1,4 +1,4 @@
-using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -25,90 +25,166 @@ namespace MKInformacineSistemaBack.Controllers
         }
 
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<MemberDto>>> GetMembers()
+        public async Task<ActionResult<IEnumerable<MemberDto>>> GetMembers([FromQuery] int? clubId)
         {
-            var members = await _context.Members
-                .Include(m => m.User)
-                .Select(m => new MemberDto
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(userId))
+                return Unauthorized();
+
+            IQueryable<MemberDto> membersQuery;
+
+            if (clubId.HasValue)
+            {
+                // Check if the user is a member of this club
+                var membership = await _context.ClubMemberships
+                    .FirstOrDefaultAsync(cm => cm.ClubId == clubId && cm.UserId == userId && cm.IsActive);
+
+                if (membership == null)
+                    return Forbid("You are not a member of this club");
+
+                // Get members of this club
+                membersQuery = _context.ClubMemberships
+                    .Where(cm => cm.ClubId == clubId && cm.IsActive)
+                    .Join(_context.Users,
+                        cm => cm.UserId,
+                        u => u.Id,
+                        (cm, u) => new MemberDto
+                        {
+                            Id = cm.Id,  // This is an int, not a Guid
+                            UserId = u.Id,
+                            Name = $"{u.FirstName} {u.LastName}",
+                            BirthDate = u.DateOfBirth,
+                            Photo = u.AvatarPhoto,
+                            Activity = 0,  // Will be calculated below
+                            HuntingSince = u.HuntingTicketIssueDate,
+                            Status = cm.Role,
+                            Email = u.Email,
+                            PhoneNumber = u.PhoneNumber,
+                            Age = CalculateAge(u.DateOfBirth)
+                        });
+            }
+            else
+            {
+                // Get all club members by user role
+                var userIsAdmin = User.IsInRole(Roles.Admin);
+                if (!userIsAdmin)
+                    return Forbid("Only administrators can view all members");
+
+                membersQuery = _context.Users
+                    .Where(u => _userManager.IsInRoleAsync(u, Roles.Hunter).Result)
+                    .Select(u => new MemberDto
+                    {
+                        Id = 0,  // Placeholder ID
+                        UserId = u.Id,
+                        Name = $"{u.FirstName} {u.LastName}",
+                        BirthDate = u.DateOfBirth,
+                        Photo = u.AvatarPhoto,
+                        Activity = 0,  // Will be calculated below
+                        HuntingSince = u.HuntingTicketIssueDate,
+                        Status = "Member", // Default status
+                        Email = u.Email,
+                        PhoneNumber = u.PhoneNumber,
+                        Age = CalculateAge(u.DateOfBirth)
+                    });
+            }
+
+            var members = await membersQuery.ToListAsync();
+
+            // Calculate activity for each member
+            if (clubId.HasValue)
+            {
+                foreach (var member in members)
                 {
-                    Id = m.Id,
-                    Name = $"{m.User.FirstName} {m.User.LastName}",
-                    BirthDate = m.User.DateOfBirth,
-                    Photo = m.User.AvatarPhoto,
-                    Activity = m.Activity,
-                    HuntingSince = m.User.HuntingTicketIssueDate,
-                    Status = m.Status,
-                    Email = m.User.Email,
-                    PhoneNumber = m.User.PhoneNumber,
-                    Age = CalculateAge(m.User.DateOfBirth)
-                })
-                .ToListAsync();
+                    // Get statistics for this user in this club
+                    var stats = await _context.UserStatistics
+                        .FirstOrDefaultAsync(s =>
+                            s.UserId == member.UserId &&
+                            s.ClubId == clubId &&
+                            s.Year == DateTime.UtcNow.Year);
+
+                    if (stats != null)
+                    {
+                        member.Activity = stats.ActivityPercentage;
+                    }
+                }
+            }
 
             return Ok(members);
         }
 
         [HttpGet("{id}")]
-        public async Task<ActionResult<MemberDto>> GetMember(Guid id)
+        public async Task<ActionResult<MemberDto>> GetMember(int id, [FromQuery] int? clubId)
         {
-            var member = await _context.Members
-                .Include(m => m.User)
-                .FirstOrDefaultAsync(m => m.Id == id);
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(userId))
+                return Unauthorized();
 
-            if (member == null)
-            {
+            if (!clubId.HasValue)
+                return BadRequest("Club ID is required");
+
+            // Check if the user is a member of this club
+            var userMembership = await _context.ClubMemberships
+                .FirstOrDefaultAsync(cm => cm.ClubId == clubId && cm.UserId == userId && cm.IsActive);
+
+            if (userMembership == null)
+                return Forbid("You are not a member of this club");
+
+            // Find the membership by ID within this club
+            var membership = await _context.ClubMemberships
+                .Include(cm => cm.User)
+                .FirstOrDefaultAsync(cm => cm.Id == id && cm.ClubId == clubId && cm.IsActive);
+
+            if (membership == null)
                 return NotFound();
-            }
 
-            return new MemberDto
+            // Calculate activity
+            var stats = await _context.UserStatistics
+                .FirstOrDefaultAsync(s =>
+                    s.UserId == membership.UserId &&
+                    s.ClubId == clubId &&
+                    s.Year == DateTime.UtcNow.Year);
+
+            int activityPercentage = stats?.ActivityPercentage ?? 0;
+
+            var memberDto = new MemberDto
             {
-                Id = member.Id,
-                Name = $"{member.User.FirstName} {member.User.LastName}",
-                BirthDate = member.User.DateOfBirth,
-                Photo = member.User.AvatarPhoto,
-                Activity = member.Activity,
-                HuntingSince = member.User.HuntingTicketIssueDate,
-                Status = member.Status,
-                Email = member.User.Email,
-                PhoneNumber = member.User.PhoneNumber,
-                Age = CalculateAge(member.User.DateOfBirth)
+                Id = membership.Id,
+                UserId = membership.UserId,
+                Name = $"{membership.User.FirstName} {membership.User.LastName}",
+                BirthDate = membership.User.DateOfBirth,
+                Photo = membership.User.AvatarPhoto,
+                Activity = activityPercentage,
+                HuntingSince = membership.User.HuntingTicketIssueDate,
+                Status = membership.Role,
+                Email = membership.User.Email,
+                PhoneNumber = membership.User.PhoneNumber,
+                Age = CalculateAge(membership.User.DateOfBirth)
             };
+
+            return Ok(memberDto);
         }
 
         [HttpPost]
         [Authorize(Roles = "Admin")]
-        public async Task<ActionResult<MemberDto>> CreateMember([FromBody] CreateMemberDto dto)
+        public async Task<ActionResult<MemberDto>> CreateMember([FromBody] CreateMemberDto dto, [FromQuery] int clubId)
         {
-            try
+            // Check if user exists
+            var user = await _userManager.FindByIdAsync(dto.UserId);
+            if (user == null)
+                return NotFound("User not found");
+
+            // Check if user is already a member of this club
+            var existingMembership = await _context.ClubMemberships
+                .FirstOrDefaultAsync(cm => cm.ClubId == clubId && cm.UserId == dto.UserId);
+
+            if (existingMembership != null)
             {
-                // Check if user exists
-                var user = await _userManager.FindByIdAsync(dto.UserId);
-                if (user == null)
-                {
-                    return NotFound("User not found");
-                }
+                if (existingMembership.IsActive)
+                    return BadRequest("User is already a member of this club");
 
-                // Check if user is already a member
-                var existingMember = await _context.Members.FirstOrDefaultAsync(m => m.UserId == dto.UserId);
-                if (existingMember != null)
-                {
-                    return BadRequest("User is already a member");
-                }
-
-                var member = new Member
-                {
-                    Id = Guid.NewGuid(),
-                    UserId = dto.UserId,
-                    Status = dto.Status,
-                    Activity = 0, // Initial activity
-
-                    // Add these fields to fix the error:
-                    Name = $"{user.FirstName} {user.LastName}",
-                    BirthDate = user.DateOfBirth,
-                    Photo = user.AvatarPhoto,
-                    HuntingSince = user.HuntingTicketIssueDate
-                };
-
-                _context.Members.Add(member);
+                // If membership exists but is inactive, reactivate it
+                existingMembership.IsActive = true;
+                existingMembership.Role = dto.Status;
                 await _context.SaveChangesAsync();
 
                 // Add role based on status
@@ -121,58 +197,79 @@ namespace MKInformacineSistemaBack.Controllers
                     await _userManager.AddToRoleAsync(user, Roles.Hunter);
                 }
 
-                return CreatedAtAction(nameof(GetMember), new { id = member.Id }, new MemberDto
+                // Return reactivated membership
+                return CreatedAtAction(nameof(GetMember),
+                    new { id = existingMembership.Id, clubId },
+                    new MemberDto
+                    {
+                        Id = existingMembership.Id,
+                        UserId = user.Id,
+                        Name = $"{user.FirstName} {user.LastName}",
+                        BirthDate = user.DateOfBirth,
+                        Photo = user.AvatarPhoto,
+                        Activity = 0,
+                        HuntingSince = user.HuntingTicketIssueDate,
+                        Status = existingMembership.Role,
+                        Email = user.Email,
+                        PhoneNumber = user.PhoneNumber,
+                        Age = CalculateAge(user.DateOfBirth)
+                    });
+            }
+
+            // Create new membership
+            var membership = new ClubMembership
+            {
+                ClubId = clubId,
+                UserId = dto.UserId,
+                Role = dto.Status,
+                JoinDate = DateTime.UtcNow,
+                IsActive = true
+            };
+
+            _context.ClubMemberships.Add(membership);
+            await _context.SaveChangesAsync();
+
+            // Add role based on status
+            if (dto.Status == "Administratorius")
+            {
+                await _userManager.AddToRoleAsync(user, Roles.Admin);
+            }
+            else
+            {
+                await _userManager.AddToRoleAsync(user, Roles.Hunter);
+            }
+
+            return CreatedAtAction(nameof(GetMember),
+                new { id = membership.Id, clubId },
+                new MemberDto
                 {
-                    Id = member.Id,
+                    Id = membership.Id,
+                    UserId = user.Id,
                     Name = $"{user.FirstName} {user.LastName}",
                     BirthDate = user.DateOfBirth,
                     Photo = user.AvatarPhoto,
-                    Activity = member.Activity,
+                    Activity = 0,
                     HuntingSince = user.HuntingTicketIssueDate,
-                    Status = member.Status,
+                    Status = membership.Role,
                     Email = user.Email,
                     PhoneNumber = user.PhoneNumber,
                     Age = CalculateAge(user.DateOfBirth)
                 });
-            }
-            catch (Exception ex)
-            {
-                // Log the exception
-                Console.WriteLine($"Error creating member: {ex.Message}");
-                if (ex.InnerException != null)
-                {
-                    Console.WriteLine($"Inner exception: {ex.InnerException.Message}");
-                }
-
-                return StatusCode(500, $"Internal server error: {ex.Message}");
-            }
         }
 
         [HttpDelete("{id}")]
         [Authorize(Roles = "Admin")]
-        public async Task<IActionResult> DeleteMember(Guid id)
+        public async Task<IActionResult> DeleteMember(int id, [FromQuery] int clubId)
         {
-            var member = await _context.Members.FindAsync(id);
-            if (member == null)
-            {
+            var membership = await _context.ClubMemberships
+                .Include(cm => cm.User)
+                .FirstOrDefaultAsync(cm => cm.Id == id && cm.ClubId == clubId);
+
+            if (membership == null)
                 return NotFound();
-            }
 
-            // Remove role from user
-            var user = await _userManager.FindByIdAsync(member.UserId);
-            if (user != null)
-            {
-                if (member.Status == "Administratorius")
-                {
-                    await _userManager.RemoveFromRoleAsync(user, Roles.Admin);
-                }
-                else
-                {
-                    await _userManager.RemoveFromRoleAsync(user, Roles.Hunter);
-                }
-            }
-
-            _context.Members.Remove(member);
+            // Don't actually delete - just mark as inactive
+            membership.IsActive = false;
             await _context.SaveChangesAsync();
 
             return NoContent();
@@ -185,5 +282,21 @@ namespace MKInformacineSistemaBack.Controllers
             if (birthDate.Date > today.AddYears(-age)) age--;
             return age;
         }
+    }
+
+    // Update MemberDto to use int for Id
+    public class MemberDto
+    {
+        public int Id { get; set; }
+        public string UserId { get; set; }
+        public string Name { get; set; }
+        public DateTime BirthDate { get; set; }
+        public string Photo { get; set; }
+        public int Activity { get; set; }
+        public DateTime HuntingSince { get; set; }
+        public string Status { get; set; }
+        public string Email { get; set; }
+        public string PhoneNumber { get; set; }
+        public int Age { get; set; }
     }
 }

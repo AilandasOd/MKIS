@@ -44,14 +44,15 @@ namespace MKInformacineSistemaBack.Controllers
         }
 
         [HttpGet("NonMembers")]
-        public async Task<ActionResult<IEnumerable<UserDto>>> GetNonMemberUsers()
+        public async Task<ActionResult<IEnumerable<UserDto>>> GetNonMemberUsers([FromQuery] int clubId)
         {
-            // Get IDs of users who are already members
-            var memberUserIds = await _context.Members
-                .Select(m => m.UserId)
+            // Get IDs of users who are already members of this club
+            var memberUserIds = await _context.ClubMemberships
+                .Where(cm => cm.ClubId == clubId && cm.IsActive)
+                .Select(cm => cm.UserId)
                 .ToListAsync();
 
-            // Get users who are not members
+            // Get users who are not members of this club
             var nonMemberUsers = await _userManager.Users
                 .Where(u => !memberUserIds.Contains(u.Id))
                 .Select(u => new UserDto
@@ -93,5 +94,102 @@ namespace MKInformacineSistemaBack.Controllers
                 HuntingTicketIssueDate = user.HuntingTicketIssueDate
             };
         }
+
+        [HttpPut("{id}")]
+        public async Task<IActionResult> UpdateUser(string id, [FromBody] UpdateUserDto dto)
+        {
+            var user = await _userManager.FindByIdAsync(id);
+            if (user == null)
+            {
+                return NotFound();
+            }
+
+            // Update user properties
+            user.FirstName = dto.FirstName;
+            user.LastName = dto.LastName;
+            user.PhoneNumber = dto.PhoneNumber;
+            user.DateOfBirth = dto.DateOfBirth;
+            user.HuntingTicketIssueDate = dto.HuntingTicketIssueDate;
+
+            // Only update email if it's changed
+            if (user.Email != dto.Email)
+            {
+                var setEmailResult = await _userManager.SetEmailAsync(user, dto.Email);
+                if (!setEmailResult.Succeeded)
+                    return BadRequest(setEmailResult.Errors);
+            }
+
+            var result = await _userManager.UpdateAsync(user);
+            if (!result.Succeeded)
+                return BadRequest(result.Errors);
+
+            return NoContent();
+        }
+
+        [HttpPost("{id}/roles")]
+        public async Task<IActionResult> AddToRole(string id, [FromBody] string role)
+        {
+            var user = await _userManager.FindByIdAsync(id);
+            if (user == null)
+            {
+                return NotFound();
+            }
+
+            // Validate role
+            if (!Roles.All.Contains(role))
+            {
+                return BadRequest($"Invalid role. Valid roles are: {string.Join(", ", Roles.All)}");
+            }
+
+            // Check if user already has this role
+            if (await _userManager.IsInRoleAsync(user, role))
+            {
+                return BadRequest($"User already has the role: {role}");
+            }
+
+            var result = await _userManager.AddToRoleAsync(user, role);
+            if (!result.Succeeded)
+                return BadRequest(result.Errors);
+
+            return NoContent();
+        }
+
+        [HttpDelete("{id}/roles/{role}")]
+        public async Task<IActionResult> RemoveFromRole(string id, string role)
+        {
+            var user = await _userManager.FindByIdAsync(id);
+            if (user == null)
+            {
+                return NotFound();
+            }
+
+            // Validate role
+            if (!Roles.All.Contains(role))
+            {
+                return BadRequest($"Invalid role. Valid roles are: {string.Join(", ", Roles.All)}");
+            }
+
+            // Check if user has this role
+            if (!await _userManager.IsInRoleAsync(user, role))
+            {
+                return BadRequest($"User does not have the role: {role}");
+            }
+
+            var result = await _userManager.RemoveFromRoleAsync(user, role);
+            if (!result.Succeeded)
+                return BadRequest(result.Errors);
+
+            return NoContent();
+        }
+    }
+
+    public class UpdateUserDto
+    {
+        public string FirstName { get; set; } = string.Empty;
+        public string LastName { get; set; } = string.Empty;
+        public string Email { get; set; } = string.Empty;
+        public string PhoneNumber { get; set; } = string.Empty;
+        public DateTime DateOfBirth { get; set; }
+        public DateTime HuntingTicketIssueDate { get; set; }
     }
 }

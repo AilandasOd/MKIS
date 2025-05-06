@@ -5,6 +5,7 @@ using MKInformacineSistemaBack.Data;
 using MKInformacineSistemaBack.Helpers.Dtos;
 using MKInformacineSistemaBack.Models;
 using MKInformacineSistemaBack.Services;
+using System.Linq;
 using System.Security.Claims;
 
 namespace MKInformacineSistemaBack.Controllers
@@ -16,11 +17,16 @@ namespace MKInformacineSistemaBack.Controllers
     {
         private readonly ApplicationDbContext _context;
         private readonly MemberActivityService _memberActivityService;
+        private readonly StatisticsService _statisticsService;
 
-        public DrivenHuntsController(ApplicationDbContext context, MemberActivityService memberActivityService)
+        public DrivenHuntsController(
+            ApplicationDbContext context,
+            MemberActivityService memberActivityService,
+            StatisticsService statisticsService)
         {
             _context = context;
             _memberActivityService = memberActivityService;
+            _statisticsService = statisticsService;
         }
 
         [HttpGet]
@@ -28,16 +34,15 @@ namespace MKInformacineSistemaBack.Controllers
         {
             // Check if user is member of this club
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            var member = await _context.Members.FirstOrDefaultAsync(m => m.UserId == userId);
+            if (string.IsNullOrEmpty(userId))
+                return Unauthorized();
 
-            if (member == null)
-                return Unauthorized("User is not a member");
+            // Find the membership record for this user in this club
+            var membership = await _context.ClubMemberships
+                .FirstOrDefaultAsync(cm => cm.ClubId == clubId && cm.UserId == userId && cm.IsActive);
 
-            var isMember = await _context.ClubMemberships
-                .AnyAsync(cm => cm.ClubId == clubId && cm.MemberId == member.Id && cm.IsActive);
-
-            if (!isMember)
-                return Forbid("User is not a member of this club");
+            if (membership == null)
+                return Forbid("You are not a member of this club");
 
             var hunts = await _context.DrivenHunts
                 .Where(h => h.ClubId == clubId)
@@ -65,22 +70,20 @@ namespace MKInformacineSistemaBack.Controllers
         {
             // Check if user is member of this club
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            var member = await _context.Members.FirstOrDefaultAsync(m => m.UserId == userId);
+            if (string.IsNullOrEmpty(userId))
+                return Unauthorized();
 
-            if (member == null)
-                return Unauthorized("User is not a member");
+            // Find the membership record for this user in this club
+            var membership = await _context.ClubMemberships
+                .FirstOrDefaultAsync(cm => cm.ClubId == clubId && cm.UserId == userId && cm.IsActive);
 
-            var isMember = await _context.ClubMemberships
-                .AnyAsync(cm => cm.ClubId == clubId && cm.MemberId == member.Id && cm.IsActive);
-
-            if (!isMember)
-                return Forbid("User is not a member of this club");
+            if (membership == null)
+                return Forbid("You are not a member of this club");
 
             var hunt = await _context.DrivenHunts
                 .Include(h => h.Leader)
                 .Include(h => h.Participants)
-                    .ThenInclude(p => p.Member)
-                        .ThenInclude(m => m.User)
+                    .ThenInclude(p => p.User)
                 .Include(h => h.Participants)
                     .ThenInclude(p => p.HuntedAnimals)
                 .FirstOrDefaultAsync(h => h.Id == id && h.ClubId == clubId);
@@ -104,8 +107,8 @@ namespace MKInformacineSistemaBack.Controllers
                 Participants = hunt.Participants.Select(p => new DrivenHuntParticipantDto
                 {
                     Id = p.Id,
-                    MemberId = p.MemberId,
-                    MemberName = $"{p.Member.User.FirstName} {p.Member.User.LastName}",
+                    UserId = p.UserId, // Changed from MemberId to UserId
+                    UserName = $"{p.User.FirstName} {p.User.LastName}", // Changed from MemberName to UserName
                     ShotsTaken = p.ShotsTaken,
                     ShotsHit = p.ShotsHit,
                     HuntedAnimals = p.HuntedAnimals.Select(a => new HuntedAnimalDto
@@ -125,26 +128,33 @@ namespace MKInformacineSistemaBack.Controllers
         {
             // Check if user is member of this club and has appropriate permissions
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            var member = await _context.Members.FirstOrDefaultAsync(m => m.UserId == userId);
-
-            if (member == null)
-                return Unauthorized("User is not a member");
+            if (string.IsNullOrEmpty(userId))
+                return Unauthorized();
 
             var membership = await _context.ClubMemberships
-                .FirstOrDefaultAsync(cm => cm.ClubId == clubId && cm.MemberId == member.Id && cm.IsActive);
+                .FirstOrDefaultAsync(cm =>
+                    cm.ClubId == clubId &&
+                    cm.UserId == userId &&
+                    cm.IsActive &&
+                    (cm.Role == "Admin" || cm.Role == "Owner"));
 
             if (membership == null)
-                return Forbid("User is not a member of this club");
-
-            // Check if user has admin or owner role in the club
-            if (membership.Role != "Admin" && membership.Role != "Owner")
-                return Forbid("User does not have permission to create driven hunts");
+                return Forbid("You don't have permission to create driven hunts");
 
             // Validate leader exists
             var leader = await _context.Users.FindAsync(dto.LeaderId);
             if (leader == null)
             {
                 return BadRequest("Invalid leader ID");
+            }
+
+            // Validate leader is a member of this club
+            var leaderIsMember = await _context.ClubMemberships
+                .AnyAsync(cm => cm.ClubId == clubId && cm.UserId == dto.LeaderId && cm.IsActive);
+
+            if (!leaderIsMember)
+            {
+                return BadRequest("Leader is not a member of this club");
             }
 
             var hunt = new DrivenHunt
@@ -154,27 +164,27 @@ namespace MKInformacineSistemaBack.Controllers
                 Date = dto.Date,
                 Game = dto.Game,
                 LeaderId = dto.LeaderId,
-                ClubId = clubId  // Set the club ID
+                ClubId = clubId
             };
 
             _context.DrivenHunts.Add(hunt);
             await _context.SaveChangesAsync();
 
-            // Add participants - but first verify they are members of this club
-            if (dto.MemberIds != null && dto.MemberIds.Any())
+            // Add participants
+            if (dto.ParticipantIds != null && dto.ParticipantIds.Any())
             {
-                // Get valid member IDs (must be members of this club)
-                var validMemberIds = await _context.ClubMemberships
-                    .Where(cm => cm.ClubId == clubId && cm.IsActive && dto.MemberIds.Contains(cm.MemberId))
-                    .Select(cm => cm.MemberId)
+                // Find users who are members of this club
+                var validUsers = await _context.ClubMemberships
+                    .Where(cm => cm.ClubId == clubId && cm.IsActive && dto.ParticipantIds.Contains(cm.UserId))
+                    .Select(cm => cm.UserId)
                     .ToListAsync();
 
-                foreach (var memberId in validMemberIds)
+                foreach (var participantId in validUsers)
                 {
                     _context.DrivenHuntParticipants.Add(new DrivenHuntParticipant
                     {
                         DrivenHuntId = hunt.Id,
-                        MemberId = memberId,
+                        UserId = participantId,
                         ShotsTaken = 0,
                         ShotsHit = 0
                     });
@@ -201,17 +211,19 @@ namespace MKInformacineSistemaBack.Controllers
         {
             // Check if user is member of this club with admin/owner privileges
             var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(currentUserId))
+                return Unauthorized();
 
             // Check if the current user is a member of this club
             var currentUserMembership = await _context.ClubMemberships
-                .FirstOrDefaultAsync(cm => cm.ClubId == clubId && cm.UserId == currentUserId && cm.IsActive);
+                .FirstOrDefaultAsync(cm =>
+                    cm.ClubId == clubId &&
+                    cm.UserId == currentUserId &&
+                    cm.IsActive &&
+                    (cm.Role == "Admin" || cm.Role == "Owner"));
 
             if (currentUserMembership == null)
-                return Unauthorized("User is not a member");
-
-            // Check if current user has admin or owner privileges
-            if (currentUserMembership.Role != "Admin" && currentUserMembership.Role != "Owner")
-                return Forbid("User does not have permission to add participants");
+                return Forbid("You don't have permission to add participants");
 
             // Check if hunt exists and belongs to this club
             var hunt = await _context.DrivenHunts
@@ -253,16 +265,14 @@ namespace MKInformacineSistemaBack.Controllers
         {
             // Check if user is member of this club
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            var currentMember = await _context.Members.FirstOrDefaultAsync(m => m.UserId == userId);
-
-            if (currentMember == null)
-                return Unauthorized("User is not a member");
+            if (string.IsNullOrEmpty(userId))
+                return Unauthorized();
 
             var membership = await _context.ClubMemberships
-                .FirstOrDefaultAsync(cm => cm.ClubId == clubId && cm.MemberId == currentMember.Id && cm.IsActive);
+                .FirstOrDefaultAsync(cm => cm.ClubId == clubId && cm.UserId == userId && cm.IsActive);
 
             if (membership == null)
-                return Forbid("User is not a member of this club");
+                return Forbid("You are not a member of this club");
 
             // Check if hunt exists and belongs to this club
             var hunt = await _context.DrivenHunts
@@ -282,11 +292,11 @@ namespace MKInformacineSistemaBack.Controllers
             }
 
             // Check if the current user is either the participant or has admin privileges
-            bool isParticipant = participant.MemberId == currentMember.Id;
+            bool isParticipant = participant.UserId == userId;
             bool hasAdminPrivileges = membership.Role == "Admin" || membership.Role == "Owner";
 
             if (!isParticipant && !hasAdminPrivileges)
-                return Forbid("User does not have permission to add animals for this participant");
+                return Forbid("You don't have permission to add animals for this participant");
 
             // Check if the animal type already exists for this participant
             var existingAnimal = participant.HuntedAnimals
@@ -316,16 +326,14 @@ namespace MKInformacineSistemaBack.Controllers
         {
             // Check if user is member of this club
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            var currentMember = await _context.Members.FirstOrDefaultAsync(m => m.UserId == userId);
-
-            if (currentMember == null)
-                return Unauthorized("User is not a member");
+            if (string.IsNullOrEmpty(userId))
+                return Unauthorized();
 
             var membership = await _context.ClubMemberships
-                .FirstOrDefaultAsync(cm => cm.ClubId == clubId && cm.MemberId == currentMember.Id && cm.IsActive);
+                .FirstOrDefaultAsync(cm => cm.ClubId == clubId && cm.UserId == userId && cm.IsActive);
 
             if (membership == null)
-                return Forbid("User is not a member of this club");
+                return Forbid("You are not a member of this club");
 
             // Check if hunt exists and belongs to this club
             var hunt = await _context.DrivenHunts
@@ -344,11 +352,11 @@ namespace MKInformacineSistemaBack.Controllers
             }
 
             // Check if the current user is either the participant or has admin privileges
-            bool isParticipant = participant.MemberId == currentMember.Id;
+            bool isParticipant = participant.UserId == userId;
             bool hasAdminPrivileges = membership.Role == "Admin" || membership.Role == "Owner";
 
             if (!isParticipant && !hasAdminPrivileges)
-                return Forbid("User does not have permission to update shots for this participant");
+                return Forbid("You don't have permission to update shots for this participant");
 
             // Validate shots hit cannot be more than shots taken
             if (dto.ShotsHit > dto.ShotsTaken)
@@ -368,16 +376,18 @@ namespace MKInformacineSistemaBack.Controllers
         {
             // Check if user is member of this club with admin/owner privileges
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            var currentMember = await _context.Members.FirstOrDefaultAsync(m => m.UserId == userId);
-
-            if (currentMember == null)
-                return Unauthorized("User is not a member");
+            if (string.IsNullOrEmpty(userId))
+                return Unauthorized();
 
             var membership = await _context.ClubMemberships
-                .FirstOrDefaultAsync(cm => cm.ClubId == clubId && cm.MemberId == currentMember.Id && cm.IsActive);
+                .FirstOrDefaultAsync(cm =>
+                    cm.ClubId == clubId &&
+                    cm.UserId == userId &&
+                    cm.IsActive &&
+                    (cm.Role == "Admin" || cm.Role == "Owner"));
 
-            if (membership == null || (membership.Role != "Admin" && membership.Role != "Owner"))
-                return Forbid("User does not have permission to complete driven hunts");
+            if (membership == null)
+                return Forbid("You don't have permission to complete driven hunts");
 
             // Check if hunt exists and belongs to this club
             var hunt = await _context.DrivenHunts
@@ -391,8 +401,9 @@ namespace MKInformacineSistemaBack.Controllers
 
             await _context.SaveChangesAsync();
 
-            // Update all members' activity percentages for this club
+            // Update statistics
             await _memberActivityService.UpdateClubMembersActivityAsync(clubId);
+            await _statisticsService.UpdateStatisticsFromDrivenHuntAsync(id);
 
             return NoContent();
         }
@@ -402,16 +413,18 @@ namespace MKInformacineSistemaBack.Controllers
         {
             // Check if user is member of this club with admin/owner privileges
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            var currentMember = await _context.Members.FirstOrDefaultAsync(m => m.UserId == userId);
-
-            if (currentMember == null)
-                return Unauthorized("User is not a member");
+            if (string.IsNullOrEmpty(userId))
+                return Unauthorized();
 
             var membership = await _context.ClubMemberships
-                .FirstOrDefaultAsync(cm => cm.ClubId == clubId && cm.MemberId == currentMember.Id && cm.IsActive);
+                .FirstOrDefaultAsync(cm =>
+                    cm.ClubId == clubId &&
+                    cm.UserId == userId &&
+                    cm.IsActive &&
+                    (cm.Role == "Admin" || cm.Role == "Owner"));
 
-            if (membership == null || (membership.Role != "Admin" && membership.Role != "Owner"))
-                return Forbid("User does not have permission to delete driven hunts");
+            if (membership == null)
+                return Forbid("You don't have permission to delete driven hunts");
 
             // Check if hunt exists and belongs to this club
             var hunt = await _context.DrivenHunts
