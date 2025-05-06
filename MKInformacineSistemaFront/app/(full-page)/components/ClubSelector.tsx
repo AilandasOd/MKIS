@@ -1,78 +1,79 @@
-// MKInformacineSistemaFront/components/ClubSelector.tsx
+// MKInformacineSistemaFront/app/(main)/layout/topbar/ClubSelector.tsx
 'use client';
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Dropdown } from 'primereact/dropdown';
 import { Button } from 'primereact/button';
-import { Dialog } from 'primereact/dialog';
-import { useClub } from '../../../context/ClubContext';
 import { useRouter } from 'next/navigation';
-
-interface Club {
-  id: number;
-  name: string;
-  logoUrl: string;
-}
+import { useClub } from '../../../context/ClubContext';
 
 const ClubSelector = () => {
-  const { clubs, selectedClub, setSelectedClub } = useClub();
-  const [joinClubDialog, setJoinClubDialog] = useState(false);
+  const { clubs, selectedClub, setSelectedClub, loading } = useClub();
   const router = useRouter();
+  const [mounted, setMounted] = useState(false);
 
-  const clubSelectItems = clubs.map(club => ({
-    label: club.name,
-    value: club
-  }));
+  // This ensures the component doesn't have hydration issues
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  useEffect(() => {
+    // Debug log to check selected club value
+    console.log("Selected club in selector:", selectedClub);
+  }, [selectedClub]);
 
   const handleCreateClub = () => {
     router.push('/clubs/create');
-  };
-
-  const handleJoinClub = () => {
-    setJoinClubDialog(true);
   };
 
   const handleBrowseClubs = () => {
     router.push('/clubs/browse');
   };
 
-  const clubOptionTemplate = (option: { label: string; value: Club }) => {
+  // Option template - what shows in the dropdown list
+  const itemTemplate = (option) => {
+    if (!option) return <span>Select a club</span>;
+    
     return (
       <div className="flex align-items-center">
-        {option.value.logoUrl ? (
+        {option.logoUrl ? (
           <img 
-            src={`https://localhost:7091${option.value.logoUrl}`} 
-            alt={option.label} 
+            src={`https://localhost:7091${option.logoUrl}`} 
+            alt={option.name} 
             className="mr-2" 
-            style={{ width: '24px', height: '24px', borderRadius: '50%' }} 
+            style={{ width: '24px', height: '24px', borderRadius: '50%', objectFit: 'cover' }} 
           />
         ) : (
           <i className="pi pi-users mr-2" />
         )}
-        <span>{option.label}</span>
+        <span>{option.name}</span>
       </div>
     );
   };
 
-  const selectedClubTemplate = (club: Club | null) => {
-    if (!club) return <span>Select a club</span>;
+  // Create a simple label component to show selected club
+  const SelectedClubLabel = () => {
+    if (!selectedClub) return <span>Select a club</span>;
     
     return (
       <div className="flex align-items-center">
-        {club.logoUrl ? (
+        {selectedClub.logoUrl ? (
           <img 
-            src={`https://localhost:7091${club.logoUrl}`} 
-            alt={club.name} 
+            src={`https://localhost:7091${selectedClub.logoUrl}`} 
+            alt={selectedClub.name} 
             className="mr-2" 
-            style={{ width: '24px', height: '24px', borderRadius: '50%' }} 
+            style={{ width: '24px', height: '24px', borderRadius: '50%', objectFit: 'cover' }} 
           />
         ) : (
           <i className="pi pi-users mr-2" />
         )}
-        <span>{club.name}</span>
+        <span>{selectedClub.name}</span>
       </div>
     );
   };
+
+  // Don't render anything until client-side mounting is complete
+  if (!mounted) return null;
 
   // No clubs scenario - show join/create buttons
   if (clubs.length === 0) {
@@ -95,16 +96,24 @@ const ClubSelector = () => {
   }
 
   return (
-    <div className="flex align-items-center">
+    <div className="flex align-items-center club-selector-container">
+      <style jsx>{`
+        .club-selector-container :global(.p-dropdown-label) {
+          display: flex !important;
+          align-items: center !important;
+          min-height: 32px;
+        }
+      `}</style>
       <Dropdown
         value={selectedClub}
-        options={clubSelectItems}
+        options={clubs}
         onChange={(e) => setSelectedClub(e.value)}
         optionLabel="name"
         placeholder="Select a Club"
         className="w-14rem mr-2"
-        valueTemplate={selectedClubTemplate}
-        itemTemplate={clubOptionTemplate}
+        valueTemplate={<SelectedClubLabel />}
+        itemTemplate={itemTemplate}
+        dataKey="id"
       />
       <Button 
         icon="pi pi-plus" 

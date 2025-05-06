@@ -1,4 +1,4 @@
-// context/ClubContext.tsx - updated for stability
+// MKInformacineSistemaFront/context/ClubContext.tsx
 'use client';
 
 import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
@@ -39,7 +39,7 @@ export const ClubProvider = ({ children }: { children: React.ReactNode }) => {
   const router = useRouter();
   const fetchingRef = useRef(false);
 
-  // Stabilize the fetch function using useCallback
+  // Fetch clubs from API
   const fetchClubs = useCallback(async () => {
     // Prevent concurrent fetches
     if (fetchingRef.current) return;
@@ -88,7 +88,7 @@ export const ClubProvider = ({ children }: { children: React.ReactNode }) => {
     }
   }, []);
 
-  // Stabilize the refresh function using useCallback
+  // Public method to refresh clubs
   const refreshClubs = useCallback(async () => {
     setLoading(true);
     await fetchClubs();
@@ -103,13 +103,11 @@ export const ClubProvider = ({ children }: { children: React.ReactNode }) => {
     }
   }, [isAuthenticated, fetchClubs]);
 
-  // Handle club selection - use useCallback to stabilize
+  // Handle club selection
   const handleSelectClub = useCallback((club: Club) => {
     console.log("Selecting club:", club.id);
     setSelectedClub(club);
     localStorage.setItem('selectedClubId', club.id.toString());
-    // Instead of refreshing the page, use a more targeted approach
-    // Only refresh if necessary
   }, []);
 
   // Provide memoized context value to reduce unnecessary renders
