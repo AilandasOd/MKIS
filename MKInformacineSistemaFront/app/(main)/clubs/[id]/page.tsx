@@ -327,23 +327,6 @@ const ClubDetailsPage = () => {
             <p><strong>Address:</strong> {club.residenceAddress}</p>
             {club.contactEmail && <p><strong>Email:</strong> {club.contactEmail}</p>}
             {club.contactPhone && <p><strong>Phone:</strong> {club.contactPhone}</p>}
-            
-            {/* Admin link - only visible to admins and owners */}
-            {club.members.some(m => 
-                (m.role === 'Admin' || m.role === 'Owner') && 
-                m.id === club.members.find(m => m.role === 'Owner' || m.role === 'Admin')?.id
-              ) && (
-              <div className="mt-4 pt-3 border-top-1 border-300">
-                <Button 
-                  label="Manage Members" 
-                  icon="pi pi-users" 
-                  onClick={() => router.push('/admin/members')} 
-                  severity="secondary"
-                  outlined
-                  className="mr-2"
-                />
-              </div>
-            )}
           </Card>
         </div>
         
