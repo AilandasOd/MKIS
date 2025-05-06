@@ -38,6 +38,7 @@ builder.Services.AddTransient<JwtTokenService>();
 builder.Services.AddTransient<SessionService>();
 builder.Services.AddScoped<AuthSeeder>();
 builder.Services.AddScoped<MemberActivityService>();
+builder.Services.AddScoped<StatisticsService>();
 
 builder.Services.AddIdentity<User, IdentityRole>()
     .AddEntityFrameworkStores<ApplicationDbContext>()

@@ -70,25 +70,38 @@ namespace MKInformacineSistemaBack.Controllers
                 if (!userIsAdmin)
                     return Forbid("Only administrators can view all members");
 
-                membersQuery = _context.Users
-                    .Where(u => _userManager.IsInRoleAsync(u, Roles.Hunter).Result)
-                    .Select(u => new MemberDto
+                // First, get all users
+                var allUsers = await _context.Users.ToListAsync();
+                // Then filter in memory
+                var huntingUsers = new List<User>();
+                foreach (var user in allUsers)
+                {
+                    if (await _userManager.IsInRoleAsync(user, Roles.Hunter))
                     {
-                        Id = 0,  // Placeholder ID
-                        UserId = u.Id,
-                        Name = $"{u.FirstName} {u.LastName}",
-                        BirthDate = u.DateOfBirth,
-                        Photo = u.AvatarPhoto,
-                        Activity = 0,  // Will be calculated below
-                        HuntingSince = u.HuntingTicketIssueDate,
-                        Status = "Member", // Default status
-                        Email = u.Email,
-                        PhoneNumber = u.PhoneNumber,
-                        Age = CalculateAge(u.DateOfBirth)
-                    });
+                        huntingUsers.Add(user);
+                    }
+                }
+
+                // Now map the filtered users to DTOs
+                membersQuery = huntingUsers.Select(u => new MemberDto
+                {
+                    Id = 0,  // Placeholder ID
+                    UserId = u.Id,
+                    Name = $"{u.FirstName} {u.LastName}",
+                    BirthDate = u.DateOfBirth,
+                    Photo = u.AvatarPhoto,
+                    Activity = 0,  // Will be calculated below
+                    HuntingSince = u.HuntingTicketIssueDate,
+                    Status = "Member", // Default status
+                    Email = u.Email,
+                    PhoneNumber = u.PhoneNumber,
+                    Age = CalculateAge(u.DateOfBirth)
+                }).AsQueryable();
+
             }
 
-            var members = await membersQuery.ToListAsync();
+            var members = membersQuery.ToList();
+
 
             // Calculate activity for each member
             if (clubId.HasValue)
