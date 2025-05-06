@@ -1,14 +1,14 @@
 using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Microsoft.EntityFrameworkCore;
 using MKInformacineSistemaBack.Auth;
 using MKInformacineSistemaBack.Auth.Models;
 using MKInformacineSistemaBack.Data;
+using MKInformacineSistemaBack.Server;
 using MKInformacineSistemaBack.Server.Auth;
+using MKInformacineSistemaBack.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
-using MKInformacineSistemaBack.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -37,6 +37,7 @@ builder.Services.AddCors(options =>
 builder.Services.AddTransient<JwtTokenService>();
 builder.Services.AddTransient<SessionService>();
 builder.Services.AddScoped<AuthSeeder>();
+builder.Services.AddScoped<DataSeeder>(); // Add DataSeeder
 builder.Services.AddScoped<MemberActivityService>();
 builder.Services.AddScoped<StatisticsService>();
 
@@ -98,22 +99,35 @@ if (string.IsNullOrEmpty(builder.Environment.WebRootPath))
 
 app.UseStaticFiles();
 
-var uploadsDir = Path.Combine(builder.Environment.WebRootPath, "uploads", "avatars");
-if (!Directory.Exists(uploadsDir))
-{
-    Directory.CreateDirectory(uploadsDir);
-}
+// Create required directories if they don't exist
+var uploadsDir = Path.Combine(builder.Environment.WebRootPath, "uploads");
+Directory.CreateDirectory(uploadsDir);
+
+var avatarsDir = Path.Combine(uploadsDir, "avatars");
+Directory.CreateDirectory(avatarsDir);
+
+var clubsDir = Path.Combine(uploadsDir, "clubs");
+Directory.CreateDirectory(clubsDir);
+
+var postsDir = Path.Combine(uploadsDir, "posts");
+Directory.CreateDirectory(postsDir);
 
 using (var scope = app.Services.CreateScope())
 {
     var services = scope.ServiceProvider;
     var context = services.GetRequiredService<ApplicationDbContext>();
-    var dbSeeder = scope.ServiceProvider.GetRequiredService<AuthSeeder>();
-    await dbSeeder.SeedAsync();
 
-    //await SeedData.Seed(context);
+    // Setup database
+    context.Database.Migrate();
+
+    // Seed auth data (roles, admin user)
+    var authSeeder = scope.ServiceProvider.GetRequiredService<AuthSeeder>();
+    await authSeeder.SeedAsync();
+
+    // Seed application data
+    var dataSeeder = scope.ServiceProvider.GetRequiredService<DataSeeder>();
+    await dataSeeder.SeedAsync();
 }
-
 
 app.AddAuthApi();
 
