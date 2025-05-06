@@ -3,6 +3,10 @@
   "WorkspaceRootPath": "C:\\Users\\ailan\\Desktop\\Bakalauro darbas\\MKISCODE\\MKInformacineSistemaBack\\",
   "Documents": [
     {
+      "AbsoluteMoniker": "D:0:0:{BB196FBF-95A5-425A-AAF9-168F42ABE859}|MKInformacineSistemaBack.csproj|c:\\users\\ailan\\desktop\\bakalauro darbas\\mkiscode\\mkinformacinesistemaback\\controllers\\statisticscontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{BB196FBF-95A5-425A-AAF9-168F42ABE859}|MKInformacineSistemaBack.csproj|solutionrelative:controllers\\statisticscontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
       "AbsoluteMoniker": "D:0:0:{BB196FBF-95A5-425A-AAF9-168F42ABE859}|MKInformacineSistemaBack.csproj|c:\\users\\ailan\\desktop\\bakalauro darbas\\mkiscode\\mkinformacinesistemaback\\appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}",
       "RelativeMoniker": "D:0:0:{BB196FBF-95A5-425A-AAF9-168F42ABE859}|MKInformacineSistemaBack.csproj|solutionrelative:appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}"
     },
@@ -190,7 +194,7 @@
       "DocumentGroups": [
         {
           "DockedWidth": 200,
-          "SelectedChildIndex": 9,
+          "SelectedChildIndex": 1,
           "Children": [
             {
               "$type": "Bookmark",
@@ -198,7 +202,20 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 1,
+              "DocumentIndex": 0,
+              "Title": "StatisticsController.cs",
+              "DocumentMoniker": "C:\\Users\\ailan\\Desktop\\Bakalauro darbas\\MKISCODE\\MKInformacineSistemaBack\\Controllers\\StatisticsController.cs",
+              "RelativeDocumentMoniker": "Controllers\\StatisticsController.cs",
+              "ToolTip": "C:\\Users\\ailan\\Desktop\\Bakalauro darbas\\MKISCODE\\MKInformacineSistemaBack\\Controllers\\StatisticsController.cs",
+              "RelativeToolTip": "Controllers\\StatisticsController.cs",
+              "ViewState": "AgIAAP4AAAAAAAAAAAAYwO8AAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-05-06T20:17:22.192Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
               "Title": "DataSeeder.cs",
               "DocumentMoniker": "C:\\Users\\ailan\\Desktop\\Bakalauro darbas\\MKISCODE\\MKInformacineSistemaBack\\DataSeeder.cs",
               "RelativeDocumentMoniker": "DataSeeder.cs",
@@ -206,12 +223,11 @@
               "RelativeToolTip": "DataSeeder.cs",
               "ViewState": "AgIAAPwBAAAAAAAAAAAuwBMCAAAuAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-05-06T15:48:39.987Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-05-06T15:48:39.987Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 12,
+              "DocumentIndex": 13,
               "Title": "PolygonsController.cs",
               "DocumentMoniker": "C:\\Users\\ailan\\Desktop\\Bakalauro darbas\\MKISCODE\\MKInformacineSistemaBack\\Controllers\\PolygonsController.cs",
               "RelativeDocumentMoniker": "Controllers\\PolygonsController.cs",
@@ -223,7 +239,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 10,
+              "DocumentIndex": 11,
               "Title": "HuntingAreasController.cs",
               "DocumentMoniker": "C:\\Users\\ailan\\Desktop\\Bakalauro darbas\\MKISCODE\\MKInformacineSistemaBack\\Controllers\\HuntingAreasController.cs",
               "RelativeDocumentMoniker": "Controllers\\HuntingAreasController.cs",
@@ -235,7 +251,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 8,
+              "DocumentIndex": 9,
               "Title": "DrivenHuntsController.cs",
               "DocumentMoniker": "C:\\Users\\ailan\\Desktop\\Bakalauro darbas\\MKISCODE\\MKInformacineSistemaBack\\Controllers\\DrivenHuntsController.cs",
               "RelativeDocumentMoniker": "Controllers\\DrivenHuntsController.cs",
@@ -247,7 +263,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 9,
+              "DocumentIndex": 10,
               "Title": "DrivenHuntDto.cs",
               "DocumentMoniker": "C:\\Users\\ailan\\Desktop\\Bakalauro darbas\\MKISCODE\\MKInformacineSistemaBack\\Helpers\\Dtos\\DrivenHuntDto.cs",
               "RelativeDocumentMoniker": "Helpers\\Dtos\\DrivenHuntDto.cs",
@@ -259,7 +275,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 7,
+              "DocumentIndex": 8,
               "Title": "ClubDto.cs",
               "DocumentMoniker": "C:\\Users\\ailan\\Desktop\\Bakalauro darbas\\MKISCODE\\MKInformacineSistemaBack\\Helpers\\Dtos\\ClubDto.cs",
               "RelativeDocumentMoniker": "Helpers\\Dtos\\ClubDto.cs",
@@ -271,7 +287,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 4,
+              "DocumentIndex": 5,
               "Title": "AuthEndpoints.cs",
               "DocumentMoniker": "C:\\Users\\ailan\\Desktop\\Bakalauro darbas\\MKISCODE\\MKInformacineSistemaBack\\Auth\\AuthEndpoints.cs",
               "RelativeDocumentMoniker": "Auth\\AuthEndpoints.cs",
@@ -283,7 +299,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 2,
+              "DocumentIndex": 3,
               "Title": "Program.cs",
               "DocumentMoniker": "C:\\Users\\ailan\\Desktop\\Bakalauro darbas\\MKISCODE\\MKInformacineSistemaBack\\Program.cs",
               "RelativeDocumentMoniker": "Program.cs",
@@ -295,7 +311,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 0,
+              "DocumentIndex": 1,
               "Title": "appsettings.json",
               "DocumentMoniker": "C:\\Users\\ailan\\Desktop\\Bakalauro darbas\\MKISCODE\\MKInformacineSistemaBack\\appsettings.json",
               "RelativeDocumentMoniker": "appsettings.json",
@@ -308,7 +324,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 6,
+              "DocumentIndex": 7,
               "Title": "ClubsController.cs",
               "DocumentMoniker": "C:\\Users\\ailan\\Desktop\\Bakalauro darbas\\MKISCODE\\MKInformacineSistemaBack\\Controllers\\ClubsController.cs",
               "RelativeDocumentMoniker": "Controllers\\ClubsController.cs",
@@ -320,7 +336,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 5,
+              "DocumentIndex": 6,
               "Title": "MembersController.cs",
               "DocumentMoniker": "C:\\Users\\ailan\\Desktop\\Bakalauro darbas\\MKISCODE\\MKInformacineSistemaBack\\Controllers\\MembersController.cs",
               "RelativeDocumentMoniker": "Controllers\\MembersController.cs",
@@ -332,7 +348,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 3,
+              "DocumentIndex": 4,
               "Title": "AuthSeeder.cs",
               "DocumentMoniker": "C:\\Users\\ailan\\Desktop\\Bakalauro darbas\\MKISCODE\\MKInformacineSistemaBack\\Auth\\AuthSeeder.cs",
               "RelativeDocumentMoniker": "Auth\\AuthSeeder.cs",
@@ -344,7 +360,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 13,
+              "DocumentIndex": 14,
               "Title": "PostsController.cs",
               "DocumentMoniker": "C:\\Users\\ailan\\Desktop\\Bakalauro darbas\\MKISCODE\\MKInformacineSistemaBack\\Controllers\\PostsController.cs",
               "RelativeDocumentMoniker": "Controllers\\PostsController.cs",
@@ -356,7 +372,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 11,
+              "DocumentIndex": 12,
               "Title": "BloodTestsController.cs",
               "DocumentMoniker": "C:\\Users\\ailan\\Desktop\\Bakalauro darbas\\MKISCODE\\MKInformacineSistemaBack\\Controllers\\BloodTestsController.cs",
               "RelativeDocumentMoniker": "Controllers\\BloodTestsController.cs",
@@ -368,7 +384,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 15,
+              "DocumentIndex": 16,
               "Title": "UsersController.cs",
               "DocumentMoniker": "C:\\Users\\ailan\\Desktop\\Bakalauro darbas\\MKISCODE\\MKInformacineSistemaBack\\Controllers\\UsersController.cs",
               "RelativeDocumentMoniker": "Controllers\\UsersController.cs",
@@ -380,7 +396,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 14,
+              "DocumentIndex": 15,
               "Title": "UserProfileController.cs",
               "DocumentMoniker": "C:\\Users\\ailan\\Desktop\\Bakalauro darbas\\MKISCODE\\MKInformacineSistemaBack\\Controllers\\UserProfileController.cs",
               "RelativeDocumentMoniker": "Controllers\\UserProfileController.cs",
@@ -392,7 +408,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 16,
+              "DocumentIndex": 17,
               "Title": "ApplicationDbContext.cs",
               "DocumentMoniker": "C:\\Users\\ailan\\Desktop\\Bakalauro darbas\\MKISCODE\\MKInformacineSistemaBack\\Data\\ApplicationDbContext.cs",
               "RelativeDocumentMoniker": "Data\\ApplicationDbContext.cs",
@@ -404,7 +420,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 23,
+              "DocumentIndex": 24,
               "Title": "HuntingArea.cs",
               "DocumentMoniker": "C:\\Users\\ailan\\Desktop\\Bakalauro darbas\\MKISCODE\\MKInformacineSistemaBack\\Models\\HuntingArea.cs",
               "RelativeDocumentMoniker": "Models\\HuntingArea.cs",
@@ -416,7 +432,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 20,
+              "DocumentIndex": 21,
               "Title": "HuntedAnimal.cs",
               "DocumentMoniker": "C:\\Users\\ailan\\Desktop\\Bakalauro darbas\\MKISCODE\\MKInformacineSistemaBack\\Models\\HuntedAnimal.cs",
               "RelativeDocumentMoniker": "Models\\HuntedAnimal.cs",
@@ -428,7 +444,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 21,
+              "DocumentIndex": 22,
               "Title": "DrivenHuntParticipant.cs",
               "DocumentMoniker": "C:\\Users\\ailan\\Desktop\\Bakalauro darbas\\MKISCODE\\MKInformacineSistemaBack\\Models\\DrivenHuntParticipant.cs",
               "RelativeDocumentMoniker": "Models\\DrivenHuntParticipant.cs",
@@ -440,7 +456,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 19,
+              "DocumentIndex": 20,
               "Title": "ClubMembership.cs",
               "DocumentMoniker": "C:\\Users\\ailan\\Desktop\\Bakalauro darbas\\MKISCODE\\MKInformacineSistemaBack\\Models\\ClubMembership.cs",
               "RelativeDocumentMoniker": "Models\\ClubMembership.cs",
@@ -452,7 +468,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 22,
+              "DocumentIndex": 23,
               "Title": "UserStatistics.cs",
               "DocumentMoniker": "C:\\Users\\ailan\\Desktop\\Bakalauro darbas\\MKISCODE\\MKInformacineSistemaBack\\Models\\UserStatistics.cs",
               "RelativeDocumentMoniker": "Models\\UserStatistics.cs",
@@ -464,7 +480,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 18,
+              "DocumentIndex": 19,
               "Title": "StatisticsService.cs",
               "DocumentMoniker": "C:\\Users\\ailan\\Desktop\\Bakalauro darbas\\MKISCODE\\MKInformacineSistemaBack\\Services\\StatisticsService.cs",
               "RelativeDocumentMoniker": "Services\\StatisticsService.cs",
@@ -476,7 +492,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 24,
+              "DocumentIndex": 25,
               "Title": "DrivenHunt.cs",
               "DocumentMoniker": "C:\\Users\\ailan\\Desktop\\Bakalauro darbas\\MKISCODE\\MKInformacineSistemaBack\\Models\\DrivenHunt.cs",
               "RelativeDocumentMoniker": "Models\\DrivenHunt.cs",
@@ -488,7 +504,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 17,
+              "DocumentIndex": 18,
               "Title": "MemberActivityService.cs",
               "DocumentMoniker": "C:\\Users\\ailan\\Desktop\\Bakalauro darbas\\MKISCODE\\MKInformacineSistemaBack\\Services\\MemberActivityService.cs",
               "RelativeDocumentMoniker": "Services\\MemberActivityService.cs",
@@ -500,7 +516,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 25,
+              "DocumentIndex": 26,
               "Title": "ClubStatistics.cs",
               "DocumentMoniker": "C:\\Users\\ailan\\Desktop\\Bakalauro darbas\\MKISCODE\\MKInformacineSistemaBack\\Models\\ClubStatistics.cs",
               "RelativeDocumentMoniker": "Models\\ClubStatistics.cs",
@@ -512,7 +528,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 26,
+              "DocumentIndex": 27,
               "Title": "Club.cs",
               "DocumentMoniker": "C:\\Users\\ailan\\Desktop\\Bakalauro darbas\\MKISCODE\\MKInformacineSistemaBack\\Models\\Club.cs",
               "RelativeDocumentMoniker": "Models\\Club.cs",
@@ -524,7 +540,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 27,
+              "DocumentIndex": 28,
               "Title": "BloodTest.cs",
               "DocumentMoniker": "C:\\Users\\ailan\\Desktop\\Bakalauro darbas\\MKISCODE\\MKInformacineSistemaBack\\Models\\BloodTest.cs",
               "RelativeDocumentMoniker": "Models\\BloodTest.cs",
@@ -536,7 +552,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 29,
+              "DocumentIndex": 30,
               "Title": "Session.cs",
               "DocumentMoniker": "C:\\Users\\ailan\\Desktop\\Bakalauro darbas\\MKISCODE\\MKInformacineSistemaBack\\Models\\Session.cs",
               "RelativeDocumentMoniker": "Models\\Session.cs",
@@ -548,7 +564,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 28,
+              "DocumentIndex": 29,
               "Title": "Post.cs",
               "DocumentMoniker": "C:\\Users\\ailan\\Desktop\\Bakalauro darbas\\MKISCODE\\MKInformacineSistemaBack\\Models\\Post.cs",
               "RelativeDocumentMoniker": "Models\\Post.cs",
@@ -560,7 +576,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 30,
+              "DocumentIndex": 31,
               "Title": "Polygon.cs",
               "DocumentMoniker": "C:\\Users\\ailan\\Desktop\\Bakalauro darbas\\MKISCODE\\MKInformacineSistemaBack\\Models\\Polygon.cs",
               "RelativeDocumentMoniker": "Models\\Polygon.cs",
@@ -572,7 +588,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 31,
+              "DocumentIndex": 32,
               "Title": "PostDto.cs",
               "DocumentMoniker": "C:\\Users\\ailan\\Desktop\\Bakalauro darbas\\MKISCODE\\MKInformacineSistemaBack\\Helpers\\Dtos\\PostDto.cs",
               "RelativeDocumentMoniker": "Helpers\\Dtos\\PostDto.cs",
@@ -584,7 +600,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 32,
+              "DocumentIndex": 33,
               "Title": "User.cs",
               "DocumentMoniker": "C:\\Users\\ailan\\Desktop\\Bakalauro darbas\\MKISCODE\\MKInformacineSistemaBack\\Auth\\Models\\User.cs",
               "RelativeDocumentMoniker": "Auth\\Models\\User.cs",
@@ -596,7 +612,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 36,
+              "DocumentIndex": 37,
               "Title": "UserDto.cs",
               "DocumentMoniker": "C:\\Users\\ailan\\Desktop\\Bakalauro darbas\\MKISCODE\\MKInformacineSistemaBack\\Helpers\\Dtos\\UserDto.cs",
               "RelativeDocumentMoniker": "Helpers\\Dtos\\UserDto.cs",
@@ -608,7 +624,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 37,
+              "DocumentIndex": 38,
               "Title": "UserProfileDto.cs",
               "DocumentMoniker": "C:\\Users\\ailan\\Desktop\\Bakalauro darbas\\MKISCODE\\MKInformacineSistemaBack\\Helpers\\Dtos\\UserProfileDto.cs",
               "RelativeDocumentMoniker": "Helpers\\Dtos\\UserProfileDto.cs",
@@ -620,7 +636,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 41,
+              "DocumentIndex": 42,
               "Title": "PolygonDto.cs",
               "DocumentMoniker": "C:\\Users\\ailan\\Desktop\\Bakalauro darbas\\MKISCODE\\MKInformacineSistemaBack\\Helpers\\Dtos\\PolygonDto.cs",
               "RelativeDocumentMoniker": "Helpers\\Dtos\\PolygonDto.cs",
@@ -632,7 +648,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 35,
+              "DocumentIndex": 36,
               "Title": "MemberDto.cs",
               "DocumentMoniker": "C:\\Users\\ailan\\Desktop\\Bakalauro darbas\\MKISCODE\\MKInformacineSistemaBack\\Helpers\\Dtos\\MemberDto.cs",
               "RelativeDocumentMoniker": "Helpers\\Dtos\\MemberDto.cs",
@@ -644,7 +660,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 38,
+              "DocumentIndex": 39,
               "Title": "HuntinAreaDto.cs",
               "DocumentMoniker": "C:\\Users\\ailan\\Desktop\\Bakalauro darbas\\MKISCODE\\MKInformacineSistemaBack\\Helpers\\Dtos\\HuntinAreaDto.cs",
               "RelativeDocumentMoniker": "Helpers\\Dtos\\HuntinAreaDto.cs",
@@ -656,7 +672,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 33,
+              "DocumentIndex": 34,
               "Title": "JwtTokenService.cs",
               "DocumentMoniker": "C:\\Users\\ailan\\Desktop\\Bakalauro darbas\\MKISCODE\\MKInformacineSistemaBack\\Auth\\JwtTokenService.cs",
               "RelativeDocumentMoniker": "Auth\\JwtTokenService.cs",
@@ -668,7 +684,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 40,
+              "DocumentIndex": 41,
               "Title": "SessionService.cs",
               "DocumentMoniker": "C:\\Users\\ailan\\Desktop\\Bakalauro darbas\\MKISCODE\\MKInformacineSistemaBack\\Auth\\SessionService.cs",
               "RelativeDocumentMoniker": "Auth\\SessionService.cs",
@@ -680,7 +696,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 43,
+              "DocumentIndex": 44,
               "Title": "MKInformacineSistemaBack.http",
               "DocumentMoniker": "C:\\Users\\ailan\\Desktop\\Bakalauro darbas\\MKISCODE\\MKInformacineSistemaBack\\MKInformacineSistemaBack.http",
               "RelativeDocumentMoniker": "MKInformacineSistemaBack.http",
@@ -692,7 +708,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 42,
+              "DocumentIndex": 43,
               "Title": "launchSettings.json",
               "DocumentMoniker": "C:\\Users\\ailan\\Desktop\\Bakalauro darbas\\MKISCODE\\MKInformacineSistemaBack\\Properties\\launchSettings.json",
               "RelativeDocumentMoniker": "Properties\\launchSettings.json",
@@ -704,7 +720,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 44,
+              "DocumentIndex": 45,
               "Title": "Extensions.cs",
               "DocumentMoniker": "C:\\Users\\ailan\\Desktop\\Bakalauro darbas\\MKISCODE\\MKInformacineSistemaBack\\Helpers\\Extensions.cs",
               "RelativeDocumentMoniker": "Helpers\\Extensions.cs",
@@ -716,7 +732,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 39,
+              "DocumentIndex": 40,
               "Title": "Roles.cs",
               "DocumentMoniker": "C:\\Users\\ailan\\Desktop\\Bakalauro darbas\\MKISCODE\\MKInformacineSistemaBack\\Auth\\Models\\Roles.cs",
               "RelativeDocumentMoniker": "Auth\\Models\\Roles.cs",
@@ -728,7 +744,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 34,
+              "DocumentIndex": 35,
               "Title": "MKInformacineSistemaBack.csproj",
               "DocumentMoniker": "C:\\Users\\ailan\\Desktop\\Bakalauro darbas\\MKISCODE\\MKInformacineSistemaBack\\MKInformacineSistemaBack.csproj",
               "RelativeDocumentMoniker": "MKInformacineSistemaBack.csproj",

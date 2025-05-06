@@ -3,7 +3,6 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using MKInformacineSistemaBack.Data;
 using MKInformacineSistemaBack.Helpers.Dtos;
-using Swashbuckle.AspNetCore.SwaggerGen;
 using System.Collections.Generic;
 using System.Security.Claims;
 using System.Text.Json;
@@ -61,12 +60,53 @@ namespace MKInformacineSistemaBack.Controllers
                 });
             }
 
-            // Parse JSON data
-            var animalsHunted = JsonSerializer.Deserialize<Dictionary<string, int>>(
-                clubStats.AnimalsHuntedJson) ?? new Dictionary<string, int>();
+            // Parse JSON data with error handling
+            Dictionary<string, int> animalsHunted;
+            List<TopHunterDto> topHunters;
 
-            var topHunters = JsonSerializer.Deserialize<List<TopHunterDto>>(
-                clubStats.TopHuntersJson) ?? new List<TopHunterDto>();
+            try
+            {
+                // Try parsing animals hunted JSON
+                if (!string.IsNullOrEmpty(clubStats.AnimalsHuntedJson) && clubStats.AnimalsHuntedJson != "{}")
+                {
+                    animalsHunted = JsonSerializer.Deserialize<Dictionary<string, int>>(
+                        clubStats.AnimalsHuntedJson) ?? new Dictionary<string, int>();
+                }
+                else
+                {
+                    animalsHunted = new Dictionary<string, int>();
+                }
+            }
+            catch (JsonException ex)
+            {
+                // Log the error
+                Console.WriteLine($"Error deserializing AnimalsHuntedJson: {ex.Message}");
+                Console.WriteLine($"Raw JSON: {clubStats.AnimalsHuntedJson}");
+                // Provide empty dictionary on error
+                animalsHunted = new Dictionary<string, int>();
+            }
+
+            try
+            {
+                // Try parsing top hunters JSON
+                if (!string.IsNullOrEmpty(clubStats.TopHuntersJson) && clubStats.TopHuntersJson != "[]")
+                {
+                    topHunters = JsonSerializer.Deserialize<List<TopHunterDto>>(
+                        clubStats.TopHuntersJson) ?? new List<TopHunterDto>();
+                }
+                else
+                {
+                    topHunters = new List<TopHunterDto>();
+                }
+            }
+            catch (JsonException ex)
+            {
+                // Log the error
+                Console.WriteLine($"Error deserializing TopHuntersJson: {ex.Message}");
+                Console.WriteLine($"Raw JSON: {clubStats.TopHuntersJson}");
+                // Provide empty list on error
+                topHunters = new List<TopHunterDto>();
+            }
 
             // Create response
             var result = new ClubStatisticsDto
@@ -153,9 +193,30 @@ namespace MKInformacineSistemaBack.Controllers
                 });
             }
 
-            // Parse JSON data
-            var animalsHunted = JsonSerializer.Deserialize<Dictionary<string, int>>(
-                userStats.AnimalsHuntedJson) ?? new Dictionary<string, int>();
+            // Parse JSON data with error handling
+            Dictionary<string, int> animalsHunted;
+
+            try
+            {
+                // Try parsing animals hunted JSON
+                if (!string.IsNullOrEmpty(userStats.AnimalsHuntedJson) && userStats.AnimalsHuntedJson != "{}")
+                {
+                    animalsHunted = JsonSerializer.Deserialize<Dictionary<string, int>>(
+                        userStats.AnimalsHuntedJson) ?? new Dictionary<string, int>();
+                }
+                else
+                {
+                    animalsHunted = new Dictionary<string, int>();
+                }
+            }
+            catch (JsonException ex)
+            {
+                // Log the error
+                Console.WriteLine($"Error deserializing user AnimalsHuntedJson: {ex.Message}");
+                Console.WriteLine($"Raw JSON: {userStats.AnimalsHuntedJson}");
+                // Provide empty dictionary on error
+                animalsHunted = new Dictionary<string, int>();
+            }
 
             // Create response
             var result = new UserStatisticsDto
@@ -175,9 +236,12 @@ namespace MKInformacineSistemaBack.Controllers
         }
     }
 
-    // DTOs for statistics
+    // DTOs for statistics remain unchanged
 
-    public class ClubStatisticsDto
+
+// DTOs for statistics
+
+public class ClubStatisticsDto
     {
         public int Year { get; set; }
         public int TotalDrivenHunts { get; set; }

@@ -1,4 +1,3 @@
-// MKInformacineSistemaFront/context/ClubContext.tsx
 'use client';
 
 import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
@@ -38,6 +37,9 @@ export const ClubProvider = ({ children }: { children: React.ReactNode }) => {
   const { isAuthenticated } = useAuth();
   const router = useRouter();
   const fetchingRef = useRef(false);
+  
+  // Track previous selected club ID for comparison
+  const previousClubIdRef = useRef<number | null>(null);
 
   // Fetch clubs from API
   const fetchClubs = useCallback(async () => {
@@ -65,16 +67,19 @@ export const ClubProvider = ({ children }: { children: React.ReactNode }) => {
           if (club) {
             console.log("Found stored club:", club.id);
             setSelectedClub(club);
+            previousClubIdRef.current = club.id;
           } else if (data.length > 0) {
             // If stored club not found, select first available club
             console.log("Stored club not found, selecting first club:", data[0].id);
             setSelectedClub(data[0]);
+            previousClubIdRef.current = data[0].id;
             localStorage.setItem('selectedClubId', data[0].id.toString());
           }
         } else if (data.length > 0) {
           // If no stored club, select first available
           console.log("No stored club, selecting first club:", data[0].id);
           setSelectedClub(data[0]);
+          previousClubIdRef.current = data[0].id;
           localStorage.setItem('selectedClubId', data[0].id.toString());
         }
       } else {
@@ -103,12 +108,26 @@ export const ClubProvider = ({ children }: { children: React.ReactNode }) => {
     }
   }, [isAuthenticated, fetchClubs]);
 
-  // Handle club selection
+  // Handle club selection with redirect to dashboard
   const handleSelectClub = useCallback((club: Club) => {
     console.log("Selecting club:", club.id);
+    
+    // Track previous club ID
+    const isDifferentClub = selectedClub?.id !== club.id;
+    
+    // Update selected club
     setSelectedClub(club);
     localStorage.setItem('selectedClubId', club.id.toString());
-  }, []);
+    
+    // Only redirect if changing to a different club (not on initial selection)
+    if (isDifferentClub && previousClubIdRef.current !== null) {
+      console.log("Club changed, redirecting to dashboard");
+      router.push('/dashboard');
+    }
+    
+    // Update previous club ID reference
+    previousClubIdRef.current = club.id;
+  }, [selectedClub, router]);
 
   // Provide memoized context value to reduce unnecessary renders
   const contextValue = React.useMemo(() => ({

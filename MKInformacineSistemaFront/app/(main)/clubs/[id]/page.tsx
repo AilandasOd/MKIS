@@ -1,4 +1,3 @@
-// MKInformacineSistemaFront/app/(main)/clubs/[id]/page.tsx
 'use client';
 import React, { useEffect, useState, useRef } from 'react';
 import { useParams, useRouter } from 'next/navigation';
@@ -48,17 +47,22 @@ const ClubDetailsPage = () => {
   
   const toast = useRef<Toast>(null);
   const mapRef = useRef<HTMLDivElement>(null);
+  const mapInstanceRef = useRef<google.maps.Map | null>(null);
+  const markerRef = useRef<google.maps.Marker | null>(null);
   const router = useRouter();
-  const { refreshClubs } = useClub();
+  const { refreshClubs, selectedClub } = useClub();
 
+  // This effect runs when the component mounts or when the ID in the URL changes
   useEffect(() => {
     if (id) {
+      console.log(`Loading club details for ID: ${id}`);
       fetchClubDetails();
     }
-  }, [id]);
+  }, [id, selectedClub?.id]);
 
   const fetchClubDetails = async () => {
     try {
+      setLoading(true);
       const response = await fetch(`https://localhost:7091/api/Clubs/${id}`, {
         headers: {
           'Authorization': `Bearer ${sessionStorage.getItem('accessToken')}`
@@ -69,10 +73,7 @@ const ClubDetailsPage = () => {
         const data = await response.json();
         setClub(data);
         
-        // Initialize map after data is loaded
-        if (data && data.huntingAreaLocation) {
-          initMap(data.huntingAreaLocation);
-        }
+        // Map will be initialized in a separate useEffect
       } else if (response.status === 403) {
         // User is not a member of this club
         toast.current?.show({ 
@@ -103,31 +104,84 @@ const ClubDetailsPage = () => {
     }
   };
 
-  // Load Google Maps script if not already loaded
+  // Improved map initialization logic
   useEffect(() => {
-    if (!window.google && club) {
+    if (!club?.huntingAreaLocation) return;
+    
+    const loadGoogleMapsAndInitMap = async () => {
+      try {
+        // Check if Google Maps is already loaded
+        if (!window.google) {
+          console.log('Loading Google Maps API');
+          await loadGoogleMapsScript();
+        }
+        
+        // Initialize or update the map
+        console.log('Initializing map with location:', club.huntingAreaLocation);
+        initMap(club.huntingAreaLocation);
+      } catch (error) {
+        console.error('Error initializing map:', error);
+      }
+    };
+    
+    loadGoogleMapsAndInitMap();
+    
+    // Cleanup function to prevent memory leaks
+    return () => {
+      if (markerRef.current) {
+        markerRef.current.setMap(null);
+        markerRef.current = null;
+      }
+      mapInstanceRef.current = null;
+    };
+  }, [club?.huntingAreaLocation]);
+
+  // Separate function to load Google Maps script
+  const loadGoogleMapsScript = (): Promise<void> => {
+    return new Promise((resolve, reject) => {
+      if (window.google?.maps) {
+        resolve();
+        return;
+      }
+
       const script = document.createElement('script');
       script.src = `https://maps.googleapis.com/maps/api/js?key=${process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY}`;
       script.async = true;
       script.defer = true;
-      script.onload = () => initMap(club.huntingAreaLocation);
+      script.onload = () => resolve();
+      script.onerror = reject;
       document.head.appendChild(script);
-    }
-  }, [club]);
+    });
+  };
 
   const initMap = (location: number[]) => {
     if (!mapRef.current || !window.google || !location || location.length < 2) return;
 
-    const map = new google.maps.Map(mapRef.current, {
+    // Clear existing map elements
+    if (markerRef.current) {
+      markerRef.current.setMap(null);
+    }
+    
+    // Create a new map or reuse the existing one
+    const mapOptions = {
       center: { lat: location[1], lng: location[0] },
       zoom: 12,
       mapTypeId: google.maps.MapTypeId.HYBRID
-    });
+    };
+    
+    if (!mapInstanceRef.current) {
+      mapInstanceRef.current = new google.maps.Map(mapRef.current, mapOptions);
+    } else {
+      mapInstanceRef.current.setCenter(mapOptions.center);
+      mapInstanceRef.current.setZoom(mapOptions.zoom);
+    }
 
-    new google.maps.Marker({
+    // Add a marker
+    markerRef.current = new google.maps.Marker({
       position: { lat: location[1], lng: location[0] },
-      map: map,
-      title: club?.name
+      map: mapInstanceRef.current,
+      title: club?.name,
+      animation: google.maps.Animation.DROP
     });
   };
 
@@ -153,8 +207,15 @@ const ClubDetailsPage = () => {
       if (response.ok) {
         toast.current?.show({ severity: 'success', summary: 'Success', detail: 'You have left the club', life: 3000 });
         
-        // Refresh global clubs context
+        // Refresh global clubs context and clear map resources
         await refreshClubs();
+        
+        // Clear map resources before navigating
+        if (markerRef.current) {
+          markerRef.current.setMap(null);
+          markerRef.current = null;
+        }
+        mapInstanceRef.current = null;
         
         // Navigate back to browse page
         router.push('/clubs/browse');
@@ -315,10 +376,19 @@ const ClubDetailsPage = () => {
     );
   };
 
-  if (loading && !club) {
-    return <div className="flex justify-content-center mt-5"><i className="pi pi-spin pi-spinner text-4xl"></i></div>;
+  // Handle loading state
+  if (loading) {
+    return (
+      <div className="p-4">
+        <div className="flex flex-column align-items-center justify-content-center mt-5">
+          <i className="pi pi-spin pi-spinner text-4xl mb-3"></i>
+          <p>Loading club details...</p>
+        </div>
+      </div>
+    );
   }
 
+  // Handle case when club is not found or user doesn't have access
   if (!club) {
     return (
       <div className="p-4">
@@ -326,11 +396,27 @@ const ClubDetailsPage = () => {
         <div className="text-center p-5">
           <i className="pi pi-exclamation-triangle text-5xl text-gray-400 mb-3"></i>
           <p className="text-xl">Club not found or you don't have access.</p>
-          <Button label="Back to Clubs" icon="pi pi-arrow-left" onClick={() => router.push('/clubs/browse')} className="mt-3" />
+          <div className="flex justify-content-center mt-4">
+            <Button 
+              label="Back to Clubs" 
+              icon="pi pi-arrow-left" 
+              onClick={() => router.push('/clubs/browse')} 
+              className="mr-2"
+            />
+            <Button 
+              label="Dashboard" 
+              icon="pi pi-home" 
+              onClick={() => router.push('/dashboard')} 
+              severity="secondary"
+            />
+          </div>
         </div>
       </div>
     );
   }
+  
+  // Special handling when club exists but has no location data
+  const hasLocationData = club.huntingAreaLocation && club.huntingAreaLocation.length >= 2;
 
   return (
     <div className="p-4">
@@ -379,7 +465,20 @@ const ClubDetailsPage = () => {
         />
       </div>
       
-      <TabView>
+      <TabView onTabChange={(e) => {
+          // Force map to resize when tab is changed, to fix rendering issues
+          if (e.index === 0 && mapInstanceRef.current) {
+            setTimeout(() => {
+              google.maps.event.trigger(mapInstanceRef.current, 'resize');
+              if (club?.huntingAreaLocation && mapInstanceRef.current) {
+                mapInstanceRef.current.setCenter({ 
+                  lat: club.huntingAreaLocation[1], 
+                  lng: club.huntingAreaLocation[0] 
+                });
+              }
+            }, 50);
+          }
+        }}>
         <TabPanel header="About">
           <div className="grid">
             <div className="col-12 md:col-8">
@@ -397,7 +496,11 @@ const ClubDetailsPage = () => {
             <div className="col-12 md:col-4">
               <Card className="h-full">
                 <h3 className="text-xl font-semibold mb-3">Location</h3>
-                <div ref={mapRef} style={{ width: '100%', height: '300px', borderRadius: '8px' }} />
+                {hasLocationData ? (
+                  <div ref={mapRef} style={{ width: '100%', height: '300px', borderRadius: '8px' }} />
+                ) : (
+                  <p className="text-gray-500 italic">No location data available for this club.</p>
+                )}
               </Card>
             </div>
           </div>

@@ -3,18 +3,22 @@ import AppMenuitem from './AppMenuitem';
 import { LayoutContext } from './context/layoutcontext';
 import { MenuProvider } from './context/menucontext';
 import { useAuth } from '../context/AuthContext'; // Import the auth hook
+import { useClub } from '../context/ClubContext'; // Add this import
 import { AppMenuItem } from '@/types';
 
 const AppMenu = () => {
     const { layoutConfig } = useContext(LayoutContext);
     const { hasRole } = useAuth(); // Get the hasRole function from auth context
+    const { selectedClub } = useClub(); // Get the selected club
+
+    const clubId = selectedClub?.id || '';
 
     const model: AppMenuItem[] = [
         {
             label: 'Meniu',
             items: [
                 { label: 'Pradžia', icon: 'pi pi-fw pi-home', to: '/dashboard' },
-                { label: 'Klubas', icon: 'pi pi-fw pi-building', to: '/uikit/club' },
+                { label: 'Klubas', icon: 'pi pi-fw pi-building', to: `/clubs/${clubId}` },
                 {
                     label: 'Žemėlapiai',
                     icon: 'pi pi-fw pi-map',

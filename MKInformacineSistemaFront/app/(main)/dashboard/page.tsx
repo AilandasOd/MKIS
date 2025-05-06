@@ -8,12 +8,11 @@ import { Toast } from 'primereact/toast';
 import { Avatar } from 'primereact/avatar';
 import { Tag } from 'primereact/tag';
 import { Image } from 'primereact/image';
+import { Button } from 'primereact/button';
 import { useApiClient } from '../../../utils/api';
 import ClubGuard from '../../../context/ClubGuard';
 
 const Dashboard = () => {
-  console.log("Dashboard rendering"); // Debugging log
-  
   const { fetchWithClub, selectedClub } = useApiClient();
   const [posts, setPosts] = useState([]);
   const [statistics, setStatistics] = useState(null);
@@ -21,38 +20,68 @@ const Dashboard = () => {
   const [loading, setLoading] = useState(true);
   const [chartData, setChartData] = useState({});
   const toast = useRef(null);
-
-  // Use useRef to track if this is the first render
-  const initialRenderRef = useRef(true);
   
-  // Use a ref to store the fetch data function to ensure it doesn't change
-  const fetchDataRef = useRef(async () => {
+  // Add key to track club changes
+  const clubIdRef = useRef(null);
+
+  // Function to fetch dashboard data
+  const fetchDashboardData = async () => {
     if (!selectedClub) return;
     
     try {
       setLoading(true);
-      console.log("Fetching data for club:", selectedClub.id);
+      console.log("Fetching dashboard data for club:", selectedClub.id);
       
       // Fetch posts
       const postsData = await fetchWithClub('Posts');
       setPosts(postsData);
       
-      // Fix the endpoint path to match what's in your backend controller
-      const statsData = await fetchWithClub(`Statistics/club/${selectedClub.id}`);
-      setStatistics(statsData);
-      
-      if (statsData && statsData.animalsHunted) {
-        // Set chart data
-        setChartData({
-          labels: Object.keys(statsData.animalsHunted),
-          datasets: [{
-            data: Object.values(statsData.animalsHunted),
-            backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF']
-          }]
-        });
+      try {
+        // Try using both endpoint formats
+        let statsData;
         
-        // Set top hunters
-        setTopHunters(statsData.topHunters || []);
+        try {
+          // Try query parameter approach first (more likely to work based on error)
+          statsData = await fetchWithClub(`Statistics/club?clubId=${selectedClub.id}`);
+        } catch (error) {
+          console.warn("Query parameter approach failed, trying route parameter:", error);
+          // Fall back to route parameter approach
+          statsData = await fetchWithClub(`Statistics/club/${selectedClub.id}`);
+        }
+        
+        console.log("Statistics data received:", statsData);
+        setStatistics(statsData);
+        
+        // Check for animals hunted data and create chart if available
+        if (statsData && statsData.animalsHunted && Object.keys(statsData.animalsHunted).length > 0) {
+          console.log("Creating chart with animal data:", statsData.animalsHunted);
+          setChartData({
+            labels: Object.keys(statsData.animalsHunted),
+            datasets: [{
+              data: Object.values(statsData.animalsHunted),
+              backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF', 
+                              '#FF9F40', '#8BC34A', '#9C27B0', '#607D8B', '#E91E63']
+            }]
+          });
+        } else {
+          console.log("No animals hunted data available");
+        }
+        
+        // Check for top hunters data and set if available
+        if (statsData && statsData.topHunters && statsData.topHunters.length > 0) {
+          console.log("Setting top hunters data:", statsData.topHunters);
+          setTopHunters(statsData.topHunters);
+        } else {
+          console.log("No top hunters data available");
+        }
+      } catch (error) {
+        console.error("Error fetching statistics:", error);
+        toast.current?.show({
+          severity: 'error',
+          summary: 'Error',
+          detail: 'Failed to load statistics: ' + error.message,
+          life: 3000
+        });
       }
     } catch (error) {
       console.error('Error fetching dashboard data:', error);
@@ -65,20 +94,22 @@ const Dashboard = () => {
     } finally {
       setLoading(false);
     }
-  });
+  };
 
+  // Manual refresh function
+  const handleRefresh = () => {
+    fetchDashboardData();
+  };
+
+  // Effect that runs when selectedClub changes
   useEffect(() => {
-    // Prevent refetching on every re-render  
-    if (initialRenderRef.current && selectedClub) {
-      console.log("Initial fetch for club:", selectedClub.id);
-      initialRenderRef.current = false;
-      fetchDataRef.current();
-    } else if (!initialRenderRef.current && selectedClub) {
-      // Only refetch if selectedClub changes
-      console.log("Club changed, refetching for:", selectedClub.id);
-      fetchDataRef.current();
+    // Only fetch if club has changed or is newly selected
+    if (selectedClub && selectedClub.id !== clubIdRef.current) {
+      console.log("Club changed from", clubIdRef.current, "to", selectedClub.id);
+      clubIdRef.current = selectedClub.id;
+      fetchDashboardData();
     }
-  }, [selectedClub]);
+  }, [selectedClub]); // Only depend on selectedClub
 
   const renderPostItem = (post) => (
     <Card className="mb-4 p-3" key={post.id}>
@@ -124,6 +155,8 @@ const Dashboard = () => {
   return (
     <ClubGuard>
       <div className="grid">
+        <Toast ref={toast} />
+        
         <div className="col-12 xl:col-6">
           <div className="card">
             <h5>Club Posts</h5>
@@ -146,7 +179,13 @@ const Dashboard = () => {
                 <Column field="count" header="Animals Hunted" />
               </DataTable>
             ) : (
-              <p>No hunter data available yet.</p>
+              <div className="p-4 text-center">
+                <i className="pi pi-users text-3xl text-gray-300 mb-3"></i>
+                <p>No top hunters data available yet.</p>
+                <small className="text-gray-500">
+                  Complete some hunts to see top hunter statistics.
+                </small>
+              </div>
             )}
           </div>
 
@@ -155,7 +194,13 @@ const Dashboard = () => {
             {statistics && statistics.animalsHunted && Object.keys(statistics.animalsHunted).length > 0 ? (
               <Chart type="pie" data={chartData} />
             ) : (
-              <p>No animal data available yet.</p>
+              <div className="p-4 text-center">
+                <i className="pi pi-chart-pie text-3xl text-gray-300 mb-3"></i>
+                <p>No animal hunting data available yet.</p>
+                <small className="text-gray-500">
+                  Log some successful hunts to see animal statistics.
+                </small>
+              </div>
             )}
           </div>
         </div>
