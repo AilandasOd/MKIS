@@ -15,9 +15,6 @@ namespace MKInformacineSistemaBack.Models
 
         public Guid MemberId { get; set; }
 
-        [ForeignKey("MemberId")]
-        public virtual Member Member { get; set; } = null!;
-
         public int ShotsTaken { get; set; }
 
         public int ShotsHit { get; set; }

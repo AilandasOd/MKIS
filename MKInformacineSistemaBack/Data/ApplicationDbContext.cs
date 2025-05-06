@@ -7,15 +7,20 @@ namespace MKInformacineSistemaBack.Data
 {
     public class ApplicationDbContext : IdentityDbContext<User>
     {
-        public DbSet<Polygon> Polygons { get; set; }
         public DbSet<Club> Clubs { get; set; }
-        public DbSet<Session> Sessions { get; set; }
-        public DbSet<HuntingArea> HuntingAreas { get; set; }
-        public DbSet<Member> Members { get; set; }
+        public DbSet<ClubMembership> ClubMemberships { get; set; }
         public DbSet<DrivenHunt> DrivenHunts { get; set; }
         public DbSet<DrivenHuntParticipant> DrivenHuntParticipants { get; set; }
         public DbSet<HuntedAnimal> HuntedAnimals { get; set; }
-        public DbSet<ClubMembership> ClubMemberships { get; set; }
+        public DbSet<BloodTest> BloodTests { get; set; }
+        public DbSet<BloodTestParticipant> BloodTestParticipants { get; set; }
+        public DbSet<HuntingArea> HuntingAreas { get; set; }
+        public DbSet<Polygon> Polygons { get; set; }
+        public DbSet<Session> Sessions { get; set; }
+        public DbSet<ClubStatistics> ClubStatistics { get; set; }
+        public DbSet<UserStatistics> UserStatistics { get; set; }
+        public DbSet<Post> Posts { get; set; }
+
 
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
             : base(options) { }
@@ -32,25 +37,12 @@ namespace MKInformacineSistemaBack.Data
             modelBuilder.Entity<User>()
                 .Property(u => u.LastName)
                 .HasMaxLength(100);
-
-            // Configure the Member - User relationship
-            modelBuilder.Entity<Member>()
-                .HasOne(m => m.User)
-                .WithOne()
-                .HasForeignKey<Member>(m => m.UserId)
-                .OnDelete(DeleteBehavior.Cascade);
-
+          
             modelBuilder.Entity<ClubMembership>()
             .HasOne(cm => cm.Club)
             .WithMany(c => c.Memberships)
             .HasForeignKey(cm => cm.ClubId)
             .OnDelete(DeleteBehavior.Cascade);
-
-            modelBuilder.Entity<ClubMembership>()
-                .HasOne(cm => cm.Member)
-                .WithMany()
-                .HasForeignKey(cm => cm.MemberId)
-                .OnDelete(DeleteBehavior.Cascade);
 
             modelBuilder.Entity<DrivenHunt>()
            .HasOne(dh => dh.Club)

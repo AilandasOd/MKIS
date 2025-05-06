@@ -1,4 +1,5 @@
 ﻿// ClubMembership.cs
+using MKInformacineSistemaBack.Auth.Models;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
@@ -13,9 +14,9 @@ namespace MKInformacineSistemaBack.Models
         [ForeignKey("ClubId")]
         public virtual Club Club { get; set; } = null!;
 
-        public Guid MemberId { get; set; }
-        [ForeignKey("MemberId")]
-        public virtual Member Member { get; set; } = null!;
+        public string UserId { get; set; }
+        [ForeignKey("UserId")]
+        public virtual User User { get; set; } = null!;
 
         public string Role { get; set; } = "Member"; // Can be "Member", "Admin", "Owner"
         public DateTime JoinDate { get; set; } = DateTime.UtcNow;
