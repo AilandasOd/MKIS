@@ -109,6 +109,73 @@ namespace MKInformacineSistemaBack.Migrations
                     b.ToTable("AspNetUsers", (string)null);
                 });
 
+            modelBuilder.Entity("MKInformacineSistemaBack.Models.BloodTest", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("AnimalType")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<int>("ClubId")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime?>("CompletedDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime>("DateHunted")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("TestName")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("TestStartDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ClubId");
+
+                    b.ToTable("BloodTests");
+                });
+
+            modelBuilder.Entity("MKInformacineSistemaBack.Models.BloodTestParticipant", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("BloodTestId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("BloodTestId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("BloodTestParticipants");
+                });
+
             modelBuilder.Entity("MKInformacineSistemaBack.Models.Club", b =>
                 {
                     b.Property<int>("Id")
@@ -180,13 +247,64 @@ namespace MKInformacineSistemaBack.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("text");
+
                     b.HasKey("Id");
 
                     b.HasIndex("ClubId");
 
-                    b.HasIndex("MemberId");
+                    b.HasIndex("UserId");
 
                     b.ToTable("ClubMemberships");
+                });
+
+            modelBuilder.Entity("MKInformacineSistemaBack.Models.ClubStatistics", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("ActiveMembersCount")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("AnimalsHuntedJson")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<int>("ClubId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("CompletedDrivenHunts")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime>("LastUpdated")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("TopHuntersJson")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<int>("TotalDrivenHunts")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("TotalShotsHit")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("TotalShotsTaken")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("Year")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ClubId");
+
+                    b.ToTable("ClubStatistics");
                 });
 
             modelBuilder.Entity("MKInformacineSistemaBack.Models.DrivenHunt", b =>
@@ -245,20 +363,21 @@ namespace MKInformacineSistemaBack.Migrations
                     b.Property<int>("DrivenHuntId")
                         .HasColumnType("integer");
 
-                    b.Property<Guid>("MemberId")
-                        .HasColumnType("uuid");
-
                     b.Property<int>("ShotsHit")
                         .HasColumnType("integer");
 
                     b.Property<int>("ShotsTaken")
                         .HasColumnType("integer");
 
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("text");
+
                     b.HasKey("Id");
 
                     b.HasIndex("DrivenHuntId");
 
-                    b.HasIndex("MemberId");
+                    b.HasIndex("UserId");
 
                     b.ToTable("DrivenHuntParticipants");
                 });
@@ -343,6 +462,55 @@ namespace MKInformacineSistemaBack.Migrations
                     b.ToTable("Polygons");
                 });
 
+            modelBuilder.Entity("MKInformacineSistemaBack.Models.Post", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("AnimalType")
+                        .HasColumnType("text");
+
+                    b.Property<string>("AuthorId")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<int>("ClubId")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<DateTime?>("HuntedDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("ImageUrl")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Type")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AuthorId");
+
+                    b.HasIndex("ClubId");
+
+                    b.ToTable("Posts");
+                });
+
             modelBuilder.Entity("MKInformacineSistemaBack.Models.Session", b =>
                 {
                     b.Property<Guid>("Id")
@@ -373,43 +541,53 @@ namespace MKInformacineSistemaBack.Migrations
                     b.ToTable("Sessions");
                 });
 
-            modelBuilder.Entity("Member", b =>
+            modelBuilder.Entity("MKInformacineSistemaBack.Models.UserStatistics", b =>
                 {
-                    b.Property<Guid>("Id")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<int>("Activity")
                         .HasColumnType("integer");
 
-                    b.Property<DateTime>("BirthDate")
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("ActivityPercentage")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("AnimalsHuntedJson")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<int>("ClubId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("DrivenHuntsLed")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("DrivenHuntsParticipated")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime>("LastUpdated")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<DateTime>("HuntingSince")
-                        .HasColumnType("timestamp with time zone");
+                    b.Property<int>("ShotsHit")
+                        .HasColumnType("integer");
 
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("Photo")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("Status")
-                        .IsRequired()
-                        .HasColumnType("text");
+                    b.Property<int>("ShotsTaken")
+                        .HasColumnType("integer");
 
                     b.Property<string>("UserId")
                         .IsRequired()
                         .HasColumnType("text");
 
+                    b.Property<int>("Year")
+                        .HasColumnType("integer");
+
                     b.HasKey("Id");
 
-                    b.HasIndex("UserId")
-                        .IsUnique();
+                    b.HasIndex("ClubId");
 
-                    b.ToTable("Members");
+                    b.HasIndex("UserId");
+
+                    b.ToTable("UserStatistics");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>
@@ -544,6 +722,36 @@ namespace MKInformacineSistemaBack.Migrations
                     b.ToTable("AspNetUserTokens", (string)null);
                 });
 
+            modelBuilder.Entity("MKInformacineSistemaBack.Models.BloodTest", b =>
+                {
+                    b.HasOne("MKInformacineSistemaBack.Models.Club", "Club")
+                        .WithMany("BloodTests")
+                        .HasForeignKey("ClubId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Club");
+                });
+
+            modelBuilder.Entity("MKInformacineSistemaBack.Models.BloodTestParticipant", b =>
+                {
+                    b.HasOne("MKInformacineSistemaBack.Models.BloodTest", "BloodTest")
+                        .WithMany("Participants")
+                        .HasForeignKey("BloodTestId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("MKInformacineSistemaBack.Auth.Models.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("BloodTest");
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("MKInformacineSistemaBack.Models.ClubMembership", b =>
                 {
                     b.HasOne("MKInformacineSistemaBack.Models.Club", "Club")
@@ -552,15 +760,26 @@ namespace MKInformacineSistemaBack.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("Member", "Member")
-                        .WithMany()
-                        .HasForeignKey("MemberId")
+                    b.HasOne("MKInformacineSistemaBack.Auth.Models.User", "User")
+                        .WithMany("ClubMemberships")
+                        .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("Club");
 
-                    b.Navigation("Member");
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("MKInformacineSistemaBack.Models.ClubStatistics", b =>
+                {
+                    b.HasOne("MKInformacineSistemaBack.Models.Club", "Club")
+                        .WithMany("Statistics")
+                        .HasForeignKey("ClubId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Club");
                 });
 
             modelBuilder.Entity("MKInformacineSistemaBack.Models.DrivenHunt", b =>
@@ -590,15 +809,15 @@ namespace MKInformacineSistemaBack.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("Member", "Member")
-                        .WithMany()
-                        .HasForeignKey("MemberId")
+                    b.HasOne("MKInformacineSistemaBack.Auth.Models.User", "User")
+                        .WithMany("HuntParticipations")
+                        .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("DrivenHunt");
 
-                    b.Navigation("Member");
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("MKInformacineSistemaBack.Models.HuntedAnimal", b =>
@@ -634,6 +853,25 @@ namespace MKInformacineSistemaBack.Migrations
                     b.Navigation("Club");
                 });
 
+            modelBuilder.Entity("MKInformacineSistemaBack.Models.Post", b =>
+                {
+                    b.HasOne("MKInformacineSistemaBack.Auth.Models.User", "Author")
+                        .WithMany("Posts")
+                        .HasForeignKey("AuthorId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("MKInformacineSistemaBack.Models.Club", "Club")
+                        .WithMany("Posts")
+                        .HasForeignKey("ClubId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Author");
+
+                    b.Navigation("Club");
+                });
+
             modelBuilder.Entity("MKInformacineSistemaBack.Models.Session", b =>
                 {
                     b.HasOne("MKInformacineSistemaBack.Auth.Models.User", "User")
@@ -645,13 +883,21 @@ namespace MKInformacineSistemaBack.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("Member", b =>
+            modelBuilder.Entity("MKInformacineSistemaBack.Models.UserStatistics", b =>
                 {
-                    b.HasOne("MKInformacineSistemaBack.Auth.Models.User", "User")
-                        .WithOne()
-                        .HasForeignKey("Member", "UserId")
+                    b.HasOne("MKInformacineSistemaBack.Models.Club", "Club")
+                        .WithMany()
+                        .HasForeignKey("ClubId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.HasOne("MKInformacineSistemaBack.Auth.Models.User", "User")
+                        .WithMany("Statistics")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Club");
 
                     b.Navigation("User");
                 });
@@ -707,8 +953,26 @@ namespace MKInformacineSistemaBack.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("MKInformacineSistemaBack.Auth.Models.User", b =>
+                {
+                    b.Navigation("ClubMemberships");
+
+                    b.Navigation("HuntParticipations");
+
+                    b.Navigation("Posts");
+
+                    b.Navigation("Statistics");
+                });
+
+            modelBuilder.Entity("MKInformacineSistemaBack.Models.BloodTest", b =>
+                {
+                    b.Navigation("Participants");
+                });
+
             modelBuilder.Entity("MKInformacineSistemaBack.Models.Club", b =>
                 {
+                    b.Navigation("BloodTests");
+
                     b.Navigation("DrivenHunts");
 
                     b.Navigation("HuntingAreas");
@@ -716,6 +980,10 @@ namespace MKInformacineSistemaBack.Migrations
                     b.Navigation("Memberships");
 
                     b.Navigation("Polygons");
+
+                    b.Navigation("Posts");
+
+                    b.Navigation("Statistics");
                 });
 
             modelBuilder.Entity("MKInformacineSistemaBack.Models.DrivenHunt", b =>

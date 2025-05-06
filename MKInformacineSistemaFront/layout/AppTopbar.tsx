@@ -32,7 +32,7 @@ const AppTopbar = forwardRef<AppTopbarRef>((props, ref) => {
             </button>
 
             {/* Add Club Selector */}
-            <div className="flex-grow-1 flex justify-content-center">
+            <div className="layout-topbar-right">
                 <ClubSelector />
             </div>
 
