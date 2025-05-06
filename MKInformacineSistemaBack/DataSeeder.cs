@@ -503,42 +503,33 @@ namespace MKInformacineSistemaBack.Server
 
             // Now add participants to completed hunts
             var completedHunts = drivenHunts.Where(h => h.IsCompleted).ToList();
+            await _context.DrivenHuntParticipants.AddRangeAsync(participants);
+            await _context.SaveChangesAsync();
+
+            // After saving participants, create and link animals directly
             foreach (var hunt in completedHunts)
             {
-                var clubMembers = memberships.Where(m => m.ClubId == hunt.ClubId && m.IsActive).ToList();
-                int participantCount = _random.Next(3, clubMembers.Count + 1);
+                var huntParticipants = await _context.DrivenHuntParticipants
+                    .Where(p => p.DrivenHuntId == hunt.Id)
+                    .ToListAsync();
 
-                // Shuffle members
-                var shuffledMembers = clubMembers.OrderBy(x => _random.Next()).Take(participantCount).ToList();
-
-                foreach (var member in shuffledMembers)
+                foreach (var participant in huntParticipants)
                 {
-                    var shotsTaken = _random.Next(0, 10);
-                    var shotsHit = _random.Next(0, shotsTaken + 1);
-
-                    var participant = new DrivenHuntParticipant
+                    // Only add animals for participants with successful shots and randomly
+                    if (participant.ShotsHit > 0 && _random.Next(0, 3) == 0)
                     {
-                        DrivenHuntId = hunt.Id,
-                        UserId = member.UserId,
-                        ShotsTaken = shotsTaken,
-                        ShotsHit = shotsHit
-                    };
-                    participants.Add(participant);
-
-                    // Add hunted animals for some participants randomly
-                    if (_random.Next(0, 3) == 0 && shotsHit > 0)
-                    {
-                        var animalCount = _random.Next(1, shotsHit + 1);
+                        var animalCount = _random.Next(1, participant.ShotsHit + 1);
                         var animal = new HuntedAnimal
                         {
-                            ParticipantId = 0, // Will be set after participants are saved
+                            ParticipantId = participant.Id, // Use the actual ID
                             AnimalType = GetRandomAnimalType(),
                             Count = animalCount
                         };
-                        animals.Add(animal);
+                        _context.HuntedAnimals.Add(animal);
                     }
                 }
             }
+            await _context.SaveChangesAsync();
 
             // Add some participants to upcoming hunts
             var upcomingHunts = drivenHunts.Where(h => !h.IsCompleted).ToList();
