@@ -14,9 +14,11 @@ namespace MKInformacineSistemaBack.Models
         [ForeignKey("ClubId")]
         public virtual Club Club { get; set; } = null!;
 
-        public string UserId { get; set; }
+        public string UserId { get; set; } = string.Empty;
         [ForeignKey("UserId")]
         public virtual User User { get; set; } = null!;
+
+        public Guid MemberId { get; set; } // Keep this for backward compatibility
 
         public string Role { get; set; } = "Member"; // Can be "Member", "Admin", "Owner"
         public DateTime JoinDate { get; set; } = DateTime.UtcNow;

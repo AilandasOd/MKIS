@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using MKInformacineSistemaBack.Auth.Models;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace MKInformacineSistemaBack.Models
@@ -13,7 +14,11 @@ namespace MKInformacineSistemaBack.Models
         [ForeignKey("DrivenHuntId")]
         public virtual DrivenHunt DrivenHunt { get; set; } = null!;
 
-        public Guid MemberId { get; set; }
+        // Changed from MemberId to UserId
+        public string UserId { get; set; } = string.Empty;
+
+        [ForeignKey("UserId")]
+        public virtual User User { get; set; } = null!;
 
         public int ShotsTaken { get; set; }
 

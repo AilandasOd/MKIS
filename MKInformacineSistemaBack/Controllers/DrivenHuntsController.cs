@@ -197,19 +197,20 @@ namespace MKInformacineSistemaBack.Controllers
         }
 
         [HttpPost("{huntId}/participants")]
-        public async Task<IActionResult> AddParticipant(int huntId, [FromBody] Guid memberId, [FromQuery] int clubId)
+        public async Task<IActionResult> AddParticipant(int huntId, [FromBody] string userId, [FromQuery] int clubId)
         {
             // Check if user is member of this club with admin/owner privileges
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            var currentMember = await _context.Members.FirstOrDefaultAsync(m => m.UserId == userId);
+            var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
-            if (currentMember == null)
+            // Check if the current user is a member of this club
+            var currentUserMembership = await _context.ClubMemberships
+                .FirstOrDefaultAsync(cm => cm.ClubId == clubId && cm.UserId == currentUserId && cm.IsActive);
+
+            if (currentUserMembership == null)
                 return Unauthorized("User is not a member");
 
-            var membership = await _context.ClubMemberships
-                .FirstOrDefaultAsync(cm => cm.ClubId == clubId && cm.MemberId == currentMember.Id && cm.IsActive);
-
-            if (membership == null || (membership.Role != "Admin" && membership.Role != "Owner"))
+            // Check if current user has admin or owner privileges
+            if (currentUserMembership.Role != "Admin" && currentUserMembership.Role != "Owner")
                 return Forbid("User does not have permission to add participants");
 
             // Check if hunt exists and belongs to this club
@@ -219,26 +220,26 @@ namespace MKInformacineSistemaBack.Controllers
             if (hunt == null)
                 return NotFound("Hunt not found or does not belong to this club");
 
-            // Check if the member being added is part of this club
+            // Check if the user being added is part of this club
             var memberToAdd = await _context.ClubMemberships
-                .FirstOrDefaultAsync(cm => cm.ClubId == clubId && cm.MemberId == memberId && cm.IsActive);
+                .FirstOrDefaultAsync(cm => cm.ClubId == clubId && cm.UserId == userId && cm.IsActive);
 
             if (memberToAdd == null)
-                return BadRequest("Member is not part of this club");
+                return BadRequest("User is not part of this club");
 
-            // Check if the member is already a participant
+            // Check if the user is already a participant
             var exists = await _context.DrivenHuntParticipants
-                .AnyAsync(p => p.DrivenHuntId == huntId && p.MemberId == memberId);
+                .AnyAsync(p => p.DrivenHuntId == huntId && p.UserId == userId);
 
             if (exists)
             {
-                return BadRequest("Member is already a participant");
+                return BadRequest("User is already a participant");
             }
 
             _context.DrivenHuntParticipants.Add(new DrivenHuntParticipant
             {
                 DrivenHuntId = huntId,
-                MemberId = memberId,
+                UserId = userId,
                 ShotsTaken = 0,
                 ShotsHit = 0
             });

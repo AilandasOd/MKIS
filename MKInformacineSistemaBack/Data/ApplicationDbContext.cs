@@ -37,40 +37,71 @@ namespace MKInformacineSistemaBack.Data
             modelBuilder.Entity<User>()
                 .Property(u => u.LastName)
                 .HasMaxLength(100);
-          
+
+            // ClubMembership relationship with Club
             modelBuilder.Entity<ClubMembership>()
-            .HasOne(cm => cm.Club)
-            .WithMany(c => c.Memberships)
-            .HasForeignKey(cm => cm.ClubId)
-            .OnDelete(DeleteBehavior.Cascade);
+                .HasOne(cm => cm.Club)
+                .WithMany(c => c.Memberships)
+                .HasForeignKey(cm => cm.ClubId)
+                .OnDelete(DeleteBehavior.Cascade);
 
+            // ClubMembership relationship with User
+            modelBuilder.Entity<ClubMembership>()
+                .HasOne(cm => cm.User)
+                .WithMany(u => u.ClubMemberships)
+                .HasForeignKey(cm => cm.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // DrivenHuntParticipant relationship with User
+            modelBuilder.Entity<DrivenHuntParticipant>()
+                .HasOne(p => p.User)
+                .WithMany(u => u.HuntParticipations)
+                .HasForeignKey(p => p.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // DrivenHunt relationship with Club
             modelBuilder.Entity<DrivenHunt>()
-           .HasOne(dh => dh.Club)
-           .WithMany(c => c.DrivenHunts)
-           .HasForeignKey(dh => dh.ClubId)
-           .OnDelete(DeleteBehavior.Cascade);
+                .HasOne(dh => dh.Club)
+                .WithMany(c => c.DrivenHunts)
+                .HasForeignKey(dh => dh.ClubId)
+                .OnDelete(DeleteBehavior.Cascade);
 
+            // HuntingArea relationship with Club
             modelBuilder.Entity<HuntingArea>()
-            .HasOne(ha => ha.Club)
-            .WithMany(c => c.HuntingAreas)
-            .HasForeignKey(ha => ha.ClubId)
-            .OnDelete(DeleteBehavior.Cascade);
+                .HasOne(ha => ha.Club)
+                .WithMany(c => c.HuntingAreas)
+                .HasForeignKey(ha => ha.ClubId)
+                .OnDelete(DeleteBehavior.Cascade);
 
-            // Existing configurations...
             // Configure spatial column for Club
             modelBuilder.Entity<Club>()
                 .Property(c => c.HuntingAreaLocation)
                 .HasColumnType("geometry (Point, 4326)");
 
+            // Polygon relationship with Club
             modelBuilder.Entity<Polygon>()
                 .Property(p => p.CoordinatesJson)
                 .HasColumnType("json"); // PostgreSQL supports this
 
             modelBuilder.Entity<Polygon>()
-            .HasOne(p => p.Club)
-            .WithMany(c => c.Polygons)
-            .HasForeignKey(p => p.ClubId)
-            .OnDelete(DeleteBehavior.Cascade);
+                .HasOne(p => p.Club)
+                .WithMany(c => c.Polygons)
+                .HasForeignKey(p => p.ClubId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // Add relationship between Post and Author (User)
+            modelBuilder.Entity<Post>()
+                .HasOne(p => p.Author)
+                .WithMany(u => u.Posts)
+                .HasForeignKey(p => p.AuthorId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // Add relationship between Post and Club
+            modelBuilder.Entity<Post>()
+                .HasOne(p => p.Club)
+                .WithMany(c => c.Posts)
+                .HasForeignKey(p => p.ClubId)
+                .OnDelete(DeleteBehavior.Cascade);
         }
     }
 }
