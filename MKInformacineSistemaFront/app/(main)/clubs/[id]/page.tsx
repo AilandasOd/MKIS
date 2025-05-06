@@ -2,16 +2,10 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { Card } from 'primereact/card';
-import { TabView, TabPanel } from 'primereact/tabview';
-import { DataTable } from 'primereact/datatable';
-import { Column } from 'primereact/column';
 import { Button } from 'primereact/button';
 import { Dialog } from 'primereact/dialog';
 import { Toast } from 'primereact/toast';
 import { useClub } from '../../../../context/ClubContext';
-import { Avatar } from 'primereact/avatar';
-import { Tag } from 'primereact/tag';
-import { Dropdown } from 'primereact/dropdown';
 
 interface ClubDetails {
   id: number;
@@ -40,9 +34,6 @@ const ClubDetailsPage = () => {
   const [club, setClub] = useState<ClubDetails | null>(null);
   const [loading, setLoading] = useState(true);
   const [leaveDialog, setLeaveDialog] = useState(false);
-  const [selectedMember, setSelectedMember] = useState<Member | null>(null);
-  const [changeRoleDialog, setChangeRoleDialog] = useState(false);
-  const [selectedRole, setSelectedRole] = useState<string>('');
   const [removing, setRemoving] = useState(false);
   
   const toast = useRef<Toast>(null);
@@ -237,145 +228,6 @@ const ClubDetailsPage = () => {
     }
   };
 
-  const openChangeRoleDialog = (member: Member) => {
-    setSelectedMember(member);
-    setSelectedRole(member.role);
-    setChangeRoleDialog(true);
-  };
-
-  const handleChangeRole = async () => {
-    if (!selectedMember || !selectedRole) return;
-    
-    try {
-      const response = await fetch(`https://localhost:7091/api/Clubs/members/${selectedMember.id}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${sessionStorage.getItem('accessToken')}`
-        },
-        body: JSON.stringify(selectedRole)
-      });
-      
-      if (response.ok) {
-        toast.current?.show({ severity: 'success', summary: 'Success', detail: 'Member role updated', life: 3000 });
-        setChangeRoleDialog(false);
-        
-        // Update local state
-        if (club) {
-          const updatedMembers = club.members.map(m => 
-            m.id === selectedMember.id ? { ...m, role: selectedRole } : m
-          );
-          
-          setClub({
-            ...club,
-            members: updatedMembers
-          });
-        }
-      } else {
-        const errorText = await response.text();
-        throw new Error(errorText || 'Failed to update role');
-      }
-    } catch (error) {
-      console.error('Error updating role:', error);
-      toast.current?.show({ 
-        severity: 'error', 
-        summary: 'Error', 
-        detail: error instanceof Error ? error.message : 'Failed to update role', 
-        life: 3000 
-      });
-    }
-  };
-
-  const handleRemoveMember = async (memberId: string) => {
-    try {
-      const response = await fetch(`https://localhost:7091/api/Clubs/members/${memberId}`, {
-        method: 'DELETE',
-        headers: {
-          'Authorization': `Bearer ${sessionStorage.getItem('accessToken')}`
-        }
-      });
-      
-      if (response.ok) {
-        toast.current?.show({ severity: 'success', summary: 'Success', detail: 'Member removed from club', life: 3000 });
-        
-        // Update local state
-        if (club) {
-          const updatedMembers = club.members.filter(m => m.id !== memberId);
-          
-          setClub({
-            ...club,
-            members: updatedMembers,
-            membersCount: updatedMembers.length
-          });
-        }
-      } else {
-        const errorText = await response.text();
-        throw new Error(errorText || 'Failed to remove member');
-      }
-    } catch (error) {
-      console.error('Error removing member:', error);
-      toast.current?.show({ 
-        severity: 'error', 
-        summary: 'Error', 
-        detail: error instanceof Error ? error.message : 'Failed to remove member', 
-        life: 3000 
-      });
-    }
-  };
-
-  const roleBadge = (role: string) => {
-    let severity: 'success' | 'info' | 'warning' | 'danger' = 'info';
-    
-    switch (role) {
-      case 'Owner':
-        severity = 'danger';
-        break;
-      case 'Admin':
-        severity = 'warning';
-        break;
-      case 'Member':
-        severity = 'success';
-        break;
-    }
-    
-    return <Tag value={role} severity={severity} />;
-  };
-
-  const memberActionTemplate = (rowData: Member) => {
-    // Find current user's role in the club
-    const currentUserMember = club?.members.find(m => 
-      m.role === 'Owner' || m.role === 'Admin'
-    );
-    
-    if (!currentUserMember) return null;
-    
-    // Check if current user has permissions to change roles or remove members
-    const isCurrentUserOwner = currentUserMember.role === 'Owner';
-    const isCurrentUserAdmin = currentUserMember.role === 'Admin';
-    
-    const canManage = isCurrentUserOwner || 
-      (isCurrentUserAdmin && rowData.role !== 'Owner');
-    
-    if (!canManage) return null;
-    
-    return (
-      <div className="flex gap-2">
-        <Button 
-          icon="pi pi-user-edit" 
-          className="p-button-rounded p-button-text" 
-          onClick={() => openChangeRoleDialog(rowData)}
-          tooltip="Change Role" 
-        />
-        <Button 
-          icon="pi pi-trash" 
-          className="p-button-rounded p-button-text p-button-danger" 
-          onClick={() => handleRemoveMember(rowData.id)}
-          tooltip="Remove from Club" 
-        />
-      </div>
-    );
-  };
-
   // Handle loading state
   if (loading) {
     return (
@@ -465,80 +317,47 @@ const ClubDetailsPage = () => {
         />
       </div>
       
-      <TabView onTabChange={(e) => {
-          // Force map to resize when tab is changed, to fix rendering issues
-          if (e.index === 0 && mapInstanceRef.current) {
-            setTimeout(() => {
-              google.maps.event.trigger(mapInstanceRef.current, 'resize');
-              if (club?.huntingAreaLocation && mapInstanceRef.current) {
-                mapInstanceRef.current.setCenter({ 
-                  lat: club.huntingAreaLocation[1], 
-                  lng: club.huntingAreaLocation[0] 
-                });
-              }
-            }, 50);
-          }
-        }}>
-        <TabPanel header="About">
-          <div className="grid">
-            <div className="col-12 md:col-8">
-              <Card className="h-full">
-                <h3 className="text-xl font-semibold mb-3">Description</h3>
-                <p className="whitespace-pre-line">{club.description || 'No description provided.'}</p>
-                
-                <h3 className="text-xl font-semibold mt-4 mb-3">Contact Information</h3>
-                <p><strong>Address:</strong> {club.residenceAddress}</p>
-                {club.contactEmail && <p><strong>Email:</strong> {club.contactEmail}</p>}
-                {club.contactPhone && <p><strong>Phone:</strong> {club.contactPhone}</p>}
-              </Card>
-            </div>
+      <div className="grid">
+        <div className="col-12 md:col-8">
+          <Card className="h-full">
+            <h3 className="text-xl font-semibold mb-3">Description</h3>
+            <p className="whitespace-pre-line">{club.description || 'No description provided.'}</p>
             
-            <div className="col-12 md:col-4">
-              <Card className="h-full">
-                <h3 className="text-xl font-semibold mb-3">Location</h3>
-                {hasLocationData ? (
-                  <div ref={mapRef} style={{ width: '100%', height: '300px', borderRadius: '8px' }} />
-                ) : (
-                  <p className="text-gray-500 italic">No location data available for this club.</p>
-                )}
-              </Card>
-            </div>
-          </div>
-        </TabPanel>
-        
-        <TabPanel header="Members">
-          <Card>
-            <DataTable 
-              value={club.members} 
-              paginator 
-              rows={10} 
-              rowsPerPageOptions={[5, 10, 25]} 
-              sortField="role" 
-              sortOrder={-1}
-            >
-              <Column 
-                header="Member" 
-                body={(rowData) => (
-                  <div className="flex align-items-center gap-3">
-                    {rowData.avatarPhoto ? (
-                      <img 
-                        src={`https://localhost:7091${rowData.avatarPhoto}`} 
-                        alt={rowData.name} 
-                        style={{ width: '32px', height: '32px', borderRadius: '50%', objectFit: 'cover' }} 
-                      />
-                    ) : (
-                      <Avatar icon="pi pi-user" style={{ width: '32px', height: '32px' }} />
-                    )}
-                    <span>{rowData.name}</span>
-                  </div>
-                )} 
-              />
-              <Column field="role" header="Role" body={(rowData) => roleBadge(rowData.role)} sortable />
-              <Column body={memberActionTemplate} style={{ width: '120px' }} />
-            </DataTable>
+            <h3 className="text-xl font-semibold mt-4 mb-3">Contact Information</h3>
+            <p><strong>Address:</strong> {club.residenceAddress}</p>
+            {club.contactEmail && <p><strong>Email:</strong> {club.contactEmail}</p>}
+            {club.contactPhone && <p><strong>Phone:</strong> {club.contactPhone}</p>}
+            
+            {/* Admin link - only visible to admins and owners */}
+            {club.members.some(m => 
+                (m.role === 'Admin' || m.role === 'Owner') && 
+                m.id === club.members.find(m => m.role === 'Owner' || m.role === 'Admin')?.id
+              ) && (
+              <div className="mt-4 pt-3 border-top-1 border-300">
+                <Button 
+                  label="Manage Members" 
+                  icon="pi pi-users" 
+                  onClick={() => router.push('/admin/members')} 
+                  severity="secondary"
+                  outlined
+                  className="mr-2"
+                />
+              </div>
+            )}
           </Card>
-        </TabPanel>
-      </TabView>
+        </div>
+        
+        <div className="col-12 md:col-4">
+          <Card className="h-full">
+            <h3 className="text-xl font-semibold mb-3">Location</h3>
+            {hasLocationData ? (
+              <div ref={mapRef} style={{ width: '100%', height: '300px', borderRadius: '8px' }} />
+            ) : (
+              <p className="text-gray-500 italic">No location data available for this club.</p>
+            )}
+          </Card>
+        </div>
+      </div>
       
       {/* Leave Club Dialog */}
       <Dialog 
@@ -567,40 +386,6 @@ const ClubDetailsPage = () => {
           <i className="pi pi-exclamation-triangle text-3xl text-yellow-500" />
           <p>Are you sure you want to leave <strong>{club.name}</strong>? You will need to be invited back to rejoin the club.</p>
         </div>
-      </Dialog>
-      
-      {/* Change Role Dialog */}
-      <Dialog 
-        visible={changeRoleDialog} 
-        onHide={() => setChangeRoleDialog(false)} 
-        header="Change Member Role" 
-        footer={
-          <div>
-            <Button 
-              label="Cancel" 
-              icon="pi pi-times" 
-              onClick={() => setChangeRoleDialog(false)} 
-              className="p-button-text" 
-            />
-            <Button 
-              label="Save" 
-              icon="pi pi-check" 
-              onClick={handleChangeRole}
-            />
-          </div>
-        }
-      >
-        {selectedMember && (
-          <div>
-            <p>Change role for <strong>{selectedMember.name}</strong></p>
-            <Dropdown 
-              value={selectedRole} 
-              options={['Owner', 'Admin', 'Member']} 
-              onChange={(e) => setSelectedRole(e.value)} 
-              className="w-full mt-3" 
-            />
-          </div>
-        )}
       </Dialog>
     </div>
   );

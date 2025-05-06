@@ -2,14 +2,12 @@ import React, { useContext } from 'react';
 import AppMenuitem from './AppMenuitem';
 import { LayoutContext } from './context/layoutcontext';
 import { MenuProvider } from './context/menucontext';
-import { useAuth } from '../context/AuthContext'; // Import the auth hook
-import { useClub } from '../context/ClubContext'; // Add this import
+import { useClub } from '../context/ClubContext';
 import { AppMenuItem } from '@/types';
 
 const AppMenu = () => {
     const { layoutConfig } = useContext(LayoutContext);
-    const { hasRole } = useAuth(); // Get the hasRole function from auth context
-    const { selectedClub } = useClub(); // Get the selected club
+    const { selectedClub, isUserAdminInSelectedClub } = useClub();
 
     const clubId = selectedClub?.id || '';
 
@@ -49,12 +47,12 @@ const AppMenu = () => {
                 ] },
             ]
         },
-        // Only include the Administration section if user has Admin role
-        ...(hasRole('Admin') ? [
+        // Only include the Administration section if user has Admin or Owner role in the selected club
+        ...(isUserAdminInSelectedClub() ? [
             {
                 label: 'Administravimas',
                 items: [
-                    { label: 'Nariai', icon: 'pi pi-fw pi-users', to: '/admin/members' },
+                    { label: 'Klubo nariai', icon: 'pi pi-fw pi-users', to: '/admin/members' },
                     { label: 'Medžioklės plotų ribos žymėjimas', icon: 'pi pi-fw pi-share-alt', to: '/admin/areamap' },
                 ]
             }
