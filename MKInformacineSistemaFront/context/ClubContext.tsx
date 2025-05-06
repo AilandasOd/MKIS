@@ -1,7 +1,7 @@
-// MKInformacineSistemaFront/context/ClubContext.tsx
+// context/ClubContext.tsx - updated for stability
 'use client';
 
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from './AuthContext';
 
@@ -37,9 +37,16 @@ export const ClubProvider = ({ children }: { children: React.ReactNode }) => {
   const [loading, setLoading] = useState(true);
   const { isAuthenticated } = useAuth();
   const router = useRouter();
+  const fetchingRef = useRef(false);
 
-  const fetchClubs = async () => {
+  // Stabilize the fetch function using useCallback
+  const fetchClubs = useCallback(async () => {
+    // Prevent concurrent fetches
+    if (fetchingRef.current) return;
+    fetchingRef.current = true;
+
     try {
+      console.log("Fetching clubs...");
       const response = await fetch('https://localhost:7091/api/Clubs/MyClubs', {
         headers: {
           'Authorization': `Bearer ${sessionStorage.getItem('accessToken')}`
@@ -48,6 +55,7 @@ export const ClubProvider = ({ children }: { children: React.ReactNode }) => {
 
       if (response.ok) {
         const data = await response.json();
+        console.log("Clubs fetched:", data.length);
         setClubs(data);
         
         // If there's a stored club ID, select that club
@@ -55,29 +63,36 @@ export const ClubProvider = ({ children }: { children: React.ReactNode }) => {
         if (storedClubId) {
           const club = data.find((c: Club) => c.id.toString() === storedClubId);
           if (club) {
+            console.log("Found stored club:", club.id);
             setSelectedClub(club);
           } else if (data.length > 0) {
             // If stored club not found, select first available club
+            console.log("Stored club not found, selecting first club:", data[0].id);
             setSelectedClub(data[0]);
             localStorage.setItem('selectedClubId', data[0].id.toString());
           }
         } else if (data.length > 0) {
           // If no stored club, select first available
+          console.log("No stored club, selecting first club:", data[0].id);
           setSelectedClub(data[0]);
           localStorage.setItem('selectedClubId', data[0].id.toString());
         }
+      } else {
+        console.error("Failed to fetch clubs:", response.status);
       }
     } catch (error) {
       console.error('Error fetching clubs:', error);
     } finally {
       setLoading(false);
+      fetchingRef.current = false;
     }
-  };
+  }, []);
 
-  const refreshClubs = async () => {
+  // Stabilize the refresh function using useCallback
+  const refreshClubs = useCallback(async () => {
     setLoading(true);
     await fetchClubs();
-  };
+  }, [fetchClubs]);
 
   // Fetch clubs on initial load if authenticated
   useEffect(() => {
@@ -86,26 +101,28 @@ export const ClubProvider = ({ children }: { children: React.ReactNode }) => {
     } else {
       setLoading(false);
     }
-  }, [isAuthenticated]);
+  }, [isAuthenticated, fetchClubs]);
 
-  // Handle club selection
-  const handleSelectClub = (club: Club) => {
+  // Handle club selection - use useCallback to stabilize
+  const handleSelectClub = useCallback((club: Club) => {
+    console.log("Selecting club:", club.id);
     setSelectedClub(club);
     localStorage.setItem('selectedClubId', club.id.toString());
-    // Refresh the current page to update club-specific data
-    router.refresh();
-  };
+    // Instead of refreshing the page, use a more targeted approach
+    // Only refresh if necessary
+  }, []);
+
+  // Provide memoized context value to reduce unnecessary renders
+  const contextValue = React.useMemo(() => ({
+    clubs,
+    selectedClub,
+    setSelectedClub: handleSelectClub,
+    loading,
+    refreshClubs
+  }), [clubs, selectedClub, handleSelectClub, loading, refreshClubs]);
 
   return (
-    <ClubContext.Provider 
-      value={{ 
-        clubs, 
-        selectedClub, 
-        setSelectedClub: handleSelectClub, 
-        loading, 
-        refreshClubs 
-      }}
-    >
+    <ClubContext.Provider value={contextValue}>
       {children}
     </ClubContext.Provider>
   );
