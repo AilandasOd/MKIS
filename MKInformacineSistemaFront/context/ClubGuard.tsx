@@ -1,6 +1,4 @@
-// MKInformacineSistemaFront/context/ClubGuard.tsx
-'use client';
-
+// Create a new file: context/ClubGuard.tsx
 import React, { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useClub } from './ClubContext';
@@ -9,10 +7,6 @@ interface ClubGuardProps {
   children: React.ReactNode;
 }
 
-/**
- * A component that checks if the user is a member of at least one club
- * If not, redirects to the club browsing page
- */
 const ClubGuard: React.FC<ClubGuardProps> = ({ children }) => {
   const { clubs, loading } = useClub();
   const router = useRouter();
