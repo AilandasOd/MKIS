@@ -114,21 +114,12 @@ const Dashboard = () => {
   const renderPostItem = (post) => (
     <Card className="mb-4 p-3" key={post.id}>
       <div className="flex align-items-center mb-3 justify-content-between">
-        <div className="flex align-items-center">
-          <Avatar 
-            image={post.authorAvatarUrl ? `https://localhost:7091${post.authorAvatarUrl}` : null}
-            icon={!post.authorAvatarUrl ? "pi pi-user" : null}
-            shape="circle" 
-            size="large" 
-            className="mr-2" 
-          />
-          <div>
-            <div className="font-medium text-900">{post.authorName}</div>
-            <small className="text-600">{new Date(post.createdAt).toLocaleString()}</small>
-            {post.type === 'Sumedžiotas žvėris' && post.animalType && (
-              <small className="text-600 block">Žvėris: <strong>{post.animalType}</strong></small>
-            )}
-          </div>
+        <div>
+          <div className="font-medium text-900">{post.authorName}</div>
+          <small className="text-600">{new Date(post.createdAt).toLocaleString()}</small>
+          {post.type === 'Sumedžiotas žvėris' && post.animalType && (
+            <small className="text-600 block">Žvėris: <strong>{post.animalType}</strong></small>
+          )}
         </div>
         <Tag value={post.type} severity={post.type === 'Sumedžiotas žvėris' ? 'success' : 'info'} />
       </div>
@@ -161,7 +152,7 @@ const Dashboard = () => {
           <div className="card">
             <h5>Club Posts</h5>
             {posts && posts.length > 0 ? (
-              <div className="flex flex-column" style={{ maxHeight: '600px', overflowY: 'auto' }}>
+              <div className="flex flex-column" style={{ maxHeight: '650px', overflowY: 'auto' }}>
                 {posts.map((post) => renderPostItem(post))}
               </div>
             ) : (
@@ -192,7 +183,11 @@ const Dashboard = () => {
           <div className="card">
             <h5>Hunted Animals</h5>
             {statistics && statistics.animalsHunted && Object.keys(statistics.animalsHunted).length > 0 ? (
-              <Chart type="pie" data={chartData} />
+              <div className="flex justify-content-center">
+                <div style={{ width: '300px', height: '300px' }}>
+                  <Chart type="pie" data={chartData} />
+                </div>
+              </div>
             ) : (
               <div className="p-4 text-center">
                 <i className="pi pi-chart-pie text-3xl text-gray-300 mb-3"></i>
