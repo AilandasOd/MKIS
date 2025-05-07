@@ -191,6 +191,9 @@ namespace MKInformacineSistemaBack.Controllers
             if (test == null)
                 return NotFound();
 
+            // Get current status before update
+            string oldStatus = test.Status;
+
             // Update test
             test.TestName = dto.TestName;
             test.AnimalType = dto.AnimalType;
@@ -199,11 +202,42 @@ namespace MKInformacineSistemaBack.Controllers
             test.Status = dto.Status;
             test.Description = dto.Description;
 
-            // Only admin can update completion date
-            if (membership != null && dto.CompletedDate.HasValue)
-                test.CompletedDate = dto.CompletedDate;
+            // If status is changing to "Patvirtinta" (Completed), set the completion date
+            if (dto.Status == "Patvirtinta" && oldStatus != "Patvirtinta")
+            {
+                test.CompletedDate = DateTime.UtcNow;
+            }
+            else if (dto.Status != "Patvirtinta" && test.CompletedDate.HasValue)
+            {
+                // If status is changing from completed to something else, clear the completion date
+                test.CompletedDate = null;
+            }
 
             await _context.SaveChangesAsync();
+
+            // Now handle participants
+            if (dto.ParticipantIds != null && dto.ParticipantIds.Any())
+            {
+                // First, remove all existing participants
+                var existingParticipants = await _context.BloodTestParticipants
+                    .Where(p => p.BloodTestId == id)
+                    .ToListAsync();
+
+                _context.BloodTestParticipants.RemoveRange(existingParticipants);
+
+                // Add new participants
+                foreach (var participantId in dto.ParticipantIds)
+                {
+                    _context.BloodTestParticipants.Add(new BloodTestParticipant
+                    {
+                        BloodTestId = id,
+                        UserId = participantId
+                    });
+                }
+
+                await _context.SaveChangesAsync();
+            }
+
             return NoContent();
         }
 
@@ -393,7 +427,7 @@ namespace MKInformacineSistemaBack.Controllers
         public DateTime DateHunted { get; set; }
         public DateTime TestStartDate { get; set; }
         public string Status { get; set; } = string.Empty;
-        public DateTime? CompletedDate { get; set; }
         public string Description { get; set; } = string.Empty;
+        public List<string> ParticipantIds { get; set; } = new List<string>();
     }
 }

@@ -39,6 +39,7 @@ namespace MKInformacineSistemaBack.Server
             await SeedBloodTestsAsync();
             await SeedPostsAsync();
             await SeedStatisticsAsync();
+            await SeedMapObjectsAsync();
         }
 
         // Helper method to ensure all DateTimes are UTC
@@ -443,6 +444,59 @@ namespace MKInformacineSistemaBack.Server
             await _context.Polygons.AddRangeAsync(polygons);
             await _context.SaveChangesAsync();
         }
+
+        private async Task SeedMapObjectsAsync()
+        {
+            if (await _context.MapObjects.AnyAsync())
+                return;
+
+            var clubs = await _context.Clubs.ToListAsync();
+
+            foreach (var club in clubs)
+            {
+                // Add some example map objects for each club
+                var objects = new List<MapObject>
+        {
+            new MapObject
+            {
+                Name = "Šiaurinis bokštelis",
+                Type = "Tower",
+                CoordinatesJson = JsonSerializer.Serialize(new { Lat = 56.12057764750518, Lng = 23.349903007765427 }),
+                ClubId = club.Id,
+                CreatedAt = EnsureUtc(DateTime.UtcNow.AddDays(-10))
+            },
+            new MapObject
+            {
+                Name = "Rytinis bokštelis",
+                Type = "Tower",
+                CoordinatesJson = JsonSerializer.Serialize(new { Lat = 56.10857764750518, Lng = 23.359903007765427 }),
+                ClubId = club.Id,
+                CreatedAt = EnsureUtc(DateTime.UtcNow.AddDays(-9))
+            },
+            new MapObject
+            {
+                Name = "Centrinė šėrykla",
+                Type = "EatingZone",
+                CoordinatesJson = JsonSerializer.Serialize(new { Lat = 56.11057764750518, Lng = 23.351903007765427 }),
+                ClubId = club.Id,
+                CreatedAt = EnsureUtc(DateTime.UtcNow.AddDays(-8))
+            },
+            new MapObject
+            {
+                Name = "Šerno šėrykla",
+                Type = "EatingZone",
+                CoordinatesJson = JsonSerializer.Serialize(new { Lat = 56.11257764750518, Lng = 23.354903007765427 }),
+                ClubId = club.Id,
+                CreatedAt = EnsureUtc(DateTime.UtcNow.AddDays(-7))
+            }
+        };
+
+                await _context.MapObjects.AddRangeAsync(objects);
+            }
+
+            await _context.SaveChangesAsync();
+        }
+
 
         private async Task SeedDrivenHuntsAsync()
         {

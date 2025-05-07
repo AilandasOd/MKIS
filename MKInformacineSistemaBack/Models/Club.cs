@@ -26,6 +26,7 @@ namespace MKInformacineSistemaBack.Models
         public virtual ICollection<BloodTest> BloodTests { get; set; } = new List<BloodTest>();
         public virtual ICollection<ClubStatistics> Statistics { get; set; } = new List<ClubStatistics>();
         public virtual ICollection<Post> Posts { get; set; } = new List<Post>();
+        public virtual ICollection<MapObject> MapObjects { get; set; } = new List<MapObject>();
 
     }
 }

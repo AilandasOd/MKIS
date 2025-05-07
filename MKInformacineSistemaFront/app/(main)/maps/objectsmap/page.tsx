@@ -1,3 +1,4 @@
+// MKInformacineSistemaFront/app/(main)/maps/objectsmap/page.tsx
 'use client';
 import React, { useEffect, useRef, useState } from 'react';
 import { Dropdown } from 'primereact/dropdown';
@@ -5,8 +6,8 @@ import { Toast } from 'primereact/toast';
 import { Dialog } from 'primereact/dialog';
 import { InputText } from 'primereact/inputtext';
 import { Button } from 'primereact/button';
-
-const API_URL = 'https://localhost:7091/api/HuntingAreas';
+import { useClub } from '../../../../context/ClubContext';
+import ClubGuard from '../../../../context/ClubGuard';
 
 const TOWER_ICON = '/layout/images/Tower.png';
 const EATING_ICON = '/layout/images/Corn.png';
@@ -15,9 +16,20 @@ const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
 type MarkerType = 'Tower' | 'EatingZone';
 
 interface NamedMarker {
+  id?: number;
   marker: google.maps.Marker;
   type: MarkerType;
   name: string;
+}
+
+interface MapObject {
+  id: number;
+  name: string;
+  type: string;
+  coordinate: {
+    lat: number;
+    lng: number;
+  };
 }
 
 const MapWithCustomMarkers: React.FC = () => {
@@ -31,52 +43,133 @@ const MapWithCustomMarkers: React.FC = () => {
   const [newMarker, setNewMarker] = useState<google.maps.Marker | null>(null);
   const [nameInput, setNameInput] = useState('');
   const [isDrawingActive, setIsDrawingActive] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const { selectedClub } = useClub();
 
   const getIconForType = (type: MarkerType) => ({
     url: type === 'Tower' ? TOWER_ICON : EATING_ICON,
     scaledSize: new google.maps.Size(32, 32),
   });
 
-  const seedInitialMarkers = (mapInstance: google.maps.Map) => {
-    const baseLat = 56.1286255021102;
-    const baseLng = 23.34730337048632;
+  // Fetch map objects from API
+  useEffect(() => {
+    if (!selectedClub || !map) return;
 
-    const offsets = [
-      { lat: 0.001, lng: 0.001 },
-      { lat: -0.001, lng: -0.001 },
-      { lat: 0.0015, lng: -0.0012 },
-      { lat: -0.0013, lng: 0.0013 },
-    ];
+    const fetchMapObjects = async () => {
+      try {
+        const response = await fetch(`https://localhost:7091/api/MapObjects?clubId=${selectedClub.id}`, {
+          headers: {
+            'Authorization': `Bearer ${sessionStorage.getItem('accessToken')}`
+          }
+        });
 
-    const types: MarkerType[] = ['Tower', 'Tower', 'EatingZone', 'EatingZone'];
+        if (!response.ok) {
+          throw new Error(`Server returned ${response.status}`);
+        }
 
-    offsets.forEach((offset, index) => {
-      const position = { lat: baseLat + offset.lat, lng: baseLng + offset.lng };
-      const type = types[index];
-      const icon = getIconForType(type);
-      const marker = new google.maps.Marker({
-        position,
-        map: mapInstance,
-        icon,
-        draggable: false,
+        const objects: MapObject[] = await response.json();
+        
+        // Create markers for each object
+        const newMarkers: NamedMarker[] = [];
+        
+        objects.forEach(obj => {
+          const position = { lat: obj.coordinate.lat, lng: obj.coordinate.lng };
+          const type = obj.type as MarkerType;
+          const icon = getIconForType(type);
+          
+          const marker = new google.maps.Marker({
+            position,
+            map,
+            icon,
+            draggable: isDrawingActive,
+          });
+
+          const infoWindow = new google.maps.InfoWindow({
+            content: `<div style="color: black;"><strong>${obj.name}</strong></div>`,
+          });
+
+          marker.addListener('click', () => infoWindow.open(map, marker));
+          
+          // Add right-click to delete
+          marker.addListener('rightclick', () => {
+            if (isDrawingActive) {
+              handleDeleteMarker(marker, obj.id);
+            }
+          });
+
+          newMarkers.push({ 
+            id: obj.id,
+            marker, 
+            type, 
+            name: obj.name 
+          });
+        });
+        
+        setMarkers(newMarkers);
+      } catch (err) {
+        console.error("Error fetching map objects:", err);
+        toast.current?.show({
+          severity: 'error',
+          summary: 'Klaida',
+          detail: 'Nepavyko gauti objektų duomenų',
+          life: 3000,
+        });
+      }
+    };
+
+    fetchMapObjects();
+  }, [selectedClub, map, isDrawingActive]);
+
+  // Delete marker handler
+  const handleDeleteMarker = async (marker: google.maps.Marker, id?: number) => {
+    if (!id || !selectedClub) return;
+
+    try {
+      const response = await fetch(`https://localhost:7091/api/MapObjects/${id}?clubId=${selectedClub.id}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${sessionStorage.getItem('accessToken')}`
+        }
       });
 
-      const name = `${type === 'Tower' ? 'Bokštelis' : 'Šėrykla'} ${index + 1}`;
+      if (!response.ok) {
+        throw new Error(`Server returned ${response.status}`);
+      }
 
-      const infoWindow = new google.maps.InfoWindow({
-        content: `<div style="color: black;"><strong>${name}</strong></div>`,
+      // Remove marker from map and state
+      marker.setMap(null);
+      setMarkers(prev => prev.filter(m => m.marker !== marker));
+
+      toast.current?.show({
+        severity: 'info',
+        summary: 'Ištrinta',
+        detail: 'Žymeklis pašalintas',
+        life: 2000,
       });
-
-      marker.addListener('click', () => infoWindow.open(mapInstance, marker));
-
-      setMarkers(prev => [...prev, { marker, type, name }]);
-    });
+    } catch (err) {
+      console.error("Error deleting marker:", err);
+      toast.current?.show({
+        severity: 'error',
+        summary: 'Klaida',
+        detail: 'Nepavyko ištrinti žymeklio',
+        life: 3000,
+      });
+    }
   };
 
-  const drawHuntingArea = (mapInstance: google.maps.Map) => {
-    fetch(API_URL)
-      .then(res => res.json())
-      .then(data => {
+  const drawHuntingArea = async (mapInstance: google.maps.Map) => {
+    if (!selectedClub) return;
+    
+    try {
+      const res = await fetch(`https://localhost:7091/api/HuntingAreas?clubId=${selectedClub.id}`, {
+        headers: {
+          'Authorization': `Bearer ${sessionStorage.getItem('accessToken')}`
+        }
+      });
+      
+      if (res.ok) {
+        const data = await res.json();
+        
         if (!data.length) return;
         const area = data[0];
         const pathCoords = area.coordinates.map((c: any) => new google.maps.LatLng(c.lat, c.lng));
@@ -87,22 +180,10 @@ const MapWithCustomMarkers: React.FC = () => {
           strokeWeight: 3,
           map: mapInstance,
         });
-      });
-  };
-
-  const initMap = () => {
-    if (!mapRef.current) return;
-
-    const newMap = new google.maps.Map(mapRef.current, {
-      center: { lat: 56.10857764750518, lng: 23.349903007765427 },
-      zoom: 12,
-      mapTypeId: google.maps.MapTypeId.HYBRID,
-      streetViewControl: false,
-    });
-
-    setMap(newMap);
-    seedInitialMarkers(newMap);
-    drawHuntingArea(newMap);
+      }
+    } catch (error) {
+      console.error("Failed to fetch hunting area:", error);
+    }
   };
 
   const loadGoogleMapsScript = (): Promise<void> => {
@@ -128,26 +209,38 @@ const MapWithCustomMarkers: React.FC = () => {
     });
   };
 
-  useEffect(() => {
-    loadGoogleMapsScript().then(() => {
-      initMap();
-    });
-  }, []);
+  const initMap = async () => {
+    if (!mapRef.current || !selectedClub) return;
 
-  useEffect(() => {
-    if (map && isDrawingActive) {
-      if (drawingManager) drawingManager.setMap(null);
+    try {
+      // Create the map
+      const newMap = new google.maps.Map(mapRef.current, {
+        center: { lat: 56.10857764750518, lng: 23.349903007765427 },
+        zoom: 12,
+        mapTypeId: google.maps.MapTypeId.HYBRID,
+        streetViewControl: false,
+      });
 
+      setMap(newMap);
+      
+      // Draw hunting area boundary
+      await drawHuntingArea(newMap);
+
+      // Set up drawing manager
       const manager = new google.maps.drawing.DrawingManager({
-        drawingMode: google.maps.drawing.OverlayType.MARKER,
-        drawingControl: false,
+        drawingMode: null, // Start with no drawing mode
+        drawingControl: isDrawingActive,
+        drawingControlOptions: {
+          position: google.maps.ControlPosition.TOP_CENTER,
+          drawingModes: [google.maps.drawing.OverlayType.MARKER],
+        },
         markerOptions: {
           icon: getIconForType(selectedType),
           draggable: true,
         },
       });
 
-      manager.setMap(map);
+      manager.setMap(newMap);
       setDrawingManager(manager);
 
       google.maps.event.addListener(manager, 'overlaycomplete', (event: google.maps.drawing.OverlayCompleteEvent) => {
@@ -159,33 +252,135 @@ const MapWithCustomMarkers: React.FC = () => {
           setNameDialogVisible(true);
         }
       });
-    } else if (drawingManager) {
-      drawingManager.setMap(null);
+    } catch (err) {
+      console.error("Map initialization error:", err);
+      toast.current?.show({
+        severity: 'error',
+        summary: 'Klaida',
+        detail: 'Nepavyko inicializuoti žemėlapio',
+        life: 3000,
+      });
+    } finally {
+      setLoading(false);
     }
-  }, [map, selectedType, isDrawingActive]);
+  };
 
-  const handleSaveMarker = () => {
-    if (newMarker && nameInput.trim()) {
+  // Initialize map when component mounts
+  useEffect(() => {
+    const init = async () => {
+      if (!selectedClub) return;
+      
+      try {
+        setLoading(true);
+        await loadGoogleMapsScript();
+        await initMap();
+      } catch (err) {
+        console.error("Initialization error:", err);
+        toast.current?.show({
+          severity: 'error',
+          summary: 'Klaida',
+          detail: 'Nepavyko užkrauti žemėlapio',
+          life: 3000,
+        });
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    init();
+    
+    // Cleanup function
+    return () => {
+      markers.forEach(m => {
+        if (m.marker) {
+          m.marker.setMap(null);
+        }
+      });
+      
+      if (drawingManager) {
+        drawingManager.setMap(null);
+      }
+    };
+  }, [selectedClub]); // Re-run when selectedClub changes
+
+  // Update drawing manager when drawing mode changes
+  useEffect(() => {
+    if (!drawingManager) return;
+    
+    drawingManager.setOptions({
+      drawingControl: isDrawingActive,
+      drawingMode: isDrawingActive ? google.maps.drawing.OverlayType.MARKER : null,
+      markerOptions: {
+        icon: getIconForType(selectedType),
+        draggable: true,
+      }
+    });
+    
+    // Update markers draggable state
+    markers.forEach(m => {
+      m.marker.setDraggable(isDrawingActive);
+    });
+  }, [isDrawingActive, selectedType, drawingManager]);
+
+  const handleSaveMarker = async () => {
+    if (!newMarker || !nameInput.trim() || !selectedClub) {
+      toast.current?.show({
+        severity: 'error',
+        summary: 'Klaida',
+        detail: 'Prašome įvesti objekto pavadinimą',
+        life: 3000,
+      });
+      return;
+    }
+
+    try {
+      const position = newMarker.getPosition();
+      if (!position) {
+        throw new Error("Invalid marker position");
+      }
+
+      const payload = {
+        name: nameInput.trim(),
+        type: selectedType,
+        lat: position.lat(),
+        lng: position.lng()
+      };
+
+      const response = await fetch(`https://localhost:7091/api/MapObjects?clubId=${selectedClub.id}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${sessionStorage.getItem('accessToken')}`
+        },
+        body: JSON.stringify(payload),
+      });
+
+      if (!response.ok) {
+        throw new Error(`Server error: ${response.status}`);
+      }
+
+      const result = await response.json();
+
+      // Add the marker to the markers list with ID from the server
       const infoWindow = new google.maps.InfoWindow({
         content: `<div style="color: black;"><strong>${nameInput}</strong></div>`,
       });
 
       newMarker.addListener('click', () => infoWindow.open(map, newMarker));
+      
+      // Add right-click to delete handler
       newMarker.addListener('rightclick', () => {
         if (isDrawingActive) {
-          newMarker.setMap(null);
-          setMarkers(prev => prev.filter(m => m.marker !== newMarker));
-          toast.current?.show({
-            severity: 'info',
-            summary: 'Ištrinta',
-            detail: 'Žymeklis pašalintas',
-            life: 2000,
-          });
+          handleDeleteMarker(newMarker, result.id);
         }
       });
 
-      newMarker.setDraggable(isDrawingActive);
-      setMarkers(prev => [...prev, { marker: newMarker, type: selectedType, name: nameInput.trim() }]);
+      setMarkers(prev => [...prev, { 
+        id: result.id,
+        marker: newMarker, 
+        type: selectedType, 
+        name: nameInput.trim() 
+      }]);
 
       toast.current?.show({
         severity: 'success',
@@ -197,64 +392,73 @@ const MapWithCustomMarkers: React.FC = () => {
       setNewMarker(null);
       setNameInput('');
       setNameDialogVisible(false);
+
+      // Reset drawing mode
+      if (drawingManager) {
+        drawingManager.setDrawingMode(google.maps.drawing.OverlayType.MARKER);
+      }
+    } catch (err) {
+      console.error("Error saving marker:", err);
+      toast.current?.show({
+        severity: 'error',
+        summary: 'Klaida',
+        detail: 'Nepavyko išsaugoti objekto',
+        life: 3000,
+      });
     }
   };
 
   return (
-    <div>
-      <Toast ref={toast} />
-      <div className="flex items-center justify-between mb-4 gap-4">
-        <h2 className="text-xl font-bold">Objektų žymėjimas</h2>
-        <div className="flex gap-4">
-          <Dropdown
-            value={selectedType}
-            options={[
-              { label: 'Bokštelis', value: 'Tower' },
-              { label: 'Šėrykla', value: 'EatingZone' },
-            ]}
-            onChange={(e) => setSelectedType(e.value)}
-            placeholder="Pasirinkite tipą"
-            className="w-64"
-            disabled={isDrawingActive}
-          />
-          <Button
-            label={isDrawingActive ? 'Baigti žymėjimą' : 'Pradėti žymėjimą'}
-            icon={isDrawingActive ? 'pi pi-check' : 'pi pi-map-marker'}
-            onClick={() => setIsDrawingActive(prev => {
-              setMarkers(currentMarkers => {
-                currentMarkers.forEach(m => m.marker.setDraggable(!prev));
-                return [...currentMarkers];
-              });
-              return !prev;
-            })}
-            severity={isDrawingActive ? 'success' : 'secondary'}
-          />
+    <ClubGuard>
+      <div>
+        <Toast ref={toast} />
+        <div className="flex items-center justify-between mb-4 gap-4">
+          <h2 className="text-xl font-bold">Objektų žymėjimas</h2>
+          <div className="flex gap-4">
+            <Dropdown
+              value={selectedType}
+              options={[
+                { label: 'Bokštelis', value: 'Tower' },
+                { label: 'Šėrykla', value: 'EatingZone' },
+              ]}
+              onChange={(e) => setSelectedType(e.value)}
+              placeholder="Pasirinkite tipą"
+              className="w-64"
+              disabled={isDrawingActive}
+            />
+            <Button
+              label={isDrawingActive ? 'Baigti žymėjimą' : 'Pradėti žymėjimą'}
+              icon={isDrawingActive ? 'pi pi-check' : 'pi pi-map-marker'}
+              onClick={() => setIsDrawingActive(prev => !prev)}
+              severity={isDrawingActive ? 'success' : 'secondary'}
+            />
+          </div>
         </div>
+
+        <div ref={mapRef} style={{ height: "600px", width: "100%", borderRadius: "8px" }} />
+
+        <Dialog
+          header="Įveskite objekto pavadinimą"
+          visible={nameDialogVisible}
+          onHide={() => {
+            setNameDialogVisible(false);
+            if (newMarker) newMarker.setMap(null);
+            setNewMarker(null);
+          }}
+          style={{ width: '30vw' }}
+          modal
+          position="top"
+          footer={<Button label="Išsaugoti" icon="pi pi-check" onClick={handleSaveMarker} />}
+        >
+          <InputText
+            value={nameInput}
+            onChange={(e) => setNameInput(e.target.value)}
+            className="w-full"
+            placeholder="Objekto pavadinimas"
+          />
+        </Dialog>
       </div>
-
-      <div ref={mapRef} style={{ height: "600px", width: "100%", borderRadius: "8px" }} />
-
-      <Dialog
-        header="Įveskite objekto pavadinimą"
-        visible={nameDialogVisible}
-        onHide={() => {
-          setNameDialogVisible(false);
-          if (newMarker) newMarker.setMap(null);
-          setNewMarker(null);
-        }}
-        style={{ width: '30vw' }}
-        modal
-        position="top"
-        footer={<Button label="Išsaugoti" icon="pi pi-check" onClick={handleSaveMarker} />}
-      >
-        <InputText
-          value={nameInput}
-          onChange={(e) => setNameInput(e.target.value)}
-          className="w-full"
-          placeholder="Objekto pavadinimas"
-        />
-      </Dialog>
-    </div>
+    </ClubGuard>
   );
 };
 

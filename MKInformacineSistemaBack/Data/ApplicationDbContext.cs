@@ -20,6 +20,7 @@ namespace MKInformacineSistemaBack.Data
         public DbSet<ClubStatistics> ClubStatistics { get; set; }
         public DbSet<UserStatistics> UserStatistics { get; set; }
         public DbSet<Post> Posts { get; set; }
+        public DbSet<MapObject> MapObjects { get; set; }
 
 
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
@@ -102,6 +103,12 @@ namespace MKInformacineSistemaBack.Data
                 .WithMany(c => c.Posts)
                 .HasForeignKey(p => p.ClubId)
                 .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<MapObject>()
+            .HasOne(mo => mo.Club)
+            .WithMany()
+            .HasForeignKey(mo => mo.ClubId)
+            .OnDelete(DeleteBehavior.Cascade);
         }
     }
 }
