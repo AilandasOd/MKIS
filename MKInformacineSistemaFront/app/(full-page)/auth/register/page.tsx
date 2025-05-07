@@ -9,6 +9,20 @@ import { Password } from 'primereact/password';
 import { Toast } from 'primereact/toast';
 import { LayoutContext } from '../../../../layout/context/layoutcontext';
 import { classNames } from 'primereact/utils';
+import { addLocale, locale } from 'primereact/api';
+
+addLocale('lt', {
+    firstDayOfWeek: 1,
+    dayNames: ['sekmadienis', 'pirmadienis', 'antradienis', 'trečiadienis', 'ketvirtadienis', 'penktadienis', 'šeštadienis'],
+    dayNamesShort: ['Sk', 'Pr', 'An', 'Tr', 'Kt', 'Pn', 'Št'],
+    dayNamesMin: ['S', 'P', 'A', 'T', 'K', 'Pn', 'Š'],
+    monthNames: ['sausis', 'vasaris', 'kovas', 'balandis', 'gegužė', 'birželis', 'liepa', 'rugpjūtis', 'rugsėjis', 'spalis', 'lapkritis', 'gruodis'],
+    monthNamesShort: ['Sau', 'Vas', 'Kov', 'Bal', 'Geg', 'Bir', 'Lie', 'Rgp', 'Rgs', 'Spa', 'Lap', 'Grd'],
+    today: 'Šiandien',
+    clear: 'Išvalyti'
+});
+
+locale('lt');
 
 const RegisterPage = () => {
     const { layoutConfig } = useContext(LayoutContext);
@@ -46,7 +60,6 @@ const RegisterPage = () => {
     const handleSubmit = async () => {
         setSubmitted(true);
 
-        // Validate form
         if (!formData.userName || 
             !formData.email || 
             !formData.password || 
@@ -55,17 +68,15 @@ const RegisterPage = () => {
             !formData.lastName ||
             !formData.dateOfBirth ||
             !formData.huntingTicketIssueDate) {
-            toast.current?.show({ severity: 'error', summary: 'Error', detail: 'All fields are required', life: 3000 });
+            toast.current?.show({ severity: 'error', summary: 'Klaida', detail: 'Visi laukai yra privalomi', life: 3000 });
             return;
         }
 
-        // Validate password match
         if (formData.password !== formData.confirmPassword) {
-            toast.current?.show({ severity: 'error', summary: 'Error', detail: 'Passwords do not match', life: 3000 });
+            toast.current?.show({ severity: 'error', summary: 'Klaida', detail: 'Slaptažodžiai nesutampa', life: 3000 });
             return;
         }
 
-        // Register user
         try {
             const response = await fetch('https://localhost:7091/api/accounts', {
                 method: 'POST',
@@ -85,17 +96,17 @@ const RegisterPage = () => {
             });
 
             if (response.ok) {
-                toast.current?.show({ severity: 'success', summary: 'Success', detail: 'Registration successful', life: 3000 });
+                toast.current?.show({ severity: 'success', summary: 'Registracija sėkminga', detail: 'Jūsų paskyra sukurta', life: 3000 });
                 setTimeout(() => {
                     router.push('/auth/login');
                 }, 2000);
             } else {
                 const errorText = await response.text();
-                toast.current?.show({ severity: 'error', summary: 'Error', detail: errorText || 'Registration failed', life: 3000 });
+                toast.current?.show({ severity: 'error', summary: 'Klaida', detail: errorText || 'Registracija nepavyko', life: 3000 });
             }
         } catch (error) {
             console.error('Registration error:', error);
-            toast.current?.show({ severity: 'error', summary: 'Error', detail: 'Failed to connect to server', life: 3000 });
+            toast.current?.show({ severity: 'error', summary: 'Klaida', detail: 'Nepavyko prisijungti prie serverio', life: 3000 });
         }
     };
 
@@ -117,58 +128,58 @@ const RegisterPage = () => {
                     }}
                 >
                     <Card className="w-full p-4" style={{ borderRadius: '53px', maxWidth: '650px' }}>
-                        <h2 className="text-center text-2xl font-semibold mb-4">Create Account</h2>
+                        <h2 className="text-center text-2xl font-semibold mb-4">Sukurti paskyrą</h2>
                         <p className="text-center text-gray-600 mb-5">
-                            Join the Hunting Club Information System
+                            Prisijunkite prie Medžiotojų Klubo informacinės sistemos
                         </p>
 
                         <div className="grid formgrid">
                             <div className="field col-12 md:col-6">
-                                <label htmlFor="userName" className="block text-sm font-medium mb-2">Username*</label>
+                                <label htmlFor="userName" className="block text-sm font-medium mb-2">Naudotojo vardas*</label>
                                 <InputText
                                     id="userName"
                                     value={formData.userName}
                                     onChange={(e) => handleInputChange(e, 'userName')}
                                     className={classNames({ 'p-invalid': submitted && !formData.userName }, 'w-full')}
                                 />
-                                {submitted && !formData.userName && <small className="p-error">Username is required.</small>}
+                                {submitted && !formData.userName && <small className="p-error">Privalomas laukelis</small>}
                             </div>
 
                             <div className="field col-12 md:col-6">
-                                <label htmlFor="email" className="block text-sm font-medium mb-2">Email*</label>
+                                <label htmlFor="email" className="block text-sm font-medium mb-2">El. paštas*</label>
                                 <InputText
                                     id="email"
                                     value={formData.email}
                                     onChange={(e) => handleInputChange(e, 'email')}
                                     className={classNames({ 'p-invalid': submitted && !formData.email }, 'w-full')}
                                 />
-                                {submitted && !formData.email && <small className="p-error">Email is required.</small>}
+                                {submitted && !formData.email && <small className="p-error">Privalomas laukelis</small>}
                             </div>
 
                             <div className="field col-12 md:col-6">
-                                <label htmlFor="firstName" className="block text-sm font-medium mb-2">First Name*</label>
+                                <label htmlFor="firstName" className="block text-sm font-medium mb-2">Vardas*</label>
                                 <InputText
                                     id="firstName"
                                     value={formData.firstName}
                                     onChange={(e) => handleInputChange(e, 'firstName')}
                                     className={classNames({ 'p-invalid': submitted && !formData.firstName }, 'w-full')}
                                 />
-                                {submitted && !formData.firstName && <small className="p-error">First name is required.</small>}
+                                {submitted && !formData.firstName && <small className="p-error">Privalomas laukelis</small>}
                             </div>
 
                             <div className="field col-12 md:col-6">
-                                <label htmlFor="lastName" className="block text-sm font-medium mb-2">Last Name*</label>
+                                <label htmlFor="lastName" className="block text-sm font-medium mb-2">Pavardė*</label>
                                 <InputText
                                     id="lastName"
                                     value={formData.lastName}
                                     onChange={(e) => handleInputChange(e, 'lastName')}
                                     className={classNames({ 'p-invalid': submitted && !formData.lastName }, 'w-full')}
                                 />
-                                {submitted && !formData.lastName && <small className="p-error">Last name is required.</small>}
+                                {submitted && !formData.lastName && <small className="p-error">Privalomas laukelis</small>}
                             </div>
 
                             <div className="field col-12 md:col-6">
-                                <label htmlFor="phoneNumber" className="block text-sm font-medium mb-2">Phone Number</label>
+                                <label htmlFor="phoneNumber" className="block text-sm font-medium mb-2">Telefono numeris</label>
                                 <InputText
                                     id="phoneNumber"
                                     value={formData.phoneNumber}
@@ -178,7 +189,7 @@ const RegisterPage = () => {
                             </div>
 
                             <div className="field col-12 md:col-6">
-                                <label htmlFor="dateOfBirth" className="block text-sm font-medium mb-2">Date of Birth*</label>
+                                <label htmlFor="dateOfBirth" className="block text-sm font-medium mb-2">Gimimo data*</label>
                                 <Calendar
                                     id="dateOfBirth"
                                     value={formData.dateOfBirth}
@@ -186,11 +197,11 @@ const RegisterPage = () => {
                                     showIcon
                                     className={classNames({ 'p-invalid': submitted && !formData.dateOfBirth }, 'w-full')}
                                 />
-                                {submitted && !formData.dateOfBirth && <small className="p-error">Date of birth is required.</small>}
+                                {submitted && !formData.dateOfBirth && <small className="p-error">Privalomas laukelis</small>}
                             </div>
 
                             <div className="field col-12">
-                                <label htmlFor="huntingTicketIssueDate" className="block text-sm font-medium mb-2">Hunting Ticket Issue Date*</label>
+                                <label htmlFor="huntingTicketIssueDate" className="block text-sm font-medium mb-2">Medžiotojo bilieto išdavimo data*</label>
                                 <Calendar
                                     id="huntingTicketIssueDate"
                                     value={formData.huntingTicketIssueDate}
@@ -198,50 +209,50 @@ const RegisterPage = () => {
                                     showIcon
                                     className={classNames({ 'p-invalid': submitted && !formData.huntingTicketIssueDate }, 'w-full')}
                                 />
-                                {submitted && !formData.huntingTicketIssueDate && <small className="p-error">Hunting ticket issue date is required.</small>}
+                                {submitted && !formData.huntingTicketIssueDate && <small className="p-error">Privalomas laukelis</small>}
                             </div>
 
                             <div className="field col-12 md:col-6">
-                                <label htmlFor="password" className="block text-sm font-medium mb-2">Password*</label>
+                                <label htmlFor="password" className="block text-sm font-medium mb-2">Slaptažodis*</label>
                                 <Password
                                     id="password"
                                     value={formData.password}
                                     onChange={(e) => handleInputChange(e, 'password')}
                                     toggleMask
+                                    feedback={false}
                                     className={classNames({ 'p-invalid': submitted && !formData.password }, 'w-full')}
-                                    feedback={true}
                                 />
-                                {submitted && !formData.password && <small className="p-error">Password is required.</small>}
+                                {submitted && !formData.password && <small className="p-error">Privalomas laukelis</small>}
                             </div>
 
                             <div className="field col-12 md:col-6">
-                                <label htmlFor="confirmPassword" className="block text-sm font-medium mb-2">Confirm Password*</label>
+                                <label htmlFor="confirmPassword" className="block text-sm font-medium mb-2">Patvirtinti slaptažodį*</label>
                                 <Password
                                     id="confirmPassword"
                                     value={formData.confirmPassword}
                                     onChange={(e) => handleInputChange(e, 'confirmPassword')}
                                     toggleMask
-                                    className={classNames({ 'p-invalid': submitted && (!formData.confirmPassword || formData.password !== formData.confirmPassword) }, 'w-full')}
                                     feedback={false}
+                                    className={classNames({ 'p-invalid': submitted && (!formData.confirmPassword || formData.password !== formData.confirmPassword) }, 'w-full')}
                                 />
-                                {submitted && !formData.confirmPassword && <small className="p-error">Confirm password is required.</small>}
+                                {submitted && !formData.confirmPassword && <small className="p-error">Privalomas laukelis</small>}
                                 {submitted && formData.confirmPassword && formData.password !== formData.confirmPassword && (
-                                    <small className="p-error">Passwords do not match.</small>
+                                    <small className="p-error">Slaptažodžiai nesutampa</small>
                                 )}
                             </div>
 
                             <div className="col-12 mt-4">
-                                <Button label="Register" icon="pi pi-user-plus" onClick={handleSubmit} className="w-full" />
+                                <Button label="Registruotis" icon="pi pi-user-plus" onClick={handleSubmit} className="w-full" />
                             </div>
 
                             <div className="col-12 mt-4 text-center">
                                 <p>
-                                    Already have an account?{' '}
+                                    Jau turite paskyrą?{' '}
                                     <span
                                         className="font-medium cursor-pointer text-primary"
                                         onClick={() => router.push('/auth/login')}
                                     >
-                                        Sign In
+                                        Prisijungti
                                     </span>
                                 </p>
                             </div>

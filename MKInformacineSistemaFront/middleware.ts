@@ -6,7 +6,7 @@ export function middleware(request: NextRequest) {
     const { pathname } = request.nextUrl;
     
     // Define public routes that don't require authentication
-    const publicRoutes = ['/auth/login', '/', '/landing', '/auth/access'];
+    const publicRoutes = ['/auth/login', '/', '/landing', '/auth/access', '/auth/register'];
     const isPublicRoute = publicRoutes.some(route => pathname === route || pathname.startsWith('/api/'));
     
     // Admin-only routes - will be handled by client-side RoleGuard
