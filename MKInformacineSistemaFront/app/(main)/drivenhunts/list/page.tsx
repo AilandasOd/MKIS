@@ -92,6 +92,11 @@ const DrivenHuntsPage = () => {
     router.push(`/drivenhunts/drivenhunt/${huntId}`);
   };
 
+   // New function to handle routing to create page
+   const handleCreateHunt = () => {
+    router.push('/drivenhunts/create');
+  };
+
   if (loading) {
     return <div className="flex justify-content-center">Loading driven hunts...</div>;
   }
@@ -100,18 +105,30 @@ const DrivenHuntsPage = () => {
     <ClubGuard>
       <div className="p-8">
         <Toast ref={toast} />
-        <h1 className="text-4xl font-bold mb-8">Varyminės medžioklės</h1>
+        
+        <div className="flex flex-column md:flex-row justify-content-between align-items-center mb-5">
+          <h1 className="text-4xl font-bold m-0">Varyminės medžioklės</h1>
+          {/* Add Create Hunt button */}
+          <Button 
+            label="Create New Hunt" 
+            icon="pi pi-plus" 
+            onClick={handleCreateHunt}
+            className="mt-3 md:mt-0"
+          />
+        </div>
+        
         <div className="mb-6">
-          <span className="p-input-icon-left">
+          <span className="p-input-icon-left w-full md:w-30rem">
             <i className="pi pi-search" />
             <InputText
               value={searchTerm}
               onChange={(e) => { setSearchTerm(e.target.value); setFirst(0); }}
               placeholder="Ieškoti pagal medžiojimo vardą"
-              className="w-full md:w-30rem"
+              className="w-full"
             />
           </span>
         </div>
+        
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredHunts.slice(first, first + rows).map((hunt) => {
             const status = getStatus(hunt.date);
@@ -141,6 +158,15 @@ const DrivenHuntsPage = () => {
             );
           })}
         </div>
+        
+        {filteredHunts.length === 0 && (
+          <div className="text-center p-5">
+            <i className="pi pi-search text-5xl text-gray-400 mb-3"></i>
+            <p className="text-xl">No hunts found. Create a new one?</p>
+            <Button label="Create New Hunt" icon="pi pi-plus" onClick={handleCreateHunt} className="mt-3" />
+          </div>
+        )}
+        
         <Paginator first={first} rows={rows} totalRecords={totalRecords} onPageChange={onPageChange} className="mt-6" />
       </div>
     </ClubGuard>
