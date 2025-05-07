@@ -3,7 +3,6 @@ import React, { useEffect, useState, useRef } from 'react';
 import { DataTable } from 'primereact/datatable';
 import { Column } from 'primereact/column';
 import { InputText } from 'primereact/inputtext';
-import { Avatar } from 'primereact/avatar';
 import { Card } from 'primereact/card';
 import { Tag } from 'primereact/tag';
 import { Toast } from 'primereact/toast';
@@ -45,24 +44,6 @@ const MembersView = () => {
     return new Date(dateString).toLocaleDateString('lt-LT');
   };
 
-  const photoBodyTemplate = (rowData) => {
-    return rowData.photo ? (
-      <img 
-        src={`https://localhost:7091${rowData.photo}`} 
-        alt={rowData.name} 
-        width="50" 
-        height="50" 
-        style={{ borderRadius: '50%', objectFit: 'cover' }} 
-      />
-    ) : (
-      <Avatar 
-        icon="pi pi-user" 
-        size="large" 
-        shape="circle" 
-      />
-    );
-  };
-
   const activityBodyTemplate = (rowData) => {
     let severity = 'info';
     if (rowData.activity > 75) severity = 'success';
@@ -92,7 +73,11 @@ const MembersView = () => {
     return (
       <Tag 
         value={rowData.status} 
-        severity={rowData.status === 'Admin' ? 'danger' : 'success'}
+        severity={
+          rowData.status === 'Owner' ? 'danger' : 
+          rowData.status === 'Admin' ? 'warning' : 
+          'success'
+        }
       />
     );
   };
@@ -141,7 +126,6 @@ const MembersView = () => {
           stripedRows
         >
           <Column header="Name" body={nameBodyTemplate} field="name" sortable />
-          <Column header="Photo" body={photoBodyTemplate} style={{ width: '70px' }} />
           <Column field="age" header="Age" sortable style={{ width: '70px' }} />
           <Column 
             field="huntingSince" 
@@ -150,7 +134,7 @@ const MembersView = () => {
             sortable 
           />
           <Column header="Activity" body={activityBodyTemplate} field="activity" sortable />
-          <Column header="Status" body={statusBodyTemplate} field="status" sortable style={{ width: '120px' }} />
+          <Column header="Role" body={statusBodyTemplate} field="status" sortable style={{ width: '120px' }} />
         </DataTable>
       </div>
     </ClubGuard>

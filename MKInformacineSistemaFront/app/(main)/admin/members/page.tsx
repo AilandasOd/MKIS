@@ -3,7 +3,6 @@ import React, { useEffect, useState, useRef } from 'react';
 import { DataTable } from 'primereact/datatable';
 import { Column } from 'primereact/column';
 import { InputText } from 'primereact/inputtext';
-import { Avatar } from 'primereact/avatar';
 import { Card } from 'primereact/card';
 import { Tag } from 'primereact/tag';
 import { Toast } from 'primereact/toast';
@@ -84,24 +83,6 @@ const AdminMembersPage = () => {
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('lt-LT');
-  };
-
-  const photoBodyTemplate = (rowData: Member) => {
-    return rowData.photo ? (
-      <img 
-        src={`https://localhost:7091${rowData.photo}`} 
-        alt={rowData.name} 
-        width="50" 
-        height="50" 
-        style={{ borderRadius: '50%', objectFit: 'cover' }} 
-      />
-    ) : (
-      <Avatar 
-        icon="pi pi-user" 
-        size="large" 
-        shape="circle" 
-      />
-    );
   };
 
   const activityBodyTemplate = (rowData: Member) => {
@@ -353,7 +334,6 @@ const AdminMembersPage = () => {
             showGridlines
           >
             <Column header="Name" body={nameBodyTemplate} field="name" sortable />
-            <Column header="Photo" body={photoBodyTemplate} style={{ width: '70px' }} />
             <Column field="age" header="Age" sortable style={{ width: '70px' }} />
             <Column field="email" header="Email" sortable />
             <Column 
@@ -366,43 +346,6 @@ const AdminMembersPage = () => {
             <Column header="Role" body={statusBodyTemplate} field="status" sortable style={{ width: '120px' }} />
             <Column header="Actions" body={actionsBodyTemplate} style={{ width: '120px' }} />
           </DataTable>
-
-          {/* Activity legend */}
-          <div className="mt-4">
-            <h5>Activity Legend</h5>
-            <div className="grid">
-              <div className="col-12 md:col-4">
-                <Card className="p-3">
-                  <div className="flex align-items-center">
-                    <div className="relative h-1.5 w-24 bg-gray-200 rounded mr-3">
-                      <div className="absolute h-1.5 rounded bg-green-500" style={{ width: '90%' }}></div>
-                    </div>
-                    <span>High Activity (75%+)</span>
-                  </div>
-                </Card>
-              </div>
-              <div className="col-12 md:col-4">
-                <Card className="p-3">
-                  <div className="flex align-items-center">
-                    <div className="relative h-1.5 w-24 bg-gray-200 rounded mr-3">
-                      <div className="absolute h-1.5 rounded bg-yellow-500" style={{ width: '50%' }}></div>
-                    </div>
-                    <span>Medium Activity (25-75%)</span>
-                  </div>
-                </Card>
-              </div>
-              <div className="col-12 md:col-4">
-                <Card className="p-3">
-                  <div className="flex align-items-center">
-                    <div className="relative h-1.5 w-24 bg-gray-200 rounded mr-3">
-                      <div className="absolute h-1.5 rounded bg-red-500" style={{ width: '15%' }}></div>
-                    </div>
-                    <span>Low Activity (25%)</span>
-                  </div>
-                </Card>
-              </div>
-            </div>
-          </div>
         </div>
 
         {/* Change Role Dialog */}
@@ -479,16 +422,6 @@ const AdminMembersPage = () => {
                 emptyFilterMessage="No users match the filter"
                 itemTemplate={(option) => (
                   <div className="flex align-items-center">
-                    {option.avatarPhoto ? (
-                      <img 
-                        src={`https://localhost:7091${option.avatarPhoto}`} 
-                        alt={option.userName} 
-                        className="mr-2" 
-                        style={{ width: '24px', height: '24px', borderRadius: '50%', objectFit: 'cover' }} 
-                      />
-                    ) : (
-                      <i className="pi pi-user mr-2" />
-                    )}
                     <div>
                       <div>{option.firstName} {option.lastName}</div>
                       <small className="text-gray-500">{option.email}</small>

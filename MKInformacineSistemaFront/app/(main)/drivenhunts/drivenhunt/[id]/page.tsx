@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
-import { useApiClient } from '../../../../utils/api';
+import { useApiClient } from '../../../../../utils/api';
 import { Toast } from 'primereact/toast';
 
 const DrivenHuntDetailsPage = () => {

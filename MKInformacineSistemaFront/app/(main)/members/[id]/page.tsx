@@ -1,14 +1,16 @@
 'use client';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { Card } from 'primereact/card';
 import { Divider } from 'primereact/divider';
-import { Avatar } from 'primereact/avatar';
 import { useParams } from 'next/navigation';
 import { Tag } from 'primereact/tag';
 import { ProgressBar } from 'primereact/progressbar';
+import { Toast } from 'primereact/toast';
+import { useApiClient } from '../../../../utils/apiClient';
+import ClubGuard from '../../../../context/ClubGuard';
 
 interface Member {
-    id: string;
+    id: string | number;
     name: string;
     birthDate: string;
     photo: string;
@@ -25,34 +27,44 @@ const MemberDetailPage = () => {
     const [member, setMember] = useState<Member | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+    const toast = useRef<Toast>(null);
+    const { fetchWithClub, selectedClub } = useApiClient();
+    
+    // Add a ref to track if we've already fetched data
+    const hasFetchedRef = useRef(false);
 
     useEffect(() => {
-        if (!id) return;
+        // Only fetch if we haven't already AND we have the necessary data
+        if (!id || !selectedClub || hasFetchedRef.current) return;
         
         const fetchMember = async () => {
             try {
-                const res = await fetch(`https://localhost:7091/api/Members/${id}`, {
-                    headers: {
-                        'Authorization': `Bearer ${sessionStorage.getItem('accessToken')}`
-                    }
-                });
+                setLoading(true);
                 
-                if (!res.ok) {
-                    throw new Error('Failed to fetch member details');
-                }
-                
-                const data = await res.json();
+                // Use the fetchWithClub utility that adds clubId automatically
+                const data = await fetchWithClub(`Members/${id}`);
                 setMember(data);
+                setError(null);
+                
+                // Mark that we've successfully fetched data
+                hasFetchedRef.current = true;
             } catch (err) {
+                console.error('Error fetching member details:', err);
                 setError('An error occurred while fetching member details.');
-                console.error(err);
+                
+                toast.current?.show({
+                    severity: 'error',
+                    summary: 'Error',
+                    detail: 'Failed to load member details',
+                    life: 3000
+                });
             } finally {
                 setLoading(false);
             }
         };
         
         fetchMember();
-    }, [id]);
+    }, [id, selectedClub, fetchWithClub]); // Keep these dependencies
 
     if (loading) {
         return <div className="flex justify-content-center my-5">Loading member details...</div>;
@@ -71,97 +83,85 @@ const MemberDetailPage = () => {
     };
 
     return (
-        <div className="p-3">
-            <Card className="p-4">
-                <div className="grid">
-                    <div className="col-12 md:col-4 flex flex-column align-items-center">
-                        {member.photo ? (
-                            <img 
-                                src={`https://localhost:7091${member.photo}`} 
-                                alt={member.name} 
-                                className="w-12 h-12 rounded-full mb-3"
-                                style={{ objectFit: 'cover' }}
-                            />
-                        ) : (
-                            <Avatar 
-                                icon="pi pi-user" 
-                                size="xlarge" 
-                                shape="circle" 
+        <ClubGuard>
+            <div className="p-3">
+                <Toast ref={toast} />
+                <Card className="p-4">
+                    <div className="grid">
+                        <div className="col-12 md:col-4 flex flex-column align-items-center">
+                            <h2 className="text-2xl font-bold mb-2">{member.name}</h2>
+                            <Tag 
+                                value={member.status} 
+                                severity={member.status === 'Administratorius' ? 'danger' : 'success'} 
                                 className="mb-3"
                             />
-                        )}
-                        <h2 className="text-2xl font-bold mb-2">{member.name}</h2>
-                        <Tag 
-                            value={member.status} 
-                            severity={member.status === 'Administratorius' ? 'danger' : 'success'} 
-                            className="mb-3"
-                        />
-                        
-                        <div className="w-full mt-3">
-                            <div className="mb-2">
-                                <span className="font-semibold">Activity in Driven Hunts</span>
+                            
+                            <div className="w-full mt-3">
+                                <div className="mb-2">
+                                    <span className="font-semibold">Activity in Driven Hunts</span>
+                                </div>
+                                <ProgressBar 
+                                    value={member.activity} 
+                                    showValue={true}
+                                    className="h-2rem"
+                                />
                             </div>
-                            <ProgressBar 
-                                value={member.activity} 
-                                showValue={true}
-                                className="h-2rem"
-                            />
                         </div>
-                    </div>
-                    
-                    <div className="col-12 md:col-8">
-                        <h3 className="text-xl font-semibold mb-3">Member Information</h3>
-                        <Divider />
                         
-                        <div className="grid">
-                            <div className="col-12 md:col-6">
-                                <div className="mb-3">
-                                    <div className="text-sm text-gray-600">Email</div>
-                                    <div className="font-medium">{member.email}</div>
-                                </div>
-                            </div>
+                        <div className="col-12 md:col-8">
+                            <h3 className="text-xl font-semibold mb-3">Member Information</h3>
+                            <Divider />
                             
-                            <div className="col-12 md:col-6">
-                                <div className="mb-3">
-                                    <div className="text-sm text-gray-600">Phone Number</div>
-                                    <div className="font-medium">{member.phoneNumber || 'Not provided'}</div>
+                            <div className="grid">
+                                <div className="col-12 md:col-6">
+                                    <div className="mb-3">
+                                        <div className="text-sm text-gray-600">Email</div>
+                                        <div className="font-medium">{member.email}</div>
+                                    </div>
                                 </div>
-                            </div>
-                            
-                            <div className="col-12 md:col-6">
-                                <div className="mb-3">
-                                    <div className="text-sm text-gray-600">Age</div>
-                                    <div className="font-medium">{member.age} years old</div>
+                                
+                                <div className="col-12 md:col-6">
+                                    <div className="mb-3">
+                                        <div className="text-sm text-gray-600">Phone Number</div>
+                                        <div className="font-medium">{member.phoneNumber || 'Not provided'}</div>
+                                    </div>
                                 </div>
-                            </div>
-                            
-                            <div className="col-12 md:col-6">
-                                <div className="mb-3">
-                                    <div className="text-sm text-gray-600">Date of Birth</div>
-                                    <div className="font-medium">{formatDate(member.birthDate)}</div>
+                                
+                                <div className="col-12 md:col-6">
+                                    <div className="mb-3">
+                                        <div className="text-sm text-gray-600">Age</div>
+                                        <div className="font-medium">{member.age} years old</div>
+                                    </div>
                                 </div>
-                            </div>
-                            
-                            <div className="col-12 md:col-6">
-                                <div className="mb-3">
-                                    <div className="text-sm text-gray-600">Hunting Since</div>
-                                    <div className="font-medium">{formatDate(member.huntingSince)}</div>
+                                
+                                <div className="col-12 md:col-6">
+                                    <div className="mb-3">
+                                        <div className="text-sm text-gray-600">Date of Birth</div>
+                                        <div className="font-medium">{formatDate(member.birthDate)}</div>
+                                    </div>
                                 </div>
-                            </div>
-                            
-                            <div className="col-12 md:col-6">
-                                <div className="mb-3">
-                                    <div className="text-sm text-gray-600">Years of Experience</div>
-                                    <div className="font-medium">
-                                        {new Date().getFullYear() - new Date(member.huntingSince).getFullYear()} years
+                                
+                                <div className="col-12 md:col-6">
+                                    <div className="mb-3">
+                                        <div className="text-sm text-gray-600">Hunting Since</div>
+                                        <div className="font-medium">{formatDate(member.huntingSince)}</div>
+                                    </div>
+                                </div>
+                                
+                                <div className="col-12 md:col-6">
+                                    <div className="mb-3">
+                                        <div className="text-sm text-gray-600">Years of Experience</div>
+                                        <div className="font-medium">
+                                            {new Date().getFullYear() - new Date(member.huntingSince).getFullYear()} years
+                                        </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
                     </div>
-                </div>
-            </Card>
-        </div>
+                </Card>
+            </div>
+        </ClubGuard>
     );
 };
 
