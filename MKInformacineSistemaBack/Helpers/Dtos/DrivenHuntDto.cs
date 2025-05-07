@@ -53,4 +53,14 @@
         public int ShotsTaken { get; set; }
         public int ShotsHit { get; set; }
     }
+
+    public class UpdateDrivenHuntDto
+    {
+        public string Name { get; set; } = string.Empty;
+        public string Location { get; set; } = string.Empty;
+        public DateTime Date { get; set; }
+        public string Game { get; set; } = string.Empty;
+        public string LeaderId { get; set; } = string.Empty;
+        public bool IsCompleted { get; set; }
+    }
 }

@@ -1,6 +1,6 @@
 'use client';
 import React, { useState, useEffect, useRef } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 import { Card } from 'primereact/card';
 import { InputText } from 'primereact/inputtext';
 import { Paginator } from 'primereact/paginator';
@@ -22,11 +22,13 @@ const DrivenHuntsPage = () => {
   const [totalRecords, setTotalRecords] = useState(0);
   const toast = useRef(null);
   const rows = 5;
+  const pathname = usePathname(); // This will change when navigating
 
   useEffect(() => {
     const fetchHunts = async () => {
       try {
         setLoading(true);
+        console.log("Fetching hunts at:", new Date().toISOString());
         const data = await fetchWithClub('DrivenHunts');
         setHunts(data);
         setFilteredHunts(data);
@@ -45,7 +47,7 @@ const DrivenHuntsPage = () => {
     };
 
     fetchHunts();
-  }, [fetchWithClub]);
+  }, [pathname, fetchWithClub]);
 
   useEffect(() => {
     if (searchTerm.trim() === '') {
@@ -61,10 +63,13 @@ const DrivenHuntsPage = () => {
     }
   }, [searchTerm, hunts]);
 
-  const getStatus = (dateString) => {
-    const huntDate = parseISO(dateString);
+  const getStatus = (hunt) => {
+    // First check if the hunt is completed
+    if (hunt.isCompleted) return "Įvykusi"; // Or "Baigta" in Lithuanian
+    
+    const huntDate = parseISO(hunt.date);
     const today = new Date();
-
+  
     if (isToday(huntDate)) return "Vykstanti";
     if (isAfter(huntDate, today)) return "Būsima";
     if (isBefore(huntDate, today)) return "Įvykusi";
@@ -130,33 +135,33 @@ const DrivenHuntsPage = () => {
         </div>
         
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredHunts.slice(first, first + rows).map((hunt) => {
-            const status = getStatus(hunt.date);
-            return (
-              <div
-                key={hunt.id}
-                className="w-full cursor-pointer transition-transform transform hover:scale-105"
-                onClick={() => handleCardClick(hunt.id)}
-              >
-                <Card
-                  title={hunt.name}
-                  subTitle={`${hunt.location} | ${format(parseISO(hunt.date), 'yyyy-MM-dd')}`}
-                  className="rounded-2xl shadow-md h-full"
-                >
-                  <div className="text-base">
-                    <p><strong>Vieta:</strong> {hunt.location}</p>
-                    <p><strong>Data:</strong> {format(parseISO(hunt.date), 'yyyy-MM-dd')}</p>
-                    <p><strong>Sumedžioti žvėrys:</strong> {hunt.game}</p>
-                    <p><strong>Vadovas:</strong> {hunt.leaderName}</p>
-                    <p>
-                      <strong>Statusas:</strong>{' '}
-                      <Tag value={status} severity={getStatusSeverity(status)} />
-                    </p>
-                  </div>
-                </Card>
-              </div>
-            );
-          })}
+        {filteredHunts.slice(first, first + rows).map((hunt) => {
+  const status = getStatus(hunt); // Pass the entire hunt object, not just the date
+  return (
+    <div
+      key={hunt.id}
+      className="w-full cursor-pointer transition-transform transform hover:scale-105"
+      onClick={() => handleCardClick(hunt.id)}
+    >
+      <Card
+        title={hunt.name}
+        subTitle={`${hunt.location} | ${format(parseISO(hunt.date), 'yyyy-MM-dd')}`}
+        className="rounded-2xl shadow-md h-full"
+      >
+        <div className="text-base">
+          <p><strong>Vieta:</strong> {hunt.location}</p>
+          <p><strong>Data:</strong> {format(parseISO(hunt.date), 'yyyy-MM-dd')}</p>
+          <p><strong>Sumedžioti žvėrys:</strong> {hunt.game}</p>
+          <p><strong>Vadovas:</strong> {hunt.leaderName}</p>
+          <p>
+            <strong>Statusas:</strong>{' '}
+            <Tag value={status} severity={getStatusSeverity(status)} />
+          </p>
+        </div>
+      </Card>
+    </div>
+  );
+})}
         </div>
         
         {filteredHunts.length === 0 && (

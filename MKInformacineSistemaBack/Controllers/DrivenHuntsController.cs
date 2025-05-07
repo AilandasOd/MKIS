@@ -321,6 +321,50 @@ namespace MKInformacineSistemaBack.Controllers
             return Ok();
         }
 
+        [HttpPut("{id}")]
+        public async Task<IActionResult> UpdateDrivenHunt(int id, [FromBody] UpdateDrivenHuntDto dto, [FromQuery] int clubId)
+        {
+            // Check if user is member of this club with appropriate permissions
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(userId))
+                return Unauthorized();
+
+            var membership = await _context.ClubMemberships
+                .FirstOrDefaultAsync(cm =>
+                    cm.ClubId == clubId &&
+                    cm.UserId == userId &&
+                    cm.IsActive &&
+                    (cm.Role == "Admin" || cm.Role == "Owner"));
+
+            if (membership == null)
+                return Forbid("You don't have permission to update driven hunts");
+
+            // Check if hunt exists and belongs to this club
+            var hunt = await _context.DrivenHunts
+                .FirstOrDefaultAsync(h => h.Id == id && h.ClubId == clubId);
+
+            if (hunt == null)
+                return NotFound("Hunt not found or does not belong to this club");
+
+            // Update hunt properties
+            hunt.Name = dto.Name;
+            hunt.Location = dto.Location;
+            hunt.Date = dto.Date;
+            hunt.Game = dto.Game;
+            hunt.LeaderId = dto.LeaderId;
+
+            // Only update completion status if changing from not completed to completed
+            if (dto.IsCompleted && !hunt.IsCompleted)
+            {
+                hunt.IsCompleted = true;
+                hunt.CompletedDate = DateTime.UtcNow;
+            }
+
+            await _context.SaveChangesAsync();
+
+            return NoContent();
+        }
+
         [HttpPut("{huntId}/participants/{participantId}/shots")]
         public async Task<IActionResult> UpdateShots(int huntId, int participantId, [FromBody] UpdateShotsDto dto, [FromQuery] int clubId)
         {
