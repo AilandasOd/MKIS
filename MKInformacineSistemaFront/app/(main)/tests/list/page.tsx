@@ -1,142 +1,150 @@
 'use client';
-import React, { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation'; // Import router for navigation
+import React, { useEffect, useState, useRef } from 'react';
+import { useRouter } from 'next/navigation';
 import { DataTable } from 'primereact/datatable';
 import { Column } from 'primereact/column';
 import { Button } from 'primereact/button';
 import { Tag } from 'primereact/tag';
+import { Toast } from 'primereact/toast';
+import { useClub } from '../../../../context/ClubContext';
+import ClubGuard from '../../../../context/ClubGuard';
 
-const TestTable = () => {
-    const [tests, setTests] = useState<any[]>([]);
-    const [expandedRows, setExpandedRows] = useState<any[]>([]);
-    const [allExpanded, setAllExpanded] = useState(false);
-
-    const router = useRouter(); // Initialize router
-
-    const loggedInMemberId = '056618';
+const BloodTestsListPage = () => {
+    const [tests, setTests] = useState([]);
+    const [expandedRows, setExpandedRows] = useState(null);
+    const [loading, setLoading] = useState(true);
+    const [hasAttemptedFetch, setHasAttemptedFetch] = useState(false);
+    const router = useRouter();
+    const toast = useRef(null);
+    const { selectedClub } = useClub();
 
     useEffect(() => {
-        setTests([
-            {
-                id: 'T001',
-                testName: 'Šerno kraujo tyrimai',
-                animalType: 'Šernas',
-                dateHunted: '2025-04-01',
-                testStartDate: '2025-04-03',
-                status: 'Patvirtinta',
-                completedDate: '2025-04-07',
-                description: 'Priduoti šerno tyrimai iš medžioklės vykusios 2025-04-01.',
-                members: [
-                    { id: '056618', name: 'Tomas Tomauskas' },
-                    { id: '124816', name: 'Kotryna Kotrynaitė' }
-                ]
-            },
-            {
-                id: 'T002',
-                testName: 'Šerno kraujo tyrimai',
-                animalType: 'Šernas',
-                dateHunted: '2025-04-10',
-                testStartDate: '2025-04-12',
-                status: 'Laukiama',
-                completedDate: null,
-                description: 'Šerno kraujo tyrimai, kurį sumedžiojo Rimas.',
-                members: [
-                    { id: '562614', name: 'Rimas Rimauskas' },
-                    { id: '124816', name: 'Kotryna Kontrynaitė' }
-                ]
-            },
-            {
-                id: 'T003',
-                testName: 'Šerno kraujo tyrimai',
-                animalType: 'Šernas',
-                dateHunted: '2025-04-08',
-                testStartDate: '2025-04-12',
-                status: 'Netinkamas',
-                completedDate: '2025-04-15',
-                description: 'Tyrimai atiduoti, dėl vykstančio AKM.',
-                members: [
-                    { id: '562614', name: 'Rimas Rimauskas' },
-                    { id: '124816', name: 'Kotryna Kotrynaitė' }
-                ]
+        // Prevent multiple fetch attempts
+        if (hasAttemptedFetch || !selectedClub) return;
+        
+        const fetchBloodTests = async () => {
+            try {
+                setLoading(true);
+                setHasAttemptedFetch(true); // Mark that we've attempted to fetch
+                
+                const response = await fetch(`https://localhost:7091/api/BloodTests?clubId=${selectedClub.id}`, {
+                    headers: {
+                        'Authorization': `Bearer ${sessionStorage.getItem('accessToken')}`
+                    }
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! Status: ${response.status}`);
+                }
+                
+                const data = await response.json();
+                setTests(data);
+            } catch (error) {
+                console.error('Error fetching blood tests:', error);
+                toast.current?.show({
+                    severity: 'error',
+                    summary: 'Error',
+                    detail: 'Failed to load blood tests: ' + error.message,
+                    life: 3000
+                });
+                // Set empty array to prevent infinite loading
+                setTests([]);
+            } finally {
+                setLoading(false);
             }
-        ]);
-    }, []);
+        };
+        
+        fetchBloodTests();
+    }, [selectedClub, hasAttemptedFetch]); // Only run when selectedClub changes and we haven't attempted fetch
 
-    const statusTemplate = (status: string) => {
-        const severity = status === 'Patvirtinta' ? 'success' : status === 'Laukiama' ? 'info' : 'warning';
-        return <Tag value={status} severity={severity} />;
+    const statusTemplate = (rowData) => {
+        const severity = 
+            rowData.status === 'Patvirtinta' ? 'success' : 
+            rowData.status === 'Laukiama' ? 'info' : 'warning';
+        return <Tag value={rowData.status} severity={severity} />;
     };
 
-    const testNameBodyTemplate = (row: any) => {
-        const isAssigned = row.members.some((m: any) => m.id === loggedInMemberId);
+    const dateTemplate = (rowData, field) => {
+        return rowData[field] ? new Date(rowData[field]).toLocaleDateString() : '';
+    };
+
+    // Add action buttons template
+    const actionTemplate = (rowData) => {
         return (
-            <div className="flex align-items-center gap-2">
-                <span>{row.testName}</span>
-                {isAssigned && <i className="pi pi-star-fill text-yellow-500" title="Priskirta Jums"></i>}
+            <div className="flex gap-2 justify-content-center">
+                <Button
+                    icon="pi pi-pencil"
+                    className="p-button-rounded p-button-text"
+                    tooltip="Edit Test"
+                    onClick={(e) => {
+                        e.stopPropagation(); // Prevent row expansion
+                        router.push(`/tests/edit/${rowData.id}`);
+                    }}
+                />
             </div>
         );
     };
 
-    const rowExpansionTemplate = (data: any) => {
+    const rowExpansionTemplate = (data) => {
         return (
-            <div className="m-3">
-                <h6 className="text-lg font-bold mb-2">Tyrimo aprašymas</h6>
-                <p className="mb-4">{data.description}</p>
-
-                <h6 className="text-lg font-bold mb-2">Priskirti klubo nariai</h6>
-                <DataTable value={data.members} responsiveLayout="scroll">
-                    <Column field="id" header="Medžiotojo bilieto numeris" />
-                    <Column field="name" header="Vardas Pavardė" />
-                </DataTable>
+            <div className="p-3">
+                <h5>Test Description</h5>
+                <p>{data.description}</p>
+                
+                <h5 className="mt-4">Participants</h5>
+                {data.participants && data.participants.length > 0 ? (
+                    <DataTable value={data.participants} responsiveLayout="scroll">
+                        <Column field="userName" header="Name" />
+                    </DataTable>
+                ) : (
+                    <p>No participants assigned</p>
+                )}
             </div>
         );
-    };
-
-    const toggleAll = () => {
-        allExpanded ? collapseAll() : expandAll();
-    };
-
-    const expandAll = () => {
-        const _expanded: any = {};
-        tests.forEach((t) => (_expanded[t.id] = true));
-        setExpandedRows(_expanded);
-        setAllExpanded(true);
-    };
-
-    const collapseAll = () => {
-        setExpandedRows([]);
-        setAllExpanded(false);
     };
 
     const header = (
-        <div className="flex align-items-center mb-3 gap-3">
-            <Button label="Pridėti tyrimą" icon="pi pi-plus" onClick={() => router.push('/tests/create')} />
-            <Button icon={allExpanded ? 'pi pi-minus' : 'pi pi-plus'} label={allExpanded ? 'Suskleisti' : 'Išskleisti'} onClick={toggleAll} />
+        <div className="flex justify-content-between align-items-center">
+            <h5 className="m-0">Tyrimai</h5>
+            <Button 
+                label="Pridėti tyrimą" 
+                icon="pi pi-plus" 
+                onClick={() => router.push('/tests/create')} 
+            />
         </div>
     );
 
     return (
-        <div className="card">
-            <h5>Tyrimai</h5>
-            {header}
-            <DataTable
-                value={tests}
-                expandedRows={expandedRows}
-                onRowToggle={(e) => setExpandedRows(e.data)}
-                dataKey="id"
-                rowExpansionTemplate={rowExpansionTemplate}
-                responsiveLayout="scroll"
-            >
-                <Column expander style={{ width: '3em' }} />
-                <Column header="Tyrimų pavadinimas" body={testNameBodyTemplate} />
-                <Column field="animalType" header="Žvėris" />
-                <Column field="dateHunted" header="Sumedžiojimo data" body={(row) => row.dateHunted} />
-                <Column field="testStartDate" header="Tyrimų pridavimo data" body={(row) => row.testStartDate} />
-                <Column field="status" header="Statusas" body={(row) => statusTemplate(row.status)} />
-                <Column field="completedDate" header="Rezultatų gavimo data" body={(row) => row.completedDate} />
-            </DataTable>
-        </div>
+        <ClubGuard>
+            <div className="card">
+                <Toast ref={toast} />
+                
+                <DataTable 
+                    value={tests} 
+                    expandedRows={expandedRows}
+                    onRowToggle={(e) => setExpandedRows(e.data)}
+                    rowExpansionTemplate={rowExpansionTemplate}
+                    header={header}
+                    loading={loading}
+                    dataKey="id"
+                    paginator 
+                    rows={10} 
+                    rowsPerPageOptions={[5, 10, 25]} 
+                    className="p-datatable-gridlines"
+                    emptyMessage="No blood tests found"
+                >
+                    <Column expander style={{ width: '3em' }} />
+                    <Column field="testName" header="Tyrimų pavadinimas" sortable />
+                    <Column field="animalType" header="Žvėris" sortable />
+                    <Column field="dateHunted" header="Sumedžiojimo data" body={(rowData) => dateTemplate(rowData, 'dateHunted')} sortable />
+                    <Column field="testStartDate" header="Tyrimų pridavimo data" body={(rowData) => dateTemplate(rowData, 'testStartDate')} sortable />
+                    <Column field="status" header="Statusas" body={statusTemplate} sortable />
+                    <Column field="completedDate" header="Rezultatų gavimo data" body={(rowData) => dateTemplate(rowData, 'completedDate')} sortable />
+                    <Column body={actionTemplate} header="Actions" style={{ width: '8rem' }} />
+                </DataTable>
+            </div>
+        </ClubGuard>
     );
 };
 
-export default TestTable;
+export default BloodTestsListPage;

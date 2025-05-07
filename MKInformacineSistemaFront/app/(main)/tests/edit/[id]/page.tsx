@@ -1,31 +1,34 @@
 'use client';
-import React, { useState, useEffect, useRef } from 'react';
-import { useRouter } from 'next/navigation';
+import React, { useEffect, useState, useRef } from 'react';
+import { useParams, useRouter } from 'next/navigation';
 import { InputText } from 'primereact/inputtext';
 import { Calendar } from 'primereact/calendar';
 import { Dropdown } from 'primereact/dropdown';
 import { MultiSelect } from 'primereact/multiselect';
 import { Button } from 'primereact/button';
 import { Toast } from 'primereact/toast';
-import { useClub } from '../../../../context/ClubContext';
-import ClubGuard from '../../../../context/ClubGuard';
+import { ProgressSpinner } from 'primereact/progressspinner';
+import { useClub } from '../../../../../context/ClubContext';
+import ClubGuard from '../../../../../context/ClubGuard';
 
-const CreateBloodTestPage = () => {
+const EditBloodTestPage = () => {
+    const { id } = useParams();
     const router = useRouter();
     const toast = useRef(null);
     const { selectedClub } = useClub();
+    
     const [members, setMembers] = useState([]);
-    const [hasAttemptedFetch, setHasAttemptedFetch] = useState(false);
-    const [loading, setLoading] = useState(false);
+    const [selectedMembers, setSelectedMembers] = useState([]);
+    const [test, setTest] = useState(null);
+    const [loading, setLoading] = useState(true);
     const [submitting, setSubmitting] = useState(false);
-
     const [formData, setFormData] = useState({
         testName: '',
-        animalType: 'Šernas',
+        animalType: '',
         dateHunted: null,
         testStartDate: null,
         description: '',
-        status: 'Laukiama',
+        status: '',
         participantIds: []
     });
 
@@ -35,46 +38,71 @@ const CreateBloodTestPage = () => {
         { label: 'Netinkamas', value: 'Netinkamas' }
     ];
 
-    // Fetch club members
+    // Fetch test data and members
     useEffect(() => {
-        if (hasAttemptedFetch || !selectedClub) return;
+        if (!selectedClub || !id) return;
         
-        const fetchMembers = async () => {
+        const fetchData = async () => {
             try {
                 setLoading(true);
-                setHasAttemptedFetch(true);
                 
-                const response = await fetch(`https://localhost:7091/api/Members?clubId=${selectedClub.id}`, {
+                // Fetch blood test
+                const testResponse = await fetch(`https://localhost:7091/api/BloodTests/${id}?clubId=${selectedClub.id}`, {
                     headers: {
                         'Authorization': `Bearer ${sessionStorage.getItem('accessToken')}`
                     }
                 });
                 
-                if (!response.ok) {
-                    throw new Error(`HTTP error! Status: ${response.status}`);
+                if (!testResponse.ok) {
+                    throw new Error(`HTTP error! Status: ${testResponse.status}`);
                 }
                 
-                const data = await response.json();
-                setMembers(data);
+                const testData = await testResponse.json();
+                setTest(testData);
+                
+                // Transform dates into Date objects
+                setFormData({
+                    testName: testData.testName,
+                    animalType: testData.animalType,
+                    dateHunted: testData.dateHunted ? new Date(testData.dateHunted) : null,
+                    testStartDate: testData.testStartDate ? new Date(testData.testStartDate) : null,
+                    description: testData.description,
+                    status: testData.status,
+                    participantIds: testData.participants ? testData.participants.map(p => p.userId) : []
+                });
+                
+                // Fetch members
+                const membersResponse = await fetch(`https://localhost:7091/api/Members?clubId=${selectedClub.id}`, {
+                    headers: {
+                        'Authorization': `Bearer ${sessionStorage.getItem('accessToken')}`
+                    }
+                });
+                
+                if (!membersResponse.ok) {
+                    throw new Error(`HTTP error! Status: ${membersResponse.status}`);
+                }
+                
+                const membersData = await membersResponse.json();
+                setMembers(membersData);
+                
             } catch (error) {
-                console.error('Error fetching members:', error);
+                console.error('Error fetching data:', error);
                 toast.current?.show({
                     severity: 'error',
                     summary: 'Error',
-                    detail: 'Failed to load members: ' + error.message,
+                    detail: 'Failed to load test data: ' + error.message,
                     life: 3000
                 });
-                setMembers([]);
             } finally {
                 setLoading(false);
             }
         };
         
-        fetchMembers();
-    }, [selectedClub, hasAttemptedFetch]);
+        fetchData();
+    }, [selectedClub, id]);
 
-    const saveTest = async () => {
-        if (!formData.testName || !formData.animalType || !formData.dateHunted || !formData.testStartDate) {
+    const handleSubmit = async () => {
+        if (!formData.testName || !formData.animalType || !formData.dateHunted || !formData.testStartDate || !formData.status) {
             toast.current?.show({
                 severity: 'error',
                 summary: 'Validation Error',
@@ -87,13 +115,19 @@ const CreateBloodTestPage = () => {
         try {
             setSubmitting(true);
             
-            const response = await fetch(`https://localhost:7091/api/BloodTests?clubId=${selectedClub.id}`, {
-                method: 'POST',
+            // Prepare the update payload
+            const updateData = {
+                ...formData,
+                id: parseInt(id)
+            };
+            
+            const response = await fetch(`https://localhost:7091/api/BloodTests/${id}?clubId=${selectedClub.id}`, {
+                method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
                     'Authorization': `Bearer ${sessionStorage.getItem('accessToken')}`
                 },
-                body: JSON.stringify(formData)
+                body: JSON.stringify(updateData)
             });
             
             if (!response.ok) {
@@ -103,7 +137,7 @@ const CreateBloodTestPage = () => {
             toast.current?.show({
                 severity: 'success',
                 summary: 'Success',
-                detail: 'Blood test created successfully',
+                detail: 'Blood test updated successfully',
                 life: 3000
             });
             
@@ -112,11 +146,11 @@ const CreateBloodTestPage = () => {
                 router.push('/tests/list');
             }, 1500);
         } catch (error) {
-            console.error('Error creating blood test:', error);
+            console.error('Error updating blood test:', error);
             toast.current?.show({
                 severity: 'error',
                 summary: 'Error',
-                detail: 'Failed to create blood test: ' + error.message,
+                detail: 'Failed to update blood test: ' + error.message,
                 life: 3000
             });
         } finally {
@@ -124,11 +158,36 @@ const CreateBloodTestPage = () => {
         }
     };
 
+    if (loading) {
+        return (
+            <div className="flex justify-content-center align-items-center" style={{ height: '70vh' }}>
+                <ProgressSpinner />
+            </div>
+        );
+    }
+
+    if (!test) {
+        return (
+            <div className="card p-5 text-center">
+                <Toast ref={toast} />
+                <i className="pi pi-exclamation-triangle text-3xl text-yellow-500 mb-3"></i>
+                <h3>Test Not Found</h3>
+                <p>The blood test you're looking for could not be found.</p>
+                <Button 
+                    label="Back to List" 
+                    icon="pi pi-arrow-left" 
+                    onClick={() => router.push('/tests/list')} 
+                    className="mt-3"
+                />
+            </div>
+        );
+    }
+
     return (
         <ClubGuard>
             <div className="card p-5">
                 <Toast ref={toast} />
-                <h5>Pridėti naują tyrimą</h5>
+                <h5>Redaguoti tyrimą</h5>
                 <div className="grid formgrid p-fluid">
                     <div className="field col-12 md:col-6">
                         <label>Pavadinimas</label>
@@ -153,7 +212,6 @@ const CreateBloodTestPage = () => {
                             onChange={(e) => setFormData({ ...formData, dateHunted: e.value })}
                             dateFormat="yy-mm-dd"
                             showIcon
-                            // Removed the locale to avoid errors
                         />
                     </div>
 
@@ -164,7 +222,6 @@ const CreateBloodTestPage = () => {
                             onChange={(e) => setFormData({ ...formData, testStartDate: e.value })}
                             dateFormat="yy-mm-dd"
                             showIcon
-                            // Removed the locale to avoid errors
                         />
                     </div>
 
@@ -198,7 +255,6 @@ const CreateBloodTestPage = () => {
                             filter
                             filterPlaceholder="Ieškoti nario"
                             display="chip"
-                            disabled={loading}
                         />
                     </div>
                 </div>
@@ -207,7 +263,7 @@ const CreateBloodTestPage = () => {
                     <Button 
                         label="Išsaugoti" 
                         icon="pi pi-save" 
-                        onClick={saveTest} 
+                        onClick={handleSubmit} 
                         loading={submitting}
                     />
                     <Button 
@@ -223,4 +279,4 @@ const CreateBloodTestPage = () => {
     );
 };
 
-export default CreateBloodTestPage;
+export default EditBloodTestPage;
