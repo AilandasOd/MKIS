@@ -46,10 +46,15 @@ const MapWithCustomMarkers: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const { selectedClub } = useClub();
 
-  const getIconForType = (type: MarkerType) => ({
-    url: type === 'Tower' ? TOWER_ICON : EATING_ICON,
-    scaledSize: new google.maps.Size(32, 32),
-  });
+  const getIconForType = (type) => {
+    console.log(`Getting icon for type: ${type}`);
+    const iconUrl = type === 'Tower' ? TOWER_ICON : EATING_ICON;
+    console.log(`Icon URL: ${iconUrl}`);
+    return {
+      url: iconUrl,
+      scaledSize: new google.maps.Size(32, 32),
+    };
+  };
 
   // Fetch map objects from API
   useEffect(() => {
@@ -119,6 +124,18 @@ const MapWithCustomMarkers: React.FC = () => {
 
     fetchMapObjects();
   }, [selectedClub, map, isDrawingActive]);
+
+  const handleTypeChange = (e) => {
+    setSelectedType(e.value);
+    if (drawingManager) {
+      drawingManager.setOptions({
+        markerOptions: {
+          icon: getIconForType(e.value),
+          draggable: true
+        }
+      });
+    }
+  };
 
   // Delete marker handler
   const handleDeleteMarker = async (marker: google.maps.Marker, id?: number) => {
@@ -211,7 +228,7 @@ const MapWithCustomMarkers: React.FC = () => {
 
   const initMap = async () => {
     if (!mapRef.current || !selectedClub) return;
-
+  
     try {
       // Create the map
       const newMap = new google.maps.Map(mapRef.current, {
@@ -220,38 +237,17 @@ const MapWithCustomMarkers: React.FC = () => {
         mapTypeId: google.maps.MapTypeId.HYBRID,
         streetViewControl: false,
       });
-
+  
       setMap(newMap);
       
       // Draw hunting area boundary
       await drawHuntingArea(newMap);
-
-      // Set up drawing manager
-      const manager = new google.maps.drawing.DrawingManager({
-        drawingMode: null, // Start with no drawing mode
-        drawingControl: isDrawingActive,
-        drawingControlOptions: {
-          position: google.maps.ControlPosition.TOP_CENTER,
-          drawingModes: [google.maps.drawing.OverlayType.MARKER],
-        },
-        markerOptions: {
-          icon: getIconForType(selectedType),
-          draggable: true,
-        },
-      });
-
-      manager.setMap(newMap);
-      setDrawingManager(manager);
-
-      google.maps.event.addListener(manager, 'overlaycomplete', (event: google.maps.drawing.OverlayCompleteEvent) => {
-        if (event.type === google.maps.drawing.OverlayType.MARKER) {
-          const marker = event.overlay as google.maps.Marker;
-          marker.setIcon(getIconForType(selectedType));
-          marker.setDraggable(true);
-          setNewMarker(marker);
-          setNameDialogVisible(true);
-        }
-      });
+  
+      // Don't create the drawing manager here - we'll create it later
+      setDrawingManager(null);
+  
+      // This will trigger the useEffect that creates the drawing manager with the correct icon
+      setMap(newMap);
     } catch (err) {
       console.error("Map initialization error:", err);
       toast.current?.show({
@@ -264,6 +260,61 @@ const MapWithCustomMarkers: React.FC = () => {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    if (!map) return;
+    
+    console.log(`Creating/updating drawing manager with icon type: ${selectedType}`);
+  
+    // If there's an existing drawing manager, remove it completely
+    if (drawingManager) {
+      drawingManager.setMap(null);
+    }
+    
+    // Create a completely new drawing manager with current settings
+    const manager = new google.maps.drawing.DrawingManager({
+      drawingMode: isDrawingActive ? google.maps.drawing.OverlayType.MARKER : null,
+      drawingControl: isDrawingActive,
+      drawingControlOptions: {
+        position: google.maps.ControlPosition.TOP_CENTER,
+        drawingModes: [google.maps.drawing.OverlayType.MARKER],
+      },
+      markerOptions: {
+        icon: getIconForType(selectedType),
+        draggable: true,
+      },
+    });
+  
+    // Set the map for the new drawing manager
+    manager.setMap(map);
+    
+    // Store the new manager in state
+    setDrawingManager(manager);
+    
+    // Add event listener for marker creation
+    google.maps.event.addListener(manager, 'overlaycomplete', (event) => {
+      if (event.type === google.maps.drawing.OverlayType.MARKER) {
+        const marker = event.overlay;
+        marker.setIcon(getIconForType(selectedType));
+        marker.setDraggable(true);
+        setNewMarker(marker);
+        setNameDialogVisible(true);
+      }
+    });
+    
+    // Update markers draggable state
+    markers.forEach(m => {
+      m.marker.setDraggable(isDrawingActive);
+    });
+    
+    return () => {
+      // Cleanup function
+      if (manager) {
+        google.maps.event.clearInstanceListeners(manager);
+        manager.setMap(null);
+      }
+    };
+  }, [map, selectedType, isDrawingActive]);
 
   // Initialize map when component mounts
   useEffect(() => {
@@ -307,6 +358,7 @@ const MapWithCustomMarkers: React.FC = () => {
   useEffect(() => {
     if (!drawingManager) return;
     
+    // Complete reset of drawing manager options
     drawingManager.setOptions({
       drawingControl: isDrawingActive,
       drawingMode: isDrawingActive ? google.maps.drawing.OverlayType.MARKER : null,
@@ -415,17 +467,20 @@ const MapWithCustomMarkers: React.FC = () => {
         <div className="flex items-center justify-between mb-4 gap-4">
           <h2 className="text-xl font-bold">Objektų žymėjimas</h2>
           <div className="flex gap-4">
-            <Dropdown
-              value={selectedType}
-              options={[
-                { label: 'Bokštelis', value: 'Tower' },
-                { label: 'Šėrykla', value: 'EatingZone' },
-              ]}
-              onChange={(e) => setSelectedType(e.value)}
-              placeholder="Pasirinkite tipą"
-              className="w-64"
-              disabled={isDrawingActive}
-            />
+          <Dropdown
+  value={selectedType}
+  options={[
+    { label: 'Bokštelis', value: 'Tower' },
+    { label: 'Šėrykla', value: 'EatingZone' },
+  ]}
+  onChange={(e) => {
+    console.log(`Dropdown changed to: ${e.value}`);
+    setSelectedType(e.value);
+  }}
+  placeholder="Pasirinkite tipą"
+  className="w-64"
+  disabled={isDrawingActive}
+/>
             <Button
               label={isDrawingActive ? 'Baigti žymėjimą' : 'Pradėti žymėjimą'}
               icon={isDrawingActive ? 'pi pi-check' : 'pi pi-map-marker'}

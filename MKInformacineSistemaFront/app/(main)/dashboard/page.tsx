@@ -9,6 +9,7 @@ import { Avatar } from 'primereact/avatar';
 import { Tag } from 'primereact/tag';
 import { Image } from 'primereact/image';
 import { Button } from 'primereact/button';
+import { useRouter } from 'next/navigation';
 import { useApiClient } from '../../../utils/api';
 import ClubGuard from '../../../context/ClubGuard';
 
@@ -20,6 +21,7 @@ const Dashboard = () => {
   const [loading, setLoading] = useState(true);
   const [chartData, setChartData] = useState({});
   const toast = useRef(null);
+  const router = useRouter();
   
   // Add key to track club changes
   const clubIdRef = useRef(null);
@@ -101,6 +103,11 @@ const Dashboard = () => {
     fetchDashboardData();
   };
 
+  // Navigate to post creation page
+  const handleCreatePost = () => {
+    router.push('/post');
+  };
+
   // Effect that runs when selectedClub changes
   useEffect(() => {
     // Only fetch if club has changed or is newly selected
@@ -150,13 +157,30 @@ const Dashboard = () => {
         
         <div className="col-12 xl:col-6">
           <div className="card">
-            <h5>Club Posts</h5>
+            <div className="flex justify-content-between align-items-center mb-3">
+              <h5>Club Posts</h5>
+              <Button 
+                label="Create Post" 
+                icon="pi pi-plus" 
+                onClick={handleCreatePost} 
+                className="p-button-sm" 
+              />
+            </div>
             {posts && posts.length > 0 ? (
               <div className="flex flex-column" style={{ maxHeight: '650px', overflowY: 'auto' }}>
                 {posts.map((post) => renderPostItem(post))}
               </div>
             ) : (
-              <p>No posts available. Create a new post to get started!</p>
+              <div className="p-4 text-center">
+                <i className="pi pi-file-edit text-3xl text-gray-300 mb-3"></i>
+                <p>No posts available. Create a new post to get started!</p>
+                <Button 
+                  label="Create Post" 
+                  icon="pi pi-plus" 
+                  onClick={handleCreatePost} 
+                  className="mt-2" 
+                />
+              </div>
             )}
           </div>
         </div>

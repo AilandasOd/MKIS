@@ -1,7 +1,7 @@
-// MKInformacineSistemaFront/app/(full-page)/auth/login/page.tsx
+// Update the login page to handle Lithuanian error messages
 'use client';
 import { useRouter } from 'next/navigation';
-import React, { useContext, useState } from 'react';
+import React, { useContext, useState, useRef } from 'react';
 import { Checkbox } from 'primereact/checkbox';
 import { Button } from 'primereact/button';
 import { Password } from 'primereact/password';
@@ -18,7 +18,7 @@ const LoginPage = () => {
     const { layoutConfig } = useContext(LayoutContext);
     const { login } = useAuth();
     const router = useRouter();
-    const toast = React.useRef<Toast>(null);
+    const toast = useRef<Toast>(null);
 
     const containerClassName = classNames(
         'surface-ground flex align-items-center justify-content-center min-h-screen min-w-screen overflow-hidden',
@@ -47,11 +47,11 @@ const LoginPage = () => {
                 
                 // Navigation is handled by the auth context
             } else {
-                const errorText = await res.text();
+                // Show Lithuanian error message for login failures
                 toast.current?.show({ 
                     severity: 'error', 
-                    summary: 'Login Failed', 
-                    detail: errorText || 'Invalid credentials', 
+                    summary: 'Klaida', 
+                    detail: 'Įvestas neteisingas slapyvardis arba slaptažodis', 
                     life: 3000 
                 });
             }
@@ -59,8 +59,8 @@ const LoginPage = () => {
             console.error('Login error:', err);
             toast.current?.show({ 
                 severity: 'error', 
-                summary: 'Error', 
-                detail: 'Something went wrong. Please try again.', 
+                summary: 'Klaida', 
+                detail: 'Įvyko klaida bandant prisijungti. Bandykite dar kartą.', 
                 life: 3000 
             });
         }
@@ -110,6 +110,11 @@ const LoginPage = () => {
                                 feedback={false}
                                 className="w-full mb-5"
                                 inputClassName="w-full p-3 md:w-30rem"
+                                onKeyDown={(e) => {
+                                    if (e.key === 'Enter') {
+                                        handleLogin();
+                                    }
+                                }}
                             ></Password>
 
                             <div className="flex align-items-center justify-content-between mb-5 gap-5">
