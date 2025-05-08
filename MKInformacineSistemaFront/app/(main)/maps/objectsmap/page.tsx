@@ -205,26 +205,46 @@ const MapWithCustomMarkers: React.FC = () => {
 
   const loadGoogleMapsScript = (): Promise<void> => {
     return new Promise((resolve, reject) => {
-      if (window.google && window.google.maps) {
+      if (window.google && window.google.maps && google.maps.drawing) {
         resolve();
         return;
       }
-
+  
       const existingScript = document.querySelector(`script[src*="maps.googleapis.com"]`);
       if (existingScript) {
-        existingScript.addEventListener("load", () => resolve());
+        existingScript.addEventListener("load", () => {
+          // Wait for drawing lib to be available
+          const waitForDrawingLib = () => {
+            if (google.maps.drawing) {
+              resolve();
+            } else {
+              setTimeout(waitForDrawingLib, 100);
+            }
+          };
+          waitForDrawingLib();
+        });
         return;
       }
-
+  
       const script = document.createElement("script");
       script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&libraries=drawing`;
       script.async = true;
       script.defer = true;
-      script.onload = () => resolve();
+      script.onload = () => {
+        const waitForDrawingLib = () => {
+          if (google.maps.drawing) {
+            resolve();
+          } else {
+            setTimeout(waitForDrawingLib, 100);
+          }
+        };
+        waitForDrawingLib();
+      };
       script.onerror = reject;
       document.head.appendChild(script);
     });
   };
+  
 
   const initMap = async () => {
     if (!mapRef.current || !selectedClub) return;

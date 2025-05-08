@@ -40,6 +40,7 @@ builder.Services.AddScoped<AuthSeeder>();
 builder.Services.AddScoped<DataSeeder>(); // Add DataSeeder
 builder.Services.AddScoped<MemberActivityService>();
 builder.Services.AddScoped<StatisticsService>();
+builder.Services.AddScoped<StatisticsRecalculationService>();
 
 builder.Services.AddIdentity<User, IdentityRole>()
     .AddEntityFrameworkStores<ApplicationDbContext>()

@@ -28,6 +28,142 @@ namespace MKInformacineSistemaBack.Services
 
             // Update club statistics
             await UpdateClubStatisticsForAnimalAsync(post.ClubId, post.AnimalType);
+
+            // Also update top hunters list to reflect the new post
+            await UpdateClubTopHuntersAsync(post.ClubId);
+        }
+
+        public async Task UpdateAllClubStatisticsAsync(int clubId)
+        {
+            // Update all aspects of club statistics
+            await UpdateClubHuntStatisticsAsync(clubId);
+            await UpdateClubShotsStatisticsAsync(clubId);
+            await UpdateClubAnimalStatisticsAsync(clubId);
+            await UpdateClubTopHuntersAsync(clubId);
+            await UpdateMembersActivityAsync(clubId);
+        }
+
+        public async Task UpdateUserStatisticsForClubAsync(string userId, int clubId)
+        {
+            // Count participated hunts
+            var participatedHunts = await _context.DrivenHuntParticipants
+                .Include(p => p.DrivenHunt)
+                .CountAsync(p =>
+                    p.UserId == userId &&
+                    p.DrivenHunt.ClubId == clubId &&
+                    p.DrivenHunt.IsCompleted);
+
+            // Count led hunts
+            var ledHunts = await _context.DrivenHunts
+                .CountAsync(h =>
+                    h.LeaderId == userId &&
+                    h.ClubId == clubId &&
+                    h.IsCompleted);
+
+            // Calculate activity percentage
+            var totalCompletedHunts = await _context.DrivenHunts
+                .CountAsync(h => h.ClubId == clubId && h.IsCompleted);
+
+            int activityPercentage = totalCompletedHunts > 0
+                ? (int)Math.Round((double)participatedHunts / totalCompletedHunts * 100)
+                : 0;
+
+            // Get shots data
+            var shotsData = await _context.DrivenHuntParticipants
+                .Include(p => p.DrivenHunt)
+                .Where(p =>
+                    p.UserId == userId &&
+                    p.DrivenHunt.ClubId == clubId &&
+                    p.DrivenHunt.IsCompleted)
+                .GroupBy(p => 1) // Group all together
+                .Select(g => new
+                {
+                    ShotsTaken = g.Sum(p => p.ShotsTaken),
+                    ShotsHit = g.Sum(p => p.ShotsHit)
+                })
+                .FirstOrDefaultAsync();
+
+            int shotsTaken = shotsData?.ShotsTaken ?? 0;
+            int shotsHit = shotsData?.ShotsHit ?? 0;
+
+            // Get hunted animals
+            var huntedAnimals = await _context.HuntedAnimals
+                .Include(a => a.Participant)
+                .Where(a =>
+                    a.Participant.UserId == userId &&
+                    a.Participant.DrivenHunt.ClubId == clubId &&
+                    a.Participant.DrivenHunt.IsCompleted)
+                .GroupBy(a => a.AnimalType)
+                .Select(g => new
+                {
+                    AnimalType = g.Key,
+                    Count = g.Sum(a => a.Count)
+                })
+                .ToListAsync();
+
+            // Also get animals from posts
+            var postedAnimals = await _context.Posts
+                .Where(p =>
+                    p.ClubId == clubId &&
+                    p.AuthorId == userId &&
+                    p.Type == "Sumedžiotas žvėris" &&
+                    p.AnimalType != null)
+                .GroupBy(p => p.AnimalType)
+                .Select(g => new
+                {
+                    AnimalType = g.Key,
+                    Count = g.Count()
+                })
+                .ToListAsync();
+
+            // Combine both sources
+            var animalsDict = new Dictionary<string, int>();
+
+            foreach (var animal in huntedAnimals)
+            {
+                if (animalsDict.ContainsKey(animal.AnimalType))
+                    animalsDict[animal.AnimalType] += animal.Count;
+                else
+                    animalsDict[animal.AnimalType] = animal.Count;
+            }
+
+            foreach (var animal in postedAnimals)
+            {
+                if (animal.AnimalType != null)
+                {
+                    if (animalsDict.ContainsKey(animal.AnimalType))
+                        animalsDict[animal.AnimalType] += animal.Count;
+                    else
+                        animalsDict[animal.AnimalType] = animal.Count;
+                }
+            }
+
+            // Get or create user statistics record
+            var userStats = await _context.UserStatistics
+                .FirstOrDefaultAsync(s => s.UserId == userId && s.ClubId == clubId && s.Year == DateTime.UtcNow.Year);
+
+            if (userStats == null)
+            {
+                userStats = new UserStatistics
+                {
+                    UserId = userId,
+                    ClubId = clubId,
+                    Year = DateTime.UtcNow.Year,
+                    LastUpdated = DateTime.UtcNow
+                };
+                _context.UserStatistics.Add(userStats);
+            }
+
+            // Update statistics
+            userStats.DrivenHuntsParticipated = participatedHunts;
+            userStats.DrivenHuntsLed = ledHunts;
+            userStats.ActivityPercentage = activityPercentage;
+            userStats.ShotsTaken = shotsTaken;
+            userStats.ShotsHit = shotsHit;
+            userStats.AnimalsHuntedJson = JsonSerializer.Serialize(animalsDict);
+            userStats.LastUpdated = DateTime.UtcNow;
+
+            await _context.SaveChangesAsync();
         }
 
         /// <summary>
@@ -183,7 +319,7 @@ namespace MKInformacineSistemaBack.Services
         /// <summary>
         /// Updates club hunt statistics
         /// </summary>
-        private async Task UpdateClubHuntStatisticsAsync(int clubId)
+        public async Task UpdateClubHuntStatisticsAsync(int clubId)
         {
             // Get or create club statistics record
             var clubStats = await GetOrCreateClubStatisticsAsync(clubId);
@@ -203,7 +339,7 @@ namespace MKInformacineSistemaBack.Services
         /// <summary>
         /// Updates club shots statistics
         /// </summary>
-        private async Task UpdateClubShotsStatisticsAsync(int clubId)
+        public async Task UpdateClubShotsStatisticsAsync(int clubId)
         {
             // Get or create club statistics record
             var clubStats = await GetOrCreateClubStatisticsAsync(clubId);
@@ -233,7 +369,7 @@ namespace MKInformacineSistemaBack.Services
         /// <summary>
         /// Updates club animal statistics by aggregating from all hunts
         /// </summary>
-        private async Task UpdateClubAnimalStatisticsAsync(int clubId)
+        public async Task UpdateClubAnimalStatisticsAsync(int clubId)
         {
             // Get or create club statistics record
             var clubStats = await GetOrCreateClubStatisticsAsync(clubId);
@@ -294,28 +430,80 @@ namespace MKInformacineSistemaBack.Services
         /// <summary>
         /// Updates the club's top hunters list
         /// </summary>
-        private async Task UpdateClubTopHuntersAsync(int clubId)
+        public async Task UpdateClubTopHuntersAsync(int clubId)
         {
             // Get or create club statistics record
             var clubStats = await GetOrCreateClubStatisticsAsync(clubId);
 
-            // Get top 5 hunters based on animals hunted
-            var topHunters = await _context.HuntedAnimals
+            // Get top hunters from hunted animals in driven hunts
+            var topHuntersFromDrivenHunts = await _context.HuntedAnimals
                 .Include(a => a.Participant)
-                    .ThenInclude(p => p.DrivenHunt)
+                .ThenInclude(p => p.DrivenHunt)
                 .Include(a => a.Participant)
-                    .ThenInclude(p => p.User)
+                .ThenInclude(p => p.User)
                 .Where(a => a.Participant.DrivenHunt.ClubId == clubId && a.Participant.DrivenHunt.IsCompleted)
-                .GroupBy(a => new { a.Participant.UserId, a.Participant.User.FirstName, a.Participant.User.LastName })
+                .GroupBy(a => new {
+                    a.Participant.UserId,
+                    FirstName = a.Participant.User.FirstName,
+                    LastName = a.Participant.User.LastName
+                })
                 .Select(g => new
                 {
                     UserId = g.Key.UserId,
                     Name = $"{g.Key.FirstName} {g.Key.LastName}",
                     Count = g.Sum(a => a.Count)
                 })
-                .OrderByDescending(x => x.Count)
-                .Take(5)
                 .ToListAsync();
+
+            // Get top hunters from posts about hunted animals
+            var topHuntersFromPosts = await _context.Posts
+                .Include(p => p.Author)
+                .Where(p => p.ClubId == clubId && p.Type == "Sumedžiotas žvėris" && p.AnimalType != null)
+                .GroupBy(p => new {
+                    p.AuthorId,
+                    FirstName = p.Author.FirstName,
+                    LastName = p.Author.LastName
+                })
+                .Select(g => new
+                {
+                    UserId = g.Key.AuthorId,
+                    Name = $"{g.Key.FirstName} {g.Key.LastName}",
+                    Count = g.Count()
+                })
+                .ToListAsync();
+
+            // Combine and aggregate the counts
+            var combinedHunters = new Dictionary<string, (string UserId, string Name, int Count)>();
+
+            foreach (var hunter in topHuntersFromDrivenHunts)
+            {
+                combinedHunters[hunter.UserId] = (hunter.UserId, hunter.Name, hunter.Count);
+            }
+
+            foreach (var hunter in topHuntersFromPosts)
+            {
+                if (combinedHunters.ContainsKey(hunter.UserId))
+                {
+                    var (userId, name, count) = combinedHunters[hunter.UserId];
+                    combinedHunters[hunter.UserId] = (userId, name, count + hunter.Count);
+                }
+                else
+                {
+                    combinedHunters[hunter.UserId] = (hunter.UserId, hunter.Name, hunter.Count);
+                }
+            }
+
+            // Sort and take top 5
+            var topHunters = combinedHunters.Values
+                .OrderByDescending(h => h.Count)
+                .Take(5)
+                .Select(h => new
+                {
+                    UserId = h.UserId,
+                    Name = h.Name,
+                    Count = h.Count
+                })
+                .ToList();
 
             // Save as JSON
             clubStats.TopHuntersJson = JsonSerializer.Serialize(topHunters);

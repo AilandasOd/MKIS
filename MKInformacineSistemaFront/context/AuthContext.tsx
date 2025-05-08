@@ -48,7 +48,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     try {
       const decoded = jwtDecode<JwtPayload>(token);
       
-      // Better role extraction
+      // Role extraction
       let roles: string[] = [];
       if (typeof decoded.role === 'string') {
         roles = [decoded.role];

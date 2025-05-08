@@ -422,7 +422,7 @@ const EditPolygonPage: React.FC = () => {
       toast.current?.show({
         severity: 'success',
         summary: 'Success',
-        detail: 'Polygon updated successfully',
+        detail: 'Polygonas atnaujintas sėkmingai',
         life: 3000
       });
       
@@ -433,7 +433,7 @@ const EditPolygonPage: React.FC = () => {
       toast.current?.show({
         severity: 'error',
         summary: 'Error',
-        detail: 'Failed to update polygon',
+        detail: 'Nepavyko atnaujinti poligoną',
         life: 3000
       });
     } finally {

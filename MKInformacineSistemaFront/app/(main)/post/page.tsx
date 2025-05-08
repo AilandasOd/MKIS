@@ -72,7 +72,7 @@ const CreatePostForm = () => {
             toast.current.show({ 
                 severity: 'error', 
                 summary: 'Error', 
-                detail: 'No club selected. Please select a club first.', 
+                detail: 'Nepasirinkote klubo', 
                 life: 3000 
             });
             return;
@@ -83,7 +83,7 @@ const CreatePostForm = () => {
             toast.current.show({ 
                 severity: 'error', 
                 summary: 'Error', 
-                detail: 'Please fill in all required fields', 
+                detail: 'Prašome užpildyti visus laukus', 
                 life: 3000 
             });
             return;
@@ -93,7 +93,7 @@ const CreatePostForm = () => {
             toast.current.show({ 
                 severity: 'error', 
                 summary: 'Error', 
-                detail: 'Please enter a title for the post', 
+                detail: 'Prašaume užpildyti visus laukus', 
                 life: 3000 
             });
             return;
@@ -147,7 +147,7 @@ const CreatePostForm = () => {
             toast.current.show({ 
                 severity: 'success', 
                 summary: 'Success', 
-                detail: 'Post created successfully', 
+                detail: 'Įrašas sukurtas sėkmingai', 
                 life: 3000 
             });
             
@@ -161,7 +161,7 @@ const CreatePostForm = () => {
             toast.current.show({ 
                 severity: 'error', 
                 summary: 'Error', 
-                detail: 'Failed to create post: ' + error.message, 
+                detail: 'Nepavykos sukurti įrašo: ' + error.message, 
                 life: 3000 
             });
         } finally {

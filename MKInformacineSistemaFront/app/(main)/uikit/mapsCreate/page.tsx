@@ -407,7 +407,7 @@ const MapsCreate: React.FC = () => {
       toast.current?.show({
         severity: 'success',
         summary: 'Success',
-        detail: 'Polygon saved successfully',
+        detail: 'Polygonas išsaugotas',
         life: 3000,
       });
 
@@ -436,7 +436,7 @@ const MapsCreate: React.FC = () => {
       toast.current?.show({
         severity: 'error',
         summary: 'Error',
-        detail: 'Failed to save polygon',
+        detail: 'Nepavyko išsaugoti',
         life: 3000,
       });
     }

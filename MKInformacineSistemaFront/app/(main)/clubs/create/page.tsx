@@ -181,27 +181,27 @@ const CreateClubPage = () => {
     <div className="p-4">
       <Toast ref={toast} />
       
-      <h2 className="text-2xl font-bold mb-4">Create New Hunting Club</h2>
+      <h2 className="text-2xl font-bold mb-4">Sukurti naują medžiotojų klubą</h2>
       
       <div className="grid">
         <div className="col-12 md:col-8">
           <Card className="p-4">
-            <h3 className="text-xl font-semibold mb-4">Club Information</h3>
+            <h3 className="text-xl font-semibold mb-4">Klubo informacija</h3>
             
             <div className="formgrid grid">
               <div className="field col-12">
-                <label htmlFor="name" className="block text-sm font-medium mb-2">Club Name*</label>
+                <label htmlFor="name" className="block text-sm font-medium mb-2">Klubo pavadinimas*</label>
                 <InputText 
                   id="name" 
                   value={formData.name} 
                   onChange={(e) => handleInputChange(e, 'name')} 
                   className={submitted && !formData.name ? 'p-invalid w-full' : 'w-full'}
                 />
-                {submitted && !formData.name && <small className="p-error">Club name is required.</small>}
+                {submitted && !formData.name && <small className="p-error">Privalomas klubo pavadinimas.</small>}
               </div>
               
               <div className="field col-12">
-                <label htmlFor="description" className="block text-sm font-medium mb-2">Description</label>
+                <label htmlFor="description" className="block text-sm font-medium mb-2">Aprašymas</label>
                 <InputTextarea 
                   id="description" 
                   value={formData.description} 
@@ -212,18 +212,18 @@ const CreateClubPage = () => {
               </div>
               
               <div className="field col-12">
-                <label htmlFor="residenceAddress" className="block text-sm font-medium mb-2">Club Address*</label>
+                <label htmlFor="residenceAddress" className="block text-sm font-medium mb-2">Klubo adresas*</label>
                 <InputText 
                   id="residenceAddress" 
                   value={formData.residenceAddress} 
                   onChange={(e) => handleInputChange(e, 'residenceAddress')} 
                   className={submitted && !formData.residenceAddress ? 'p-invalid w-full' : 'w-full'}
                 />
-                {submitted && !formData.residenceAddress && <small className="p-error">Club address is required.</small>}
+                {submitted && !formData.residenceAddress && <small className="p-error">Privalomas klubo adresas.</small>}
               </div>
               
               <div className="field col-12 md:col-6">
-                <label htmlFor="contactEmail" className="block text-sm font-medium mb-2">Contact Email</label>
+                <label htmlFor="contactEmail" className="block text-sm font-medium mb-2">Kontaktinis el. paštas</label>
                 <InputText 
                   id="contactEmail" 
                   value={formData.contactEmail} 
@@ -233,7 +233,7 @@ const CreateClubPage = () => {
               </div>
               
               <div className="field col-12 md:col-6">
-                <label htmlFor="contactPhone" className="block text-sm font-medium mb-2">Contact Phone</label>
+                <label htmlFor="contactPhone" className="block text-sm font-medium mb-2">Kontaktinis telefonas</label>
                 <InputText 
                   id="contactPhone" 
                   value={formData.contactPhone} 
@@ -243,7 +243,7 @@ const CreateClubPage = () => {
               </div>
               
               <div className="field col-12 md:col-6">
-                <label htmlFor="foundedDate" className="block text-sm font-medium mb-2">Founded Date*</label>
+                <label htmlFor="foundedDate" className="block text-sm font-medium mb-2">Įkūrimo data*</label>
                 <Calendar 
                   id="foundedDate" 
                   value={formData.foundedDate} 
@@ -251,7 +251,7 @@ const CreateClubPage = () => {
                   showIcon
                   className={submitted && !formData.foundedDate ? 'p-invalid w-full' : 'w-full'}
                 />
-                {submitted && !formData.foundedDate && <small className="p-error">Founded date is required.</small>}
+                {submitted && !formData.foundedDate && <small className="p-error">Įkūrimo data yra privaloma.</small>}
               </div>
             </div>
           </Card>
@@ -259,13 +259,13 @@ const CreateClubPage = () => {
         
         <div className="col-12 md:col-4">
           <Card className="p-4 mb-4">
-            <h3 className="text-xl font-semibold mb-4">Club Logo</h3>
+            <h3 className="text-xl font-semibold mb-4">Klubo logotipas</h3>
             
             <div className="flex flex-column align-items-center">
               {logoPreview ? (
                 <img 
                   src={logoPreview} 
-                  alt="Logo Preview" 
+                  alt="Logotipo peržiūra" 
                   className="mb-3 border-circle" 
                   style={{ width: '150px', height: '150px', objectFit: 'cover' }} 
                 />
@@ -282,32 +282,32 @@ const CreateClubPage = () => {
                 maxFileSize={1000000} 
                 customUpload={true}
                 uploadHandler={onLogoSelect}
-                chooseLabel="Select Logo" 
+                chooseLabel="Pasirinkti logotipą" 
                 className="w-full"
               />
             </div>
           </Card>
           
           <Card className="p-4">
-            <h3 className="text-xl font-semibold mb-4">Hunting Area Location</h3>
-            <p className="text-sm mb-3">Click on the map to set your club's main hunting area location.</p>
+            <h3 className="text-xl font-semibold mb-4">Medžioklės plotų vieta</h3>
+            <p className="text-sm mb-3">Spustelėkite žemėlapį, kad nustatytumėte pagrindinę medžioklės vietą.</p>
             
             <div ref={mapRef} style={{ width: '100%', height: '300px', borderRadius: '8px' }} className="mb-3" />
             
             <div className="text-sm text-gray-400">
-              <p className="m-0">Longitude: {locationCoords[0].toFixed(6)}</p>
-              <p className="m-0">Latitude: {locationCoords[1].toFixed(6)}</p>
+              <p className="m-0">Ilguma: {locationCoords[0].toFixed(6)}</p>
+              <p className="m-0">Platuma: {locationCoords[1].toFixed(6)}</p>
             </div>
           </Card>
         </div>
         
         <div className="col-12 flex justify-content-end mt-4">
-          <Button label="Cancel" icon="pi pi-times" className="p-button-outlined mr-2" onClick={() => router.push('/clubs/browse')} />
-          <Button label="Create Club" icon="pi pi-check" loading={loading} onClick={handleSubmit} />
+          <Button label="Atšaukti" icon="pi pi-times" className="p-button-outlined mr-2" onClick={() => router.push('/clubs/browse')} />
+          <Button label="Sukurti klubą" icon="pi pi-check" loading={loading} onClick={handleSubmit} />
         </div>
       </div>
     </div>
   );
-};
+};  
 
 export default CreateClubPage;

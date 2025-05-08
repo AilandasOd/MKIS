@@ -318,6 +318,19 @@ namespace MKInformacineSistemaBack.Controllers
             }
 
             await _context.SaveChangesAsync();
+            hunt = await _context.DrivenHunts.FindAsync(huntId);
+            if (hunt != null && hunt.IsCompleted)
+            {
+                // Update user statistics
+                await _statisticsService.UpdateUserStatisticsForClubAsync(participant.UserId, clubId);
+
+                // Update club statistics for animals
+                await _statisticsService.UpdateClubAnimalStatisticsAsync(clubId);
+
+                // Update top hunters list
+                await _statisticsService.UpdateClubTopHuntersAsync(clubId);
+            }
+
             return Ok();
         }
 
@@ -412,6 +425,18 @@ namespace MKInformacineSistemaBack.Controllers
             participant.ShotsHit = dto.ShotsHit;
 
             await _context.SaveChangesAsync();
+
+            // If the hunt is completed, update statistics to reflect new shots data
+            hunt = await _context.DrivenHunts.FindAsync(huntId);
+            if (hunt != null && hunt.IsCompleted)
+            {
+                // Update user statistics
+                await _statisticsService.UpdateUserStatisticsForClubAsync(participant.UserId, clubId);
+
+                // Update club statistics for shots
+                await _statisticsService.UpdateClubShotsStatisticsAsync(clubId);
+            }
+
             return Ok();
         }
 
@@ -446,8 +471,8 @@ namespace MKInformacineSistemaBack.Controllers
             await _context.SaveChangesAsync();
 
             // Update statistics
-            await _memberActivityService.UpdateClubMembersActivityAsync(clubId);
             await _statisticsService.UpdateStatisticsFromDrivenHuntAsync(id);
+            await _memberActivityService.UpdateClubMembersActivityAsync(clubId);
 
             return NoContent();
         }
