@@ -21,53 +21,54 @@ const AdminPostsPage = () => {
   const { selectedClub } = useClub();
   const toast = useRef(null);
   const router = useRouter();
-  
-  // Fetch posts when the component mounts or club changes
+
   useEffect(() => {
     fetchPosts();
   }, [selectedClub]);
-  
+
   const fetchPosts = async () => {
     if (!selectedClub) return;
-    
+
     try {
       setLoading(true);
-      
+
       const response = await fetch(`https://localhost:7091/api/Posts?clubId=${selectedClub.id}`, {
         headers: {
           'Authorization': `Bearer ${sessionStorage.getItem('accessToken')}`
         }
       });
-      
+
       if (!response.ok) {
-        throw new Error(`HTTP error! Status: ${response.status}`);
+        throw new Error(`HTTP klaida! Statusas: ${response.status}`);
       }
-      
+
       const data = await response.json();
       setPosts(data);
     } catch (error) {
-      console.error('Error fetching posts:', error);
+      console.error('Klaida gaunant įrašus:', error);
       toast.current?.show({
         severity: 'error',
-        summary: 'Error',
-        detail: 'Failed to load posts: ' + error.message,
+        summary: 'Klaida',
+        detail: 'Nepavyko įkelti įrašų: ' + error.message,
         life: 3000
       });
     } finally {
       setLoading(false);
     }
   };
-  
+
   const confirmDelete = (post) => {
     confirmDialog({
-      message: `Are you sure you want to delete the post "${post.title}"?`,
-      header: 'Confirm Delete',
+      message: `Ar tikrai norite ištrinti įrašą "${post.title}"?`,
+      header: 'Patvirtinkite ištrynimą',
       icon: 'pi pi-exclamation-triangle',
       acceptClassName: 'p-button-danger',
+      acceptLabel: 'Taip',
+      rejectLabel: 'Ne',
       accept: () => handleDeletePost(post.id),
     });
   };
-  
+
   const handleDeletePost = async (postId) => {
     try {
       const response = await fetch(`https://localhost:7091/api/Posts/${postId}?clubId=${selectedClub.id}`, {
@@ -76,36 +77,34 @@ const AdminPostsPage = () => {
           'Authorization': `Bearer ${sessionStorage.getItem('accessToken')}`
         }
       });
-      
+
       if (!response.ok) {
-        throw new Error(`HTTP error! Status: ${response.status}`);
+        throw new Error(`HTTP klaida! Statusas: ${response.status}`);
       }
-      
-      // Remove the deleted post from the state
+
       setPosts(posts.filter(post => post.id !== postId));
-      
+
       toast.current?.show({
         severity: 'success',
-        summary: 'Success',
-        detail: 'Post deleted successfully',
+        summary: 'Pavyko',
+        detail: 'Įrašas sėkmingai ištrintas',
         life: 3000
       });
     } catch (error) {
-      console.error('Error deleting post:', error);
+      console.error('Klaida trinant įrašą:', error);
       toast.current?.show({
         severity: 'error',
-        summary: 'Error',
-        detail: 'Failed to delete post: ' + error.message,
+        summary: 'Klaida',
+        detail: 'Nepavyko ištrinti įrašo: ' + error.message,
         life: 3000
       });
     }
   };
-  
-  // Formatting functions for table display
+
   const formatDate = (rowData) => {
     return new Date(rowData.createdAt).toLocaleString();
   };
-  
+
   const typeTemplate = (rowData) => {
     return (
       <Tag 
@@ -114,7 +113,7 @@ const AdminPostsPage = () => {
       />
     );
   };
-  
+
   const imageTemplate = (rowData) => {
     if (rowData.imageUrl) {
       return (
@@ -129,9 +128,9 @@ const AdminPostsPage = () => {
         />
       );
     }
-    return <span>No image</span>;
+    return <span>Nėra nuotraukos</span>;
   };
-  
+
   const actionTemplate = (rowData) => {
     return (
       <div className="flex gap-2 justify-content-center">
@@ -139,39 +138,38 @@ const AdminPostsPage = () => {
           icon="pi pi-trash" 
           className="p-button-rounded p-button-danger p-button-text" 
           onClick={() => confirmDelete(rowData)} 
-          tooltip="Delete Post" 
+          tooltip="Ištrinti įrašą" 
         />
       </div>
     );
   };
-  
-  
+
   return (
     <RoleGuard requiredRoles={['Admin', 'Owner']}>
       <ClubGuard>
         <div className="card">
           <Toast ref={toast} />
           <ConfirmDialog />
-          
+
           <DataTable 
             value={posts} 
             responsiveLayout="scroll" 
             paginator 
             rows={10} 
             globalFilter={globalFilter}
-            emptyMessage="No posts found" 
+            emptyMessage="Įrašų nerasta" 
             loading={loading}
             rowHover
             stripedRows
             dataKey="id"
           >
-            <Column header="Image" body={imageTemplate} style={{ width: '10%' }} />
-            <Column field="title" header="Title" sortable style={{ width: '20%' }} />
-            <Column field="type" header="Type" body={typeTemplate} sortable style={{ width: '10%' }} />
-            <Column field="authorName" header="Author" sortable style={{ width: '15%' }} />
-            <Column field="createdAt" header="Created At" body={formatDate} sortable style={{ width: '15%' }} />
-            <Column field="description" header="Description" style={{ width: '20%' }} />
-            <Column body={actionTemplate} header="Actions" style={{ width: '5%' }} />
+            <Column header="Nuotrauka" body={imageTemplate} style={{ width: '10%' }} />
+            <Column field="title" header="Pavadinimas" sortable style={{ width: '20%' }} />
+            <Column field="type" header="Tipas" body={typeTemplate} sortable style={{ width: '10%' }} />
+            <Column field="authorName" header="Autorius" sortable style={{ width: '15%' }} />
+            <Column field="createdAt" header="Sukurta" body={formatDate} sortable style={{ width: '15%' }} />
+            <Column field="description" header="Aprašymas" style={{ width: '20%' }} />
+            <Column body={actionTemplate} header="Veiksmai" style={{ width: '5%' }} />
           </DataTable>
           
         </div>

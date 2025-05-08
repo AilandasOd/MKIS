@@ -168,7 +168,7 @@ const AppTopbar = forwardRef<AppTopbarRef>((props, ref) => {
                         icon="pi pi-plus" 
                         className="p-button-rounded p-button-outlined p-button-sm mr-2" 
                         onClick={() => router.push('/clubs/create')} 
-                        tooltip="Create New Club" 
+                        tooltip="Sukruti naują klubą" 
                         tooltipOptions={{ position: 'bottom' }} 
                     />
                 )}

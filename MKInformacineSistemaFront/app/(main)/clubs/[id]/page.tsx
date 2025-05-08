@@ -30,12 +30,12 @@ interface Member {
 }
 
 const ClubDetailsPage = () => {
-  const { id } = useParams<{ id: string }>();
+  const { id } = useParams();
   const [club, setClub] = useState<ClubDetails | null>(null);
   const [loading, setLoading] = useState(true);
   const [leaveDialog, setLeaveDialog] = useState(false);
   const [removing, setRemoving] = useState(false);
-  
+
   const toast = useRef<Toast>(null);
   const mapRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<google.maps.Map | null>(null);
@@ -43,12 +43,8 @@ const ClubDetailsPage = () => {
   const router = useRouter();
   const { refreshClubs, selectedClub } = useClub();
 
-  // This effect runs when the component mounts or when the ID in the URL changes
   useEffect(() => {
-    if (id) {
-      console.log(`Loading club details for ID: ${id}`);
-      fetchClubDetails();
-    }
+    if (id) fetchClubDetails();
   }, [id, selectedClub?.id]);
 
   const fetchClubDetails = async () => {
@@ -63,61 +59,51 @@ const ClubDetailsPage = () => {
       if (response.ok) {
         const data = await response.json();
         setClub(data);
-        
-        // Map will be initialized in a separate useEffect
       } else if (response.status === 403) {
-        // User is not a member of this club
-        toast.current?.show({ 
-          severity: 'error', 
-          summary: 'Access Denied', 
-          detail: 'You are not a member of this club', 
-          life: 3000 
+        toast.current?.show({
+          severity: 'error',
+          summary: 'Prieiga neleidžiama',
+          detail: 'Jūs nesate šio klubo narys',
+          life: 3000
         });
         router.push('/clubs/browse');
       } else {
-        toast.current?.show({ 
-          severity: 'error', 
-          summary: 'Error', 
-          detail: 'Failed to load club details', 
-          life: 3000 
+        toast.current?.show({
+          severity: 'error',
+          summary: 'Klaida',
+          detail: 'Nepavyko įkelti klubo informacijos',
+          life: 3000
         });
       }
     } catch (error) {
-      console.error('Error fetching club details:', error);
-      toast.current?.show({ 
-        severity: 'error', 
-        summary: 'Error', 
-        detail: 'Failed to connect to server', 
-        life: 3000 
+      console.error('Klaida gaunant informaciją apie klubą:', error);
+      toast.current?.show({
+        severity: 'error',
+        summary: 'Klaida',
+        detail: 'Nepavyko prisijungti prie serverio',
+        life: 3000
       });
     } finally {
       setLoading(false);
     }
   };
 
-  // Improved map initialization logic
   useEffect(() => {
     if (!club?.huntingAreaLocation) return;
-    
+
     const loadGoogleMapsAndInitMap = async () => {
       try {
-        // Check if Google Maps is already loaded
         if (!window.google) {
-          console.log('Loading Google Maps API');
           await loadGoogleMapsScript();
         }
-        
-        // Initialize or update the map
-        console.log('Initializing map with location:', club.huntingAreaLocation);
         initMap(club.huntingAreaLocation);
       } catch (error) {
-        console.error('Error initializing map:', error);
+        console.error('Klaida inicijuojant žemėlapį:', error);
       }
     };
-    
+
     loadGoogleMapsAndInitMap();
-    
-    // Cleanup function to prevent memory leaks
+
     return () => {
       if (markerRef.current) {
         markerRef.current.setMap(null);
@@ -127,7 +113,6 @@ const ClubDetailsPage = () => {
     };
   }, [club?.huntingAreaLocation]);
 
-  // Separate function to load Google Maps script
   const loadGoogleMapsScript = (): Promise<void> => {
     return new Promise((resolve, reject) => {
       if (window.google?.maps) {
@@ -146,20 +131,18 @@ const ClubDetailsPage = () => {
   };
 
   const initMap = (location: number[]) => {
-    if (!mapRef.current || !window.google || !location || location.length < 2) return;
+    if (!mapRef.current || !window.google || location.length < 2) return;
 
-    // Clear existing map elements
     if (markerRef.current) {
       markerRef.current.setMap(null);
     }
-    
-    // Create a new map or reuse the existing one
+
     const mapOptions = {
       center: { lat: location[1], lng: location[0] },
       zoom: 12,
       mapTypeId: google.maps.MapTypeId.HYBRID
     };
-    
+
     if (!mapInstanceRef.current) {
       mapInstanceRef.current = new google.maps.Map(mapRef.current, mapOptions);
     } else {
@@ -167,7 +150,6 @@ const ClubDetailsPage = () => {
       mapInstanceRef.current.setZoom(mapOptions.zoom);
     }
 
-    // Add a marker
     markerRef.current = new google.maps.Marker({
       position: { lat: location[1], lng: location[0] },
       map: mapInstanceRef.current,
@@ -179,48 +161,33 @@ const ClubDetailsPage = () => {
   const handleLeaveClub = async () => {
     try {
       setRemoving(true);
-      
-      // Find the membership ID for this user in this club
       const currentMember = club?.members.find(m => m.role === 'Owner' || m.role === 'Admin' || m.role === 'Member');
-      
-      if (!currentMember) {
-        throw new Error('Could not find your membership record');
-      }
-      
-      // Call the API to remove member
+
+      if (!currentMember) throw new Error('Nepavyko rasti jūsų narystės įrašo');
+
       const response = await fetch(`https://localhost:7091/api/Clubs/members/${currentMember.id}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${sessionStorage.getItem('accessToken')}`
         }
       });
-      
+
       if (response.ok) {
-        toast.current?.show({ severity: 'success', summary: 'Success', detail: 'You have left the club', life: 3000 });
-        
-        // Refresh global clubs context and clear map resources
+        toast.current?.show({ severity: 'success', summary: 'Išėjote', detail: 'Sėkmingai palikote klubą', life: 3000 });
         await refreshClubs();
-        
-        // Clear map resources before navigating
-        if (markerRef.current) {
-          markerRef.current.setMap(null);
-          markerRef.current = null;
-        }
+        if (markerRef.current) markerRef.current.setMap(null);
         mapInstanceRef.current = null;
-        
-        // Navigate back to browse page
         router.push('/clubs/browse');
       } else {
         const errorText = await response.text();
-        throw new Error(errorText || 'Failed to leave club');
+        throw new Error(errorText || 'Nepavyko palikti klubo');
       }
     } catch (error) {
-      console.error('Error leaving club:', error);
-      toast.current?.show({ 
-        severity: 'error', 
-        summary: 'Error', 
-        detail: error instanceof Error ? error.message : 'Failed to leave club', 
-        life: 3000 
+      toast.current?.show({
+        severity: 'error',
+        summary: 'Klaida',
+        detail: error instanceof Error ? error.message : 'Nepavyko palikti klubo',
+        life: 3000
       });
     } finally {
       setRemoving(false);
@@ -228,76 +195,58 @@ const ClubDetailsPage = () => {
     }
   };
 
-  // Handle loading state
   if (loading) {
     return (
       <div className="p-4">
         <div className="flex flex-column align-items-center justify-content-center mt-5">
           <i className="pi pi-spin pi-spinner text-4xl mb-3"></i>
-          <p>Loading club details...</p>
+          <p>Įkeliama klubo informacija...</p>
         </div>
       </div>
     );
   }
 
-  // Handle case when club is not found or user doesn't have access
   if (!club) {
     return (
       <div className="p-4">
         <Toast ref={toast} />
         <div className="text-center p-5">
           <i className="pi pi-exclamation-triangle text-5xl text-gray-400 mb-3"></i>
-          <p className="text-xl">Club not found or you don't have access.</p>
+          <p className="text-xl">Klubas nerastas arba jūs neturite prieigos.</p>
           <div className="flex justify-content-center mt-4">
-            <Button 
-              label="Back to Clubs" 
-              icon="pi pi-arrow-left" 
-              onClick={() => router.push('/clubs/browse')} 
-              className="mr-2"
-            />
-            <Button 
-              label="Dashboard" 
-              icon="pi pi-home" 
-              onClick={() => router.push('/dashboard')} 
-              severity="secondary"
-            />
+            <Button label="Grįžti į klubus" icon="pi pi-arrow-left" onClick={() => router.push('/clubs/browse')} className="mr-2" />
+            <Button label="Pagrindinis" icon="pi pi-home" onClick={() => router.push('/dashboard')} severity="secondary" />
           </div>
         </div>
       </div>
     );
   }
-  
-  // Special handling when club exists but has no location data
+
   const hasLocationData = club.huntingAreaLocation && club.huntingAreaLocation.length >= 2;
 
   return (
     <div className="p-4">
       <Toast ref={toast} />
-      
+
       <div className="flex flex-column md:flex-row align-items-center md:align-items-start gap-4 mb-4">
         {club.logoUrl ? (
-          <img 
-            src={`https://localhost:7091${club.logoUrl}`} 
-            alt={club.name} 
-            className="border-circle" 
-            style={{ width: '100px', height: '100px', objectFit: 'cover' }} 
-          />
+          <img src={`https://localhost:7091${club.logoUrl}`} alt={club.name} className="border-circle" style={{ width: '100px', height: '100px', objectFit: 'cover' }} />
         ) : (
           <div className="flex align-items-center justify-content-center bg-primary border-circle" style={{ width: '100px', height: '100px' }}>
             <i className="pi pi-users text-3xl text-white" />
           </div>
         )}
-        
+
         <div className="flex-grow-1">
           <h2 className="text-3xl font-bold mb-2 text-center md:text-left">{club.name}</h2>
           <div className="flex flex-column md:flex-row gap-3 justify-content-center md:justify-content-start">
             <div className="flex align-items-center">
               <i className="pi pi-calendar mr-2" />
-              <span>Founded: {new Date(club.foundedDate).toLocaleDateString('lt-LT')}</span>
+              <span>Įkurtas: {new Date(club.foundedDate).toLocaleDateString('lt-LT')}</span>
             </div>
             <div className="flex align-items-center">
               <i className="pi pi-users mr-2" />
-              <span>{club.membersCount} members</span>
+              <span>{club.membersCount} narių</span>
             </div>
             {club.contactEmail && (
               <div className="flex align-items-center">
@@ -307,67 +256,49 @@ const ClubDetailsPage = () => {
             )}
           </div>
         </div>
-        
-        <Button 
-          label="Leave Club" 
-          icon="pi pi-sign-out" 
-          severity="danger" 
-          outlined 
-          onClick={() => setLeaveDialog(true)} 
-        />
+
+        <Button label="Palikti klubą" icon="pi pi-sign-out" severity="danger" outlined onClick={() => setLeaveDialog(true)} />
       </div>
-      
+
       <div className="grid">
         <div className="col-12 md:col-8">
           <Card className="h-full">
-            <h3 className="text-xl font-semibold mb-3">Description</h3>
-            <p className="whitespace-pre-line">{club.description || 'No description provided.'}</p>
-            
-            <h3 className="text-xl font-semibold mt-4 mb-3">Contact Information</h3>
-            <p><strong>Address:</strong> {club.residenceAddress}</p>
-            {club.contactEmail && <p><strong>Email:</strong> {club.contactEmail}</p>}
-            {club.contactPhone && <p><strong>Phone:</strong> {club.contactPhone}</p>}
+            <h3 className="text-xl font-semibold mb-3">Aprašymas</h3>
+            <p className="whitespace-pre-line">{club.description || 'Aprašymo nėra.'}</p>
+
+            <h3 className="text-xl font-semibold mt-4 mb-3">Kontaktinė informacija</h3>
+            <p><strong>Adresas:</strong> {club.residenceAddress}</p>
+            {club.contactEmail && <p><strong>El. paštas:</strong> {club.contactEmail}</p>}
+            {club.contactPhone && <p><strong>Telefonas:</strong> {club.contactPhone}</p>}
           </Card>
         </div>
-        
+
         <div className="col-12 md:col-4">
           <Card className="h-full">
-            <h3 className="text-xl font-semibold mb-3">Location</h3>
+            <h3 className="text-xl font-semibold mb-3">Vieta</h3>
             {hasLocationData ? (
               <div ref={mapRef} style={{ width: '100%', height: '300px', borderRadius: '8px' }} />
             ) : (
-              <p className="text-gray-500 italic">No location data available for this club.</p>
+              <p className="text-gray-500 italic">Šis klubas neturi vietos duomenų.</p>
             )}
           </Card>
         </div>
       </div>
-      
-      {/* Leave Club Dialog */}
-      <Dialog 
-        visible={leaveDialog} 
-        onHide={() => setLeaveDialog(false)} 
-        header="Confirm Leave" 
+
+      <Dialog
+        visible={leaveDialog}
+        onHide={() => setLeaveDialog(false)}
+        header="Patvirtinti išėjimą"
         footer={
           <div>
-            <Button 
-              label="Cancel" 
-              icon="pi pi-times" 
-              onClick={() => setLeaveDialog(false)} 
-              className="p-button-text" 
-            />
-            <Button 
-              label="Leave" 
-              icon="pi pi-sign-out" 
-              onClick={handleLeaveClub} 
-              severity="danger" 
-              loading={removing}
-            />
+            <Button label="Atšaukti" icon="pi pi-times" onClick={() => setLeaveDialog(false)} className="p-button-text" />
+            <Button label="Išeiti" icon="pi pi-sign-out" onClick={handleLeaveClub} severity="danger" loading={removing} />
           </div>
         }
       >
         <div className="flex align-items-center gap-3">
           <i className="pi pi-exclamation-triangle text-3xl text-yellow-500" />
-          <p>Are you sure you want to leave <strong>{club.name}</strong>? You will need to be invited back to rejoin the club.</p>
+          <p>Ar tikrai norite palikti klubą <strong>{club.name}</strong>? Norėdami grįžti, turėsite gauti pakvietimą.</p>
         </div>
       </Dialog>
     </div>

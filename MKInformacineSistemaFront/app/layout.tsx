@@ -4,6 +4,7 @@ import { LayoutProvider } from '../layout/context/layoutcontext';
 import { PrimeReactProvider } from 'primereact/api';
 import { AuthProvider } from '../context/AuthContext';
 import { ClubProvider } from '../context/ClubContext';
+import PrimeReactLocaleProvider from './providers';
 import 'primereact/resources/primereact.css';
 import 'primeflex/primeflex.css';
 import 'primeicons/primeicons.css';
@@ -24,7 +25,9 @@ export default function RootLayout({ children }: RootLayoutProps) {
                 <PrimeReactProvider>
                     <AuthProvider>
                         <ClubProvider>
-                            <LayoutProvider>{children}</LayoutProvider>
+                            <PrimeReactLocaleProvider>
+                                <LayoutProvider>{children}</LayoutProvider>
+                            </PrimeReactLocaleProvider>
                         </ClubProvider>
                     </AuthProvider>
                 </PrimeReactProvider>

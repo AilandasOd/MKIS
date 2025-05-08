@@ -22,75 +22,45 @@ const Dashboard = () => {
   const [chartData, setChartData] = useState({});
   const toast = useRef(null);
   const router = useRouter();
-  
-  // Add key to track club changes
   const clubIdRef = useRef(null);
 
-  // Function to fetch dashboard data
   const fetchDashboardData = async () => {
     if (!selectedClub) return;
-    
+
     try {
       setLoading(true);
-      console.log("Fetching dashboard data for club:", selectedClub.id);
-      
-      // Fetch posts
+
       const postsData = await fetchWithClub('Posts');
       setPosts(postsData);
-      
+
+      let statsData;
       try {
-        // Try using both endpoint formats
-        let statsData;
-        
-        try {
-          // Try query parameter approach first (more likely to work based on error)
-          statsData = await fetchWithClub(`Statistics/club?clubId=${selectedClub.id}`);
-        } catch (error) {
-          console.warn("Query parameter approach failed, trying route parameter:", error);
-          // Fall back to route parameter approach
-          statsData = await fetchWithClub(`Statistics/club/${selectedClub.id}`);
-        }
-        
-        console.log("Statistics data received:", statsData);
-        setStatistics(statsData);
-        
-        // Check for animals hunted data and create chart if available
-        if (statsData && statsData.animalsHunted && Object.keys(statsData.animalsHunted).length > 0) {
-          console.log("Creating chart with animal data:", statsData.animalsHunted);
-          setChartData({
-            labels: Object.keys(statsData.animalsHunted),
-            datasets: [{
-              data: Object.values(statsData.animalsHunted),
-              backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF', 
-                              '#FF9F40', '#8BC34A', '#9C27B0', '#607D8B', '#E91E63']
-            }]
-          });
-        } else {
-          console.log("No animals hunted data available");
-        }
-        
-        // Check for top hunters data and set if available
-        if (statsData && statsData.topHunters && statsData.topHunters.length > 0) {
-          console.log("Setting top hunters data:", statsData.topHunters);
-          setTopHunters(statsData.topHunters);
-        } else {
-          console.log("No top hunters data available");
-        }
+        statsData = await fetchWithClub(`Statistics/club?clubId=${selectedClub.id}`);
       } catch (error) {
-        console.error("Error fetching statistics:", error);
-        toast.current?.show({
-          severity: 'error',
-          summary: 'Error',
-          detail: 'Failed to load statistics: ' + error.message,
-          life: 3000
+        statsData = await fetchWithClub(`Statistics/club/${selectedClub.id}`);
+      }
+
+      setStatistics(statsData);
+
+      if (statsData && statsData.animalsHunted && Object.keys(statsData.animalsHunted).length > 0) {
+        setChartData({
+          labels: Object.keys(statsData.animalsHunted),
+          datasets: [{
+            data: Object.values(statsData.animalsHunted),
+            backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF',
+              '#FF9F40', '#8BC34A', '#9C27B0', '#607D8B', '#E91E63']
+          }]
         });
       }
+
+      if (statsData && statsData.topHunters && statsData.topHunters.length > 0) {
+        setTopHunters(statsData.topHunters);
+      }
     } catch (error) {
-      console.error('Error fetching dashboard data:', error);
       toast.current?.show({
         severity: 'error',
-        summary: 'Error',
-        detail: 'Failed to load dashboard data: ' + error.message,
+        summary: 'Klaida',
+        detail: 'Nepavyko įkelti duomenų: ' + error.message,
         life: 3000
       });
     } finally {
@@ -98,25 +68,20 @@ const Dashboard = () => {
     }
   };
 
-  // Manual refresh function
   const handleRefresh = () => {
     fetchDashboardData();
   };
 
-  // Navigate to post creation page
   const handleCreatePost = () => {
     router.push('/post');
   };
 
-  // Effect that runs when selectedClub changes
   useEffect(() => {
-    // Only fetch if club has changed or is newly selected
     if (selectedClub && selectedClub.id !== clubIdRef.current) {
-      console.log("Club changed from", clubIdRef.current, "to", selectedClub.id);
       clubIdRef.current = selectedClub.id;
       fetchDashboardData();
     }
-  }, [selectedClub]); // Only depend on selectedClub
+  }, [selectedClub]);
 
   const renderPostItem = (post) => (
     <Card className="mb-4 p-3" key={post.id}>
@@ -147,23 +112,23 @@ const Dashboard = () => {
   );
 
   if (loading) {
-    return <div className="flex justify-content-center">Loading dashboard data...</div>;
+    return <div className="flex justify-content-center">Įkeliami duomenys...</div>;
   }
 
   return (
     <ClubGuard>
       <div className="grid">
         <Toast ref={toast} />
-        
+
         <div className="col-12 xl:col-6">
           <div className="card">
             <div className="flex justify-content-between align-items-center mb-3">
-              <h5>Club Posts</h5>
-              <Button 
-                label="Create Post" 
-                icon="pi pi-plus" 
-                onClick={handleCreatePost} 
-                className="p-button-sm" 
+              <h5>Klubo įrašai</h5>
+              <Button
+                label="Sukurti įrašą"
+                icon="pi pi-plus"
+                onClick={handleCreatePost}
+                className="p-button-sm"
               />
             </div>
             {posts && posts.length > 0 ? (
@@ -173,12 +138,12 @@ const Dashboard = () => {
             ) : (
               <div className="p-4 text-center">
                 <i className="pi pi-file-edit text-3xl text-gray-300 mb-3"></i>
-                <p>No posts available. Create a new post to get started!</p>
-                <Button 
-                  label="Create Post" 
-                  icon="pi pi-plus" 
-                  onClick={handleCreatePost} 
-                  className="mt-2" 
+                <p>Įrašų nėra. Sukurkite pirmą įrašą!</p>
+                <Button
+                  label="Sukurti įrašą"
+                  icon="pi pi-plus"
+                  onClick={handleCreatePost}
+                  className="mt-2"
                 />
               </div>
             )}
@@ -187,25 +152,25 @@ const Dashboard = () => {
 
         <div className="col-12 xl:col-6">
           <div className="card mb-4">
-            <h5>Top Hunters</h5>
+            <h5>Daugiausiai sumedžioję medžiotojai</h5>
             {topHunters && topHunters.length > 0 ? (
               <DataTable value={topHunters}>
-                <Column field="name" header="Hunter" />
-                <Column field="count" header="Animals Hunted" />
+                <Column field="name" header="Medžiotojas" />
+                <Column field="count" header="Sumedžiota žvėrių" />
               </DataTable>
             ) : (
               <div className="p-4 text-center">
                 <i className="pi pi-users text-3xl text-gray-300 mb-3"></i>
-                <p>No top hunters data available yet.</p>
+                <p>Nėra duomenų apie geriausius medžiotojus.</p>
                 <small className="text-gray-500">
-                  Complete some hunts to see top hunter statistics.
+                  Įrašykite medžioklės duomenis, kad matytumėte statistiką.
                 </small>
               </div>
             )}
           </div>
 
           <div className="card">
-            <h5>Hunted Animals</h5>
+            <h5>Sumedžioti žvėrys</h5>
             {statistics && statistics.animalsHunted && Object.keys(statistics.animalsHunted).length > 0 ? (
               <div className="flex justify-content-center">
                 <div style={{ width: '300px', height: '300px' }}>
@@ -215,9 +180,9 @@ const Dashboard = () => {
             ) : (
               <div className="p-4 text-center">
                 <i className="pi pi-chart-pie text-3xl text-gray-300 mb-3"></i>
-                <p>No animal hunting data available yet.</p>
+                <p>Nėra sumedžiotų žvėrių duomenų.</p>
                 <small className="text-gray-500">
-                  Log some successful hunts to see animal statistics.
+                  Įrašykite medžioklės rezultatus, kad pamatytumėte statistiką.
                 </small>
               </div>
             )}

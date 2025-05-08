@@ -41,6 +41,8 @@ const AdminMembersPage = () => {
   const [globalFilter, setGlobalFilter] = useState('');
   const [loading, setLoading] = useState(true);
   const [addMemberLoading, setAddMemberLoading] = useState(false);
+  const [deleteConfirmDialog, setDeleteConfirmDialog] = useState(false);
+const [memberToDelete, setMemberToDelete] = useState<Member | null>(null);
   
   const { fetchWithClub, selectedClub } = useApiClient();
   const { refreshClubs } = useClub();
@@ -62,12 +64,18 @@ const AdminMembersPage = () => {
       toast.current?.show({
         severity: 'error',
         summary: 'Error',
-        detail: 'Failed to load members',
+        detail: 'Nepavyko įkelti narių sąrašo: ' + (error instanceof Error ? error.message : 'Nežinoma klaida'),
         life: 3000
       });
     } finally {
       setLoading(false);
     }
+  };
+
+  const roleLabelsLT: Record<string, string> = {
+    Owner: 'Savininkas',
+    Admin: 'Administratorius',
+    Member: 'Narys',
   };
 
   const fetchNonMembers = async () => {
@@ -112,11 +120,11 @@ const AdminMembersPage = () => {
 
   const statusBodyTemplate = (rowData: Member) => {
     return (
-      <Tag 
-        value={rowData.status} 
+        <Tag 
+        value={roleLabelsLT[rowData.status] || rowData.status}
         severity={
-          rowData.status === 'Owner' ? 'danger' : 
-          rowData.status === 'Admin' ? 'warning' : 
+          rowData.status === 'Owner' ? 'danger' :
+          rowData.status === 'Admin' ? 'warning' :
           'success'
         }
       />
@@ -156,13 +164,16 @@ const AdminMembersPage = () => {
           icon="pi pi-user-edit" 
           className="p-button-rounded p-button-text" 
           onClick={() => openChangeRoleDialog(rowData)}
-          tooltip="Change Role" 
+          tooltip="Pakeisti rolę" 
         />
         <Button 
           icon="pi pi-trash" 
           className="p-button-rounded p-button-text p-button-danger" 
-          onClick={() => handleRemoveMember(rowData.id)}
-          tooltip="Remove from Club" 
+          onClick={() => {
+            setMemberToDelete(rowData);
+            setDeleteConfirmDialog(true);
+          }}
+          tooltip="Panaikinti narį" 
         />
       </div>
     );
@@ -188,7 +199,7 @@ const AdminMembersPage = () => {
       });
       
       if (response.ok) {
-        toast.current?.show({ severity: 'success', summary: 'Success', detail: 'Member role updated', life: 3000 });
+        toast.current?.show({ severity: 'success', summary: 'Success', detail: 'Nario rolė pakeista', life: 3000 });
         setChangeRoleDialog(false);
         
         // Update local state
@@ -206,7 +217,7 @@ const AdminMembersPage = () => {
       toast.current?.show({ 
         severity: 'error', 
         summary: 'Error', 
-        detail: error instanceof Error ? error.message : 'Failed to update role', 
+        detail: error instanceof Error ? error.message : 'Nepavyko pakeisti rolės', 
         life: 3000 
       });
     }
@@ -222,7 +233,7 @@ const AdminMembersPage = () => {
       });
       
       if (response.ok) {
-        toast.current?.show({ severity: 'success', summary: 'Success', detail: 'Member removed from club', life: 3000 });
+        toast.current?.show({ severity: 'success', summary: 'Success', detail: 'Narys pašalintas iš klubo', life: 3000 });
         
         // Update local state
         setMembers(members.filter(m => m.id !== memberId));
@@ -238,7 +249,7 @@ const AdminMembersPage = () => {
       toast.current?.show({ 
         severity: 'error', 
         summary: 'Error', 
-        detail: error instanceof Error ? error.message : 'Failed to remove member', 
+        detail: error instanceof Error ? error.message : 'Nepavyko pašalinti nario', 
         life: 3000 
       });
     }
@@ -264,7 +275,7 @@ const AdminMembersPage = () => {
       });
       
       if (response.ok) {
-        toast.current?.show({ severity: 'success', summary: 'Success', detail: 'Member added to club', life: 3000 });
+        toast.current?.show({ severity: 'success', summary: 'Success', detail: 'Narys pridėtas prie klubo', life: 3000 });
         setAddMemberDialog(false);
         
         // Reset form
@@ -284,7 +295,7 @@ const AdminMembersPage = () => {
       toast.current?.show({ 
         severity: 'error', 
         summary: 'Error', 
-        detail: error instanceof Error ? error.message : 'Failed to add member', 
+        detail: error instanceof Error ? error.message : 'Nepavyko pridėti nario', 
         life: 3000 
       });
     } finally {
@@ -294,18 +305,10 @@ const AdminMembersPage = () => {
 
   const header = (
     <div className="flex flex-column md:flex-row md:justify-content-between md:align-items-center">
-      <h5 className="m-0">Club Members</h5>
+      <h5 className="m-0">Klubo nariai</h5>
       <div className="flex align-items-center gap-2">
-        <span className="p-input-icon-left">
-          <i className="pi pi-search" />
-          <InputText 
-            type="search" 
-            onInput={(e: React.FormEvent<HTMLInputElement>) => setGlobalFilter(e.currentTarget.value)} 
-            placeholder="Search..." 
-          />
-        </span>
         <Button 
-          label="Add Member" 
+          label="Pridėti narį" 
           icon="pi pi-user-plus" 
           onClick={() => setAddMemberDialog(true)} 
         />
@@ -333,18 +336,18 @@ const AdminMembersPage = () => {
             stripedRows
             showGridlines
           >
-            <Column header="Name" body={nameBodyTemplate} field="name" sortable />
-            <Column field="age" header="Age" sortable style={{ width: '70px' }} />
-            <Column field="email" header="Email" sortable />
+            <Column header="Vardas" body={nameBodyTemplate} field="name" sortable />
+            <Column field="age" header="Metai" sortable style={{ width: '70px' }} />
+            <Column field="email" header="El. paštas" sortable />
             <Column 
               field="huntingSince" 
-              header="Hunter Since" 
+              header="Medžioja nuo" 
               body={(rowData) => formatDate(rowData.huntingSince)} 
               sortable 
             />
-            <Column header="Activity" body={activityBodyTemplate} field="activity" sortable />
-            <Column header="Role" body={statusBodyTemplate} field="status" sortable style={{ width: '120px' }} />
-            <Column header="Actions" body={actionsBodyTemplate} style={{ width: '120px' }} />
+            <Column header="Aktyvumas" body={activityBodyTemplate} field="activity" sortable />
+            <Column header="Rolė" body={statusBodyTemplate} field="status" sortable style={{ width: '120px' }} />
+            <Column header="Veiksmai" body={actionsBodyTemplate} style={{ width: '120px' }} />
           </DataTable>
         </div>
 
@@ -352,17 +355,17 @@ const AdminMembersPage = () => {
         <Dialog 
           visible={changeRoleDialog} 
           onHide={() => setChangeRoleDialog(false)} 
-          header="Change Member Role" 
+          header="Pakeisti rolę" 
           footer={
             <div>
               <Button 
-                label="Cancel" 
+                label="Atšaukti" 
                 icon="pi pi-times" 
                 onClick={() => setChangeRoleDialog(false)} 
                 className="p-button-text" 
               />
               <Button 
-                label="Save" 
+                label="Išsaugoti" 
                 icon="pi pi-check" 
                 onClick={handleChangeRole}
               />
@@ -371,13 +374,17 @@ const AdminMembersPage = () => {
         >
           {selectedMember && (
             <div>
-              <p>Change role for <strong>{selectedMember.name}</strong></p>
-              <Dropdown 
-                value={selectedRole} 
-                options={['Owner', 'Admin', 'Member']} 
-                onChange={(e) => setSelectedRole(e.value)} 
-                className="w-full mt-3" 
-              />
+              <p>Pakeisti rolę <strong>{selectedMember.name}</strong></p>
+              <Dropdown
+  value={selectedRole}
+  options={[
+    { label: roleLabelsLT['Owner'], value: 'Owner' },
+    { label: roleLabelsLT['Admin'], value: 'Admin' },
+    { label: roleLabelsLT['Member'], value: 'Member' }
+  ]}
+  onChange={(e) => setSelectedRole(e.value)}
+  className="w-full mt-3"
+/>
             </div>
           )}
         </Dialog>
@@ -386,18 +393,18 @@ const AdminMembersPage = () => {
         <Dialog 
           visible={addMemberDialog} 
           onHide={() => setAddMemberDialog(false)} 
-          header="Add New Member" 
+          header="Pridėti narį" 
           style={{ width: '500px' }}
           footer={
             <div>
               <Button 
-                label="Cancel" 
+                label="Atšaukti" 
                 icon="pi pi-times" 
                 onClick={() => setAddMemberDialog(false)} 
                 className="p-button-text" 
               />
               <Button 
-                label="Add Member" 
+                label="Pridėti" 
                 icon="pi pi-user-plus" 
                 onClick={handleAddMember}
                 loading={addMemberLoading}
@@ -408,7 +415,7 @@ const AdminMembersPage = () => {
         >
           <div className="p-fluid">
             <div className="field mb-4">
-              <label htmlFor="user" className="font-semibold">Select User</label>
+              <label htmlFor="user" className="font-semibold">Pasirinkite narį</label>
               <Dropdown
                 id="user"
                 value={selectedUser}
@@ -416,7 +423,7 @@ const AdminMembersPage = () => {
                 onChange={(e) => setSelectedUser(e.value)}
                 optionLabel="userName"
                 filter
-                placeholder="Select a user"
+                placeholder="Pasirinkite narį"
                 className="w-full"
                 emptyMessage="No available users found"
                 emptyFilterMessage="No users match the filter"
@@ -432,17 +439,48 @@ const AdminMembersPage = () => {
             </div>
 
             <div className="field">
-              <label htmlFor="role" className="font-semibold">Role</label>
+              <label htmlFor="role" className="font-semibold">Rolė</label>
               <Dropdown
-                id="role"
-                value={userRole}
-                options={['Owner', 'Admin', 'Member']}
-                onChange={(e) => setUserRole(e.value)}
-                className="w-full"
-              />
+  id="role"
+  value={userRole}
+  options={[
+    { label: roleLabelsLT['Owner'], value: 'Owner' },
+    { label: roleLabelsLT['Admin'], value: 'Admin' },
+    { label: roleLabelsLT['Member'], value: 'Member' }
+  ]}
+  onChange={(e) => setUserRole(e.value)}
+  className="w-full"
+/>
             </div>
           </div>
         </Dialog>
+        <Dialog
+  visible={deleteConfirmDialog}
+  onHide={() => setDeleteConfirmDialog(false)}
+  header="Patvirtinti šalinimą"
+  modal
+  footer={
+    <div>
+      <Button
+        label="Atšaukti"
+        icon="pi pi-times"
+        onClick={() => setDeleteConfirmDialog(false)}
+        className="p-button-text"
+      />
+      <Button
+        label="Pašalinti"
+        icon="pi pi-trash"
+        onClick={() => {
+          if (memberToDelete) handleRemoveMember(memberToDelete.id);
+          setDeleteConfirmDialog(false);
+        }}
+        className="p-button-danger"
+      />
+    </div>
+  }
+>
+  <p>Ar tikrai norite pašalinti narį <strong>{memberToDelete?.name}</strong> iš klubo?</p>
+</Dialog>
       </ClubGuard>
     </RoleGuard>
   );

@@ -150,7 +150,7 @@ const DrivenHuntEdit = () => {
         toast.current?.show({
           severity: 'error',
           summary: 'Error',
-          detail: 'Failed to load hunt data',
+          detail: 'Nepavyko užkrauti duomenų',
           life: 3000
         });
       } finally {
@@ -171,7 +171,7 @@ const DrivenHuntEdit = () => {
       toast.current?.show({
         severity: 'error',
         summary: 'Validation Error',
-        detail: 'Please fill in all required fields',
+        detail: 'Prašome užpildyti visus privalomus laukus',
         life: 3000
       });
       return;
@@ -209,7 +209,7 @@ const DrivenHuntEdit = () => {
       toast.current?.show({
         severity: 'success',
         summary: 'Success',
-        detail: 'Hunt information updated successfully',
+        detail: 'Medžioklė sėkmingai atnaujinta',
         life: 3000
       });
       
@@ -227,7 +227,7 @@ const DrivenHuntEdit = () => {
       toast.current?.show({
         severity: 'error',
         summary: 'Error',
-        detail: error instanceof Error ? error.message : 'Failed to update hunt',
+        detail: error instanceof Error ? error.message : 'Nepavyko atnaujinti medžioklės',
         life: 3000
       });
     } finally {
@@ -251,7 +251,7 @@ const DrivenHuntEdit = () => {
         toast.current?.show({
           severity: 'error',
           summary: 'Validation Error',
-          detail: 'Shots hit cannot be greater than shots taken',
+          detail: 'Šūvių pataikymų skaičius negali būti didesnis už šūvių skaičių',
           life: 3000
         });
         return;
@@ -277,7 +277,7 @@ const DrivenHuntEdit = () => {
       toast.current?.show({
         severity: 'success',
         summary: 'Success',
-        detail: 'Shots updated successfully',
+        detail: 'Šūvių informacija sėkmingai atnaujinta',
         life: 3000
       });
       
@@ -302,7 +302,7 @@ const DrivenHuntEdit = () => {
       toast.current?.show({
         severity: 'error',
         summary: 'Error',
-        detail: error instanceof Error ? error.message : 'Failed to update shots',
+        detail: error instanceof Error ? error.message : 'Nepavyko atnaujinti šūvių informacijos',
         life: 3000
       });
     }
@@ -338,7 +338,7 @@ const DrivenHuntEdit = () => {
       toast.current?.show({
         severity: 'success',
         summary: 'Success',
-        detail: 'Animal added successfully',
+        detail: 'Žvėris sėkmingai pridėtas',
         life: 3000
       });
       
@@ -355,7 +355,7 @@ const DrivenHuntEdit = () => {
       toast.current?.show({
         severity: 'error',
         summary: 'Error',
-        detail: error instanceof Error ? error.message : 'Failed to add animal',
+        detail: error instanceof Error ? error.message : 'Nepavyko pridėti žvėries',
         life: 3000
       });
     }
@@ -396,13 +396,13 @@ const DrivenHuntEdit = () => {
           icon="pi pi-pencil" 
           className="p-button-rounded p-button-text p-button-sm" 
           onClick={() => openEditShotsDialog(rowData)}
-          tooltip="Edit Shots" 
+          tooltip="Redaguoti šūvius" 
         />
         <Button 
           icon="pi pi-plus" 
           className="p-button-rounded p-button-text p-button-sm" 
           onClick={() => openAddAnimalDialog(rowData)}
-          tooltip="Add Animal" 
+          tooltip="Pridėti žvėrį" 
         />
       </div>
     );
@@ -411,7 +411,7 @@ const DrivenHuntEdit = () => {
   // Animals column template for participants table
   const animalsTemplate = (rowData: DrivenHuntParticipant) => {
     if (rowData.huntedAnimals.length === 0) {
-      return <span className="text-500">No animals</span>;
+      return <span className="text-500">Nėra žvėrių</span>;
     }
     
     return (
@@ -439,8 +439,8 @@ const DrivenHuntEdit = () => {
         <Toast ref={toast} />
         <Card className="p-4 text-center">
           <i className="pi pi-exclamation-triangle text-yellow-500 text-4xl mb-3"></i>
-          <h3 className="text-xl font-semibold">Hunt Not Found</h3>
-          <p className="mb-4">The driven hunt you're looking for doesn't exist or you don't have permission to edit it.</p>
+          <h3 className="text-xl font-semibold">Medžioklė nerasta</h3>
+          <p className="mb-4">Medžioklė, kurią norite redaguoti neegzistuoja arba neturite tam teisių.</p>
           <Button label="Back to Hunts List" icon="pi pi-arrow-left" onClick={() => router.push('/drivenhunts/list')} />
         </Card>
       </div>
@@ -453,10 +453,10 @@ const DrivenHuntEdit = () => {
         <Toast ref={toast} />
         
         <div className="flex justify-content-between align-items-center mb-4">
-          <h2 className="text-2xl font-bold m-0">Edit Driven Hunt</h2>
+          <h2 className="text-2xl font-bold m-0">Redaguoti varyminę medžioklę</h2>
           <Button 
             icon="pi pi-arrow-left" 
-            label="Back to Details" 
+            label="Grįžti atgal" 
             className="p-button-outlined" 
             onClick={handleCancel}
           />
@@ -467,57 +467,44 @@ const DrivenHuntEdit = () => {
             <Card>
               <form onSubmit={handleSaveGeneralInfo} className="grid formgrid p-fluid">
                 <div className="field col-12 md:col-6">
-                  <label htmlFor="name" className="font-bold">Hunt Name*</label>
+                  <label htmlFor="name" className="font-bold">Medžioklės pavadinimas*</label>
                   <InputText
                     id="name"
                     value={editedHunt.name}
                     onChange={e => setEditedHunt({ ...editedHunt, name: e.target.value })}
                     className={classNames({'p-invalid': submitted && !editedHunt.name})}
-                    placeholder="Enter hunt name"
+                    placeholder="Įveskite pavadinimą"
                   />
-                  {submitted && !editedHunt.name && <small className="p-error">Name is required.</small>}
+                  {submitted && !editedHunt.name && <small className="p-error">Pavadinimas privalomas.</small>}
                 </div>
                 
                 <div className="field col-12 md:col-6">
-                  <label htmlFor="location" className="font-bold">Location*</label>
+                  <label htmlFor="location" className="font-bold">Vieta*</label>
                   <InputText
                     id="location"
                     value={editedHunt.location}
                     onChange={e => setEditedHunt({ ...editedHunt, location: e.target.value })}
                     className={classNames({'p-invalid': submitted && !editedHunt.location})}
-                    placeholder="Enter location"
+                    placeholder="Įveskite vietą"
                   />
-                  {submitted && !editedHunt.location && <small className="p-error">Location is required.</small>}
+                  {submitted && !editedHunt.location && <small className="p-error">Vieta privaloma.</small>}
                 </div>
                 
                 <div className="field col-12 md:col-6">
-                  <label htmlFor="date" className="font-bold">Date*</label>
+                  <label htmlFor="date" className="font-bold">Data*</label>
                   <Calendar
                     id="date"
                     value={editedHunt.date}
                     onChange={e => setEditedHunt({ ...editedHunt, date: e.value as Date })}
                     showIcon
                     className={classNames({'p-invalid': submitted && !editedHunt.date})}
-                    placeholder="Select date"
+                    placeholder="Pasirinkite datą"
                   />
-                  {submitted && !editedHunt.date && <small className="p-error">Date is required.</small>}
+                  {submitted && !editedHunt.date && <small className="p-error">Data privaloma.</small>}
                 </div>
                 
                 <div className="field col-12 md:col-6">
-                  <label htmlFor="game" className="font-bold">Game Types</label>
-                  <Dropdown
-                    id="game"
-                    value={editedHunt.game}
-                    options={gameTypes}
-                    onChange={e => setEditedHunt({ ...editedHunt, game: e.value })}
-                    placeholder="Select game types"
-                    filter
-                    showClear
-                  />
-                </div>
-                
-                <div className="field col-12 md:col-6">
-                  <label htmlFor="leader" className="font-bold">Hunt Leader*</label>
+                  <label htmlFor="leader" className="font-bold">Medžioklės vadovas*</label>
                   <Dropdown
                     id="leader"
                     value={editedHunt.leaderId}
@@ -526,39 +513,39 @@ const DrivenHuntEdit = () => {
                     optionLabel="name"
                     optionValue="userId"
                     filter
-                    placeholder="Select hunt leader"
+                    placeholder="Pasirinkite vadovą"
                     className={classNames({'p-invalid': submitted && !editedHunt.leaderId})}
                   />
-                  {submitted && !editedHunt.leaderId && <small className="p-error">Leader is required.</small>}
+                  {submitted && !editedHunt.leaderId && <small className="p-error">Vadovas privalomas.</small>}
                 </div>
                 
                 <div className="field col-12 md:col-6">
                   <div className="flex align-items-center">
-                    <label htmlFor="isCompleted" className="font-bold mr-3">Hunt Status</label>
+                    <label htmlFor="isCompleted" className="font-bold mr-3">Medžioklės statusas</label>
                     <div className="p-field-checkbox">
                       <Dropdown
                         id="isCompleted"
                         value={editedHunt.isCompleted}
                         options={[
-                          { label: 'In Progress', value: false },
-                          { label: 'Completed', value: true }
+                          { label: 'Vykstanti', value: false },
+                          { label: 'Užbaigta', value: true }
                         ]}
                         onChange={e => setEditedHunt({ ...editedHunt, isCompleted: e.value })}
-                        placeholder="Select status"
+                        placeholder="Pasirinkite statusą"
                       />
                     </div>
                   </div>
                   
                   {hunt.isCompleted && hunt.completedDate && (
                     <small className="text-color-secondary mt-2 block">
-                      Completed on: {format(parseISO(hunt.completedDate), 'yyyy-MM-dd')}
+                      Užbaigta: {format(parseISO(hunt.completedDate), 'yyyy-MM-dd')}
                     </small>
                   )}
                 </div>
                 
                 <div className="col-12 flex gap-2 justify-content-end mt-4">
                   <Button 
-                    label="Cancel" 
+                    label="Atšaukti" 
                     icon="pi pi-times" 
                     className="p-button-outlined" 
                     onClick={handleCancel}
@@ -566,7 +553,7 @@ const DrivenHuntEdit = () => {
                     type="button"
                   />
                   <Button 
-                    label="Save Changes" 
+                    label="Išsaugoti" 
                     icon="pi pi-check" 
                     type="submit"
                     loading={submitting}
@@ -576,7 +563,7 @@ const DrivenHuntEdit = () => {
             </Card>
           </TabPanel>
           
-          <TabPanel header="Participants & Hunted Animals">
+          <TabPanel header="Dalyviai ir sumedžioti žvėrys">
             <Card>
               <DataTable 
                 value={hunt.participants} 
@@ -586,24 +573,24 @@ const DrivenHuntEdit = () => {
                 dataKey="id"
                 rowHover
                 stripedRows
-                emptyMessage="No participants found"
+                emptyMessage="Nerasta dalyvių"
               >
-                <Column field="userName" header="Name" sortable />
-                <Column field="shotsTaken" header="Shots Taken" sortable style={{ width: '120px' }} />
-                <Column field="shotsHit" header="Shots Hit" sortable style={{ width: '120px' }} />
+                <Column field="userName" header="Vardas" sortable />
+                <Column field="shotsTaken" header="Atliko šūvių" sortable style={{ width: '120px' }} />
+                <Column field="shotsHit" header="Pataikė šūvių" sortable style={{ width: '120px' }} />
                 <Column 
-                  header="Accuracy" 
+                  header="Taiklumas" 
                   body={(rowData) => `${calculateAccuracy(rowData.shotsTaken, rowData.shotsHit)}%`}
                   sortable
                   sortField="shotsHit"
                   style={{ width: '100px' }}
                 />
                 <Column 
-                  header="Animals Hunted" 
+                  header="Sumedžioti žvėrys" 
                   body={animalsTemplate}
                 />
                 <Column 
-                  header="Actions" 
+                  header="Veiksmai" 
                   body={actionsTemplate} 
                   style={{ width: '120px' }}
                 />
@@ -616,26 +603,26 @@ const DrivenHuntEdit = () => {
         <Dialog 
           visible={editShotsDialog} 
           onHide={() => setEditShotsDialog(false)} 
-          header="Edit Shots" 
+          header="Redaguoti šūvius" 
           style={{ width: '450px' }}
           footer={
             <div>
-              <Button label="Cancel" icon="pi pi-times" className="p-button-text" onClick={() => setEditShotsDialog(false)} />
-              <Button label="Save" icon="pi pi-check" onClick={handleUpdateShots} />
+              <Button label="Atšaukti" icon="pi pi-times" className="p-button-text" onClick={() => setEditShotsDialog(false)} />
+              <Button label="Išsaugoti" icon="pi pi-check" onClick={handleUpdateShots} />
             </div>
           }
         >
           {selectedParticipant && (
             <div className="p-fluid">
               <div className="field mb-4">
-                <label htmlFor="participant" className="font-bold">Participant</label>
+                <label htmlFor="participant" className="font-bold">Dalyvis</label>
                 <div className="p-inputtext p-component p-disabled">
                   {selectedParticipant.userName}
                 </div>
               </div>
               
               <div className="field mb-4">
-                <label htmlFor="shotsTaken" className="font-bold">Shots Taken</label>
+                <label htmlFor="shotsTaken" className="font-bold">Atliko šūvių</label>
                 <InputNumber 
                   id="shotsTaken" 
                   value={shots.shotsTaken} 
@@ -645,7 +632,7 @@ const DrivenHuntEdit = () => {
               </div>
               
               <div className="field">
-                <label htmlFor="shotsHit" className="font-bold">Shots Hit</label>
+                <label htmlFor="shotsHit" className="font-bold">Pataikė šūvių</label>
                 <InputNumber 
                   id="shotsHit" 
                   value={shots.shotsHit} 
@@ -662,32 +649,32 @@ const DrivenHuntEdit = () => {
         <Dialog 
           visible={addAnimalDialog} 
           onHide={() => setAddAnimalDialog(false)} 
-          header="Add Hunted Animal" 
+          header="Pridėti sumedžiotą žvėrį" 
           style={{ width: '450px' }}
           footer={
             <div>
-              <Button label="Cancel" icon="pi pi-times" className="p-button-text" onClick={() => setAddAnimalDialog(false)} />
-              <Button label="Add" icon="pi pi-plus" onClick={handleAddAnimal} disabled={!animalType} />
+              <Button label="Atšaukti" icon="pi pi-times" className="p-button-text" onClick={() => setAddAnimalDialog(false)} />
+              <Button label="Pridėti" icon="pi pi-plus" onClick={handleAddAnimal} disabled={!animalType} />
             </div>
           }
         >
           {selectedParticipant && (
             <div className="p-fluid">
               <div className="field mb-4">
-                <label htmlFor="participant" className="font-bold">Participant</label>
+                <label htmlFor="participant" className="font-bold">Dalyvis</label>
                 <div className="p-inputtext p-component p-disabled">
                   {selectedParticipant.userName}
                 </div>
               </div>
               
               <div className="field">
-                <label htmlFor="animalType" className="font-bold">Animal Type</label>
+                <label htmlFor="animalType" className="font-bold">Žvėries rūšis</label>
                 <Dropdown 
                   id="animalType" 
                   value={animalType} 
                   options={animalTypes} 
                   onChange={(e) => setAnimalType(e.value)} 
-                  placeholder="Select animal type"
+                  placeholder="Pasirinkite žvėrį"
                   filter
                 />
               </div>

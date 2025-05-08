@@ -1,4 +1,3 @@
-// MKInformacineSistemaFront/app/(main)/layout/topbar/ClubSelector.tsx
 'use client';
 
 import React, { useEffect, useState } from 'react';
@@ -12,14 +11,12 @@ const ClubSelector = () => {
   const router = useRouter();
   const [mounted, setMounted] = useState(false);
 
-  // This ensures the component doesn't have hydration issues
   useEffect(() => {
     setMounted(true);
   }, []);
 
   useEffect(() => {
-    // Debug log to check selected club value
-    console.log("Selected club in selector:", selectedClub);
+    console.log("Pasirinktas klubas selektoriuje:", selectedClub);
   }, [selectedClub]);
 
   const handleCreateClub = () => {
@@ -30,10 +27,9 @@ const ClubSelector = () => {
     router.push('/clubs/browse');
   };
 
-  // Option template - what shows in the dropdown list
   const itemTemplate = (option) => {
-    if (!option) return <span>Select a club</span>;
-    
+    if (!option) return <span>Pasirinkite klubą</span>;
+
     return (
       <div className="flex align-items-center">
         {option.logoUrl ? (
@@ -51,10 +47,9 @@ const ClubSelector = () => {
     );
   };
 
-  // Create a simple label component to show selected club
   const SelectedClubLabel = () => {
-    if (!selectedClub) return <span>Select a club</span>;
-    
+    if (!selectedClub) return <span>Pasirinkite klubą</span>;
+
     return (
       <div className="flex align-items-center">
         {selectedClub.logoUrl ? (
@@ -72,21 +67,19 @@ const ClubSelector = () => {
     );
   };
 
-  // Don't render anything until client-side mounting is complete
   if (!mounted) return null;
 
-  // No clubs scenario - show join/create buttons
   if (clubs.length === 0) {
     return (
       <div className="flex gap-2">
         <Button 
-          label="Join Club" 
+          label="Prisijungti prie klubo" 
           icon="pi pi-sign-in" 
           className="p-button-sm p-button-outlined" 
           onClick={handleBrowseClubs} 
         />
         <Button 
-          label="Create Club" 
+          label="Sukurti klubą" 
           icon="pi pi-plus" 
           className="p-button-sm" 
           onClick={handleCreateClub} 
@@ -109,7 +102,7 @@ const ClubSelector = () => {
         options={clubs}
         onChange={(e) => setSelectedClub(e.value)}
         optionLabel="name"
-        placeholder="Select a Club"
+        placeholder="Pasirinkite klubą"
         className="w-14rem mr-2"
         valueTemplate={<SelectedClubLabel />}
         itemTemplate={itemTemplate}
@@ -119,7 +112,7 @@ const ClubSelector = () => {
         icon="pi pi-plus" 
         className="p-button-rounded p-button-outlined p-button-sm" 
         onClick={handleCreateClub} 
-        tooltip="Create New Club" 
+        tooltip="Sukurti naują klubą" 
         tooltipOptions={{ position: 'bottom' }} 
       />
     </div>

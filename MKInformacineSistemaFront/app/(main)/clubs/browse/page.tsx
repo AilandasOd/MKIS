@@ -1,12 +1,10 @@
-// MKInformacineSistemaFront/app/(main)/clubs/browse/page.tsx
 'use client';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { Card } from 'primereact/card';
 import { Button } from 'primereact/button';
 import { InputText } from 'primereact/inputtext';
 import { Tag } from 'primereact/tag';
 import { Toast } from 'primereact/toast';
-import { useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { useClub } from '../../../../context/ClubContext';
 
@@ -37,7 +35,7 @@ const BrowseClubsPage = () => {
     if (searchTerm.trim() === '') {
       setFilteredClubs(clubs);
     } else {
-      const filtered = clubs.filter(club => 
+      const filtered = clubs.filter(club =>
         club.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
         club.description.toLowerCase().includes(searchTerm.toLowerCase())
       );
@@ -58,11 +56,11 @@ const BrowseClubsPage = () => {
         setClubs(data);
         setFilteredClubs(data);
       } else {
-        toast.current?.show({ severity: 'error', summary: 'Error', detail: 'Failed to load clubs', life: 3000 });
+        toast.current?.show({ severity: 'error', summary: 'Klaida', detail: 'Nepavyko įkelti klubų', life: 3000 });
       }
     } catch (error) {
-      console.error('Error fetching clubs:', error);
-      toast.current?.show({ severity: 'error', summary: 'Error', detail: 'Failed to connect to server', life: 3000 });
+      console.error('Klaida gaunant klubus:', error);
+      toast.current?.show({ severity: 'error', summary: 'Klaida', detail: 'Nepavyko prisijungti prie serverio', life: 3000 });
     } finally {
       setLoading(false);
     }
@@ -80,16 +78,16 @@ const BrowseClubsPage = () => {
       });
 
       if (response.ok) {
-        toast.current?.show({ severity: 'success', summary: 'Success', detail: 'Join request sent', life: 3000 });
-        await fetchClubs(); // Refresh the list
-        await refreshClubs(); // Update global club context
+        toast.current?.show({ severity: 'success', summary: 'Pavyko', detail: 'Prisijungimo užklausa išsiųsta', life: 3000 });
+        await fetchClubs();
+        await refreshClubs();
       } else {
         const errorText = await response.text();
-        toast.current?.show({ severity: 'error', summary: 'Error', detail: errorText || 'Failed to join club', life: 3000 });
+        toast.current?.show({ severity: 'error', summary: 'Klaida', detail: errorText || 'Nepavyko prisijungti prie klubo', life: 3000 });
       }
     } catch (error) {
-      console.error('Error joining club:', error);
-      toast.current?.show({ severity: 'error', summary: 'Error', detail: 'Failed to connect to server', life: 3000 });
+      console.error('Klaida jungiantis prie klubo:', error);
+      toast.current?.show({ severity: 'error', summary: 'Klaida', detail: 'Nepavyko prisijungti prie serverio', life: 3000 });
     }
   };
 
@@ -110,8 +108,8 @@ const BrowseClubsPage = () => {
       <Toast ref={toast} />
       
       <div className="flex justify-content-between align-items-center mb-4">
-        <h2 className="text-2xl font-bold m-0">Browse Hunting Clubs</h2>
-        <Button label="Create Club" icon="pi pi-plus" onClick={handleCreateClub} />
+        <h2 className="text-2xl font-bold m-0">Naršyti medžiotojų klubus</h2>
+        <Button label="Sukurti klubą" icon="pi pi-plus" onClick={handleCreateClub} />
       </div>
       
       <div className="mb-4">
@@ -120,7 +118,7 @@ const BrowseClubsPage = () => {
           <InputText 
             value={searchTerm} 
             onChange={(e) => setSearchTerm(e.target.value)} 
-            placeholder="Search clubs..." 
+            placeholder="Ieškoti klubų..." 
             className="w-full"
           />
         </span>
@@ -129,8 +127,8 @@ const BrowseClubsPage = () => {
       {filteredClubs.length === 0 ? (
         <div className="text-center p-5">
           <i className="pi pi-search text-5xl text-gray-400 mb-3"></i>
-          <p className="text-xl">No clubs found. Create a new one?</p>
-          <Button label="Create Club" icon="pi pi-plus" onClick={handleCreateClub} className="mt-3" />
+          <p className="text-xl">Klubų nerasta. Sukurti naują?</p>
+          <Button label="Sukurti klubą" icon="pi pi-plus" onClick={handleCreateClub} className="mt-3" />
         </div>
       ) : (
         <div className="grid">
@@ -153,30 +151,30 @@ const BrowseClubsPage = () => {
                     )}
                     <div>
                       <h3 className="text-xl font-semibold m-0">{club.name}</h3>
-                      <p className="text-sm text-gray-400 m-0">Founded: {new Date(club.foundedDate).toLocaleDateString('lt-LT')}</p>
+                      <p className="text-sm text-gray-400 m-0">Įkurtas: {new Date(club.foundedDate).toLocaleDateString('lt-LT')}</p>
                     </div>
                   </div>
                   
-                  <p className="line-clamp-3 mb-3">{club.description || 'No description provided.'}</p>
+                  <p className="line-clamp-3 mb-3">{club.description || 'Aprašymas nepateiktas.'}</p>
                   
                   <div className="flex align-items-center mb-3 mt-auto">
                     <i className="pi pi-users mr-2" />
-                    <span>{club.membersCount} members</span>
+                    <span>{club.membersCount} nariai</span>
                     {club.isUserMember && (
-                      <Tag value="Member" severity="success" className="ml-2" />
+                      <Tag value="Narys" severity="success" className="ml-2" />
                     )}
                   </div>
                   
                   <div className="flex gap-2">
                     <Button 
-                      label="View" 
+                      label="Peržiūrėti" 
                       icon="pi pi-eye" 
                       className="p-button-outlined flex-grow-1" 
                       onClick={() => handleViewClub(club.id)} 
                     />
                     {!club.isUserMember && (
                       <Button 
-                        label="Join" 
+                        label="Prisijungti" 
                         icon="pi pi-sign-in" 
                         className="flex-grow-1" 
                         onClick={() => handleJoinClub(club.id)} 

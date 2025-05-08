@@ -56,6 +56,7 @@ const AppMenu = () => {
                     { label: 'Medžioklės plotų ribos žymėjimas', icon: 'pi pi-fw pi-share-alt', to: '/admin/areamap' },
                     { label: 'Medžioklės objektų redagavimas', icon: 'pi pi-box', to: '/admin/mapobjects' },
                     { label: 'Klubo įrašų valdymas', icon: 'pi pi-comment', to: '/admin/posts' },
+                    { label: 'Klubo informacijos redagavimas', icon: 'pi pi-building', to: '/admin/clubs' },
                 ]
             }
         ] : [])

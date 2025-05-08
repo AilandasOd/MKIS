@@ -35,33 +35,32 @@ const CreateBloodTestPage = () => {
         { label: 'Netinkamas', value: 'Netinkamas' }
     ];
 
-    // Fetch club members
     useEffect(() => {
         if (hasAttemptedFetch || !selectedClub) return;
-        
+
         const fetchMembers = async () => {
             try {
                 setLoading(true);
                 setHasAttemptedFetch(true);
-                
+
                 const response = await fetch(`https://localhost:7091/api/Members?clubId=${selectedClub.id}`, {
                     headers: {
                         'Authorization': `Bearer ${sessionStorage.getItem('accessToken')}`
                     }
                 });
-                
+
                 if (!response.ok) {
-                    throw new Error(`HTTP error! Status: ${response.status}`);
+                    throw new Error(`HTTP klaida! Statusas: ${response.status}`);
                 }
-                
+
                 const data = await response.json();
                 setMembers(data);
             } catch (error) {
-                console.error('Error fetching members:', error);
+                console.error('Klaida gaunant narius:', error);
                 toast.current?.show({
                     severity: 'error',
-                    summary: 'Error',
-                    detail: 'Failed to load members: ' + error.message,
+                    summary: 'Klaida',
+                    detail: 'Nepavyko įkelti narių: ' + error.message,
                     life: 3000
                 });
                 setMembers([]);
@@ -69,7 +68,7 @@ const CreateBloodTestPage = () => {
                 setLoading(false);
             }
         };
-        
+
         fetchMembers();
     }, [selectedClub, hasAttemptedFetch]);
 
@@ -77,8 +76,8 @@ const CreateBloodTestPage = () => {
         if (!formData.testName || !formData.animalType || !formData.dateHunted || !formData.testStartDate) {
             toast.current?.show({
                 severity: 'error',
-                summary: 'Validation Error',
-                detail: 'Please fill in all required fields',
+                summary: 'Validacijos klaida',
+                detail: 'Prašome užpildyti visus privalomus laukus',
                 life: 3000
             });
             return;
@@ -86,7 +85,7 @@ const CreateBloodTestPage = () => {
 
         try {
             setSubmitting(true);
-            
+
             const response = await fetch(`https://localhost:7091/api/BloodTests?clubId=${selectedClub.id}`, {
                 method: 'POST',
                 headers: {
@@ -95,28 +94,27 @@ const CreateBloodTestPage = () => {
                 },
                 body: JSON.stringify(formData)
             });
-            
+
             if (!response.ok) {
-                throw new Error(`HTTP error! Status: ${response.status}`);
+                throw new Error(`HTTP klaida! Statusas: ${response.status}`);
             }
-            
+
             toast.current?.show({
                 severity: 'success',
-                summary: 'Success',
-                detail: 'Blood test created successfully',
+                summary: 'Pavyko',
+                detail: 'Kraujo tyrimas sėkmingai sukurtas',
                 life: 3000
             });
-            
-            // Navigate back to list
+
             setTimeout(() => {
                 router.push('/tests/list');
             }, 1500);
         } catch (error) {
-            console.error('Error creating blood test:', error);
+            console.error('Klaida kuriant tyrimą:', error);
             toast.current?.show({
                 severity: 'error',
-                summary: 'Error',
-                detail: 'Failed to create blood test: ' + error.message,
+                summary: 'Klaida',
+                detail: 'Nepavyko sukurti tyrimo: ' + error.message,
                 life: 3000
             });
         } finally {
@@ -128,21 +126,21 @@ const CreateBloodTestPage = () => {
         <ClubGuard>
             <div className="card p-5">
                 <Toast ref={toast} />
-                <h5>Pridėti naują tyrimą</h5>
+                <h5>Pridėti naują kraujo tyrimą</h5>
                 <div className="grid formgrid p-fluid">
                     <div className="field col-12 md:col-6">
                         <label>Pavadinimas</label>
-                        <InputText 
-                            value={formData.testName} 
-                            onChange={(e) => setFormData({ ...formData, testName: e.target.value })} 
+                        <InputText
+                            value={formData.testName}
+                            onChange={(e) => setFormData({ ...formData, testName: e.target.value })}
                         />
                     </div>
 
                     <div className="field col-12 md:col-6">
                         <label>Žvėries tipas</label>
-                        <InputText 
-                            value={formData.animalType} 
-                            onChange={(e) => setFormData({ ...formData, animalType: e.target.value })} 
+                        <InputText
+                            value={formData.animalType}
+                            onChange={(e) => setFormData({ ...formData, animalType: e.target.value })}
                         />
                     </div>
 
@@ -153,26 +151,24 @@ const CreateBloodTestPage = () => {
                             onChange={(e) => setFormData({ ...formData, dateHunted: e.value })}
                             dateFormat="yy-mm-dd"
                             showIcon
-                            // Removed the locale to avoid errors
                         />
                     </div>
 
                     <div className="field col-12 md:col-6">
-                        <label>Tyrimų pridavimo data</label>
+                        <label>Tyrimo pradžios data</label>
                         <Calendar
                             value={formData.testStartDate}
                             onChange={(e) => setFormData({ ...formData, testStartDate: e.value })}
                             dateFormat="yy-mm-dd"
                             showIcon
-                            // Removed the locale to avoid errors
                         />
                     </div>
 
                     <div className="field col-12">
                         <label>Aprašymas</label>
-                        <InputText 
-                            value={formData.description} 
-                            onChange={(e) => setFormData({ ...formData, description: e.target.value })} 
+                        <InputText
+                            value={formData.description}
+                            onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                         />
                     </div>
 
@@ -204,17 +200,17 @@ const CreateBloodTestPage = () => {
                 </div>
 
                 <div className="flex gap-3 mt-4">
-                    <Button 
-                        label="Išsaugoti" 
-                        icon="pi pi-save" 
-                        onClick={saveTest} 
+                    <Button
+                        label="Išsaugoti"
+                        icon="pi pi-save"
+                        onClick={saveTest}
                         loading={submitting}
                     />
-                    <Button 
-                        label="Atšaukti" 
-                        icon="pi pi-times" 
-                        severity="secondary" 
-                        onClick={() => router.push('/tests/list')} 
+                    <Button
+                        label="Atšaukti"
+                        icon="pi pi-times"
+                        severity="secondary"
+                        onClick={() => router.push('/tests/list')}
                         disabled={submitting}
                     />
                 </div>

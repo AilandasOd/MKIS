@@ -273,7 +273,7 @@ const CreatePostForm = () => {
                     <Button 
                         label="Atšaukti" 
                         icon="pi pi-times" 
-                        className="p-button-outlined" 
+                        className="p-button-outlined pd-3" 
                         onClick={() => router.push('/dashboard')} 
                         disabled={submitting}
                     />
