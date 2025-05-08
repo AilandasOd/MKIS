@@ -7,6 +7,7 @@ import { Button } from 'primereact/button';
 import { Tag } from 'primereact/tag';
 import { Toast } from 'primereact/toast';
 import { useClub } from '../../../../context/ClubContext';
+import { useAuth } from '../../../../context/AuthContext';
 import ClubGuard from '../../../../context/ClubGuard';
 
 const BloodTestsListPage = () => {
@@ -17,6 +18,7 @@ const BloodTestsListPage = () => {
     const router = useRouter();
     const toast = useRef(null);
     const { selectedClub } = useClub();
+    const { userId } = useAuth();  // Get current user ID from auth context
 
     useEffect(() => {
         if (hasAttemptedFetch || !selectedClub) return;
@@ -63,6 +65,24 @@ const BloodTestsListPage = () => {
 
     const dateTemplate = (rowData, field) => {
         return rowData[field] ? new Date(rowData[field]).toLocaleDateString('lt-LT') : '';
+    };
+
+    // Modified name template to show star if current user is a participant
+    const nameTemplate = (rowData) => {
+        // Check if current user is a participant in this test
+        const isUserParticipant = rowData.participants && 
+            rowData.participants.some(participant => participant.userId === userId);
+
+        return (
+            <div className="flex align-items-center">
+                <span>{rowData.testName}</span>
+                {isUserParticipant && (
+                    <i className="pi pi-star-fill text-yellow-500 ml-2" 
+                       style={{ fontSize: '0.85rem' }} 
+                       title="Jūs esate šio tyrimo dalyvis" />
+                )}
+            </div>
+        );
     };
 
     const actionTemplate = (rowData) => {
@@ -129,7 +149,7 @@ const BloodTestsListPage = () => {
                     emptyMessage="Kraujo tyrimų nerasta"
                 >
                     <Column expander style={{ width: '3em' }} />
-                    <Column field="testName" header="Tyrimo pavadinimas" sortable />
+                    <Column field="testName" header="Tyrimo pavadinimas" body={nameTemplate} sortable />
                     <Column field="animalType" header="Žvėries tipas" sortable />
                     <Column field="dateHunted" header="Sumedžiojimo data" body={(rowData) => dateTemplate(rowData, 'dateHunted')} sortable />
                     <Column field="testStartDate" header="Tyrimo pradžios data" body={(rowData) => dateTemplate(rowData, 'testStartDate')} sortable />

@@ -463,7 +463,7 @@ const DrivenHuntEdit = () => {
         </div>
         
         <TabView activeIndex={activeIndex} onTabChange={(e) => setActiveIndex(e.index)}>
-          <TabPanel header="General Information">
+          <TabPanel header="Bendra informacija">
             <Card>
               <form onSubmit={handleSaveGeneralInfo} className="grid formgrid p-fluid">
                 <div className="field col-12 md:col-6">

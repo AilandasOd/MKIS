@@ -22,7 +22,9 @@ const Dashboard = () => {
   const [chartData, setChartData] = useState({});
   const toast = useRef(null);
   const router = useRouter();
-  const clubIdRef = useRef(null);
+
+  // Remove clubIdRef as it's causing the issue
+  // Instead, depend directly on selectedClub.id
 
   const fetchDashboardData = async () => {
     if (!selectedClub) return;
@@ -55,14 +57,22 @@ const Dashboard = () => {
 
       if (statsData && statsData.topHunters && statsData.topHunters.length > 0) {
         setTopHunters(statsData.topHunters);
+      } else {
+        // Clear top hunters when no data is available
+        setTopHunters([]);
       }
     } catch (error) {
+      console.error('Error loading data:', error);
       toast.current?.show({
         severity: 'error',
         summary: 'Klaida',
         detail: 'Nepavyko įkelti duomenų: ' + error.message,
         life: 3000
       });
+      // Reset state on error
+      setStatistics(null);
+      setTopHunters([]);
+      setChartData({});
     } finally {
       setLoading(false);
     }
@@ -76,12 +86,14 @@ const Dashboard = () => {
     router.push('/post');
   };
 
+  // Effect that runs when selectedClub changes
   useEffect(() => {
-    if (selectedClub && selectedClub.id !== clubIdRef.current) {
-      clubIdRef.current = selectedClub.id;
+    // Only fetch when we have a selected club
+    if (selectedClub) {
+      console.log("Selected club changed, fetching new data for:", selectedClub.id);
       fetchDashboardData();
     }
-  }, [selectedClub]);
+  }, [selectedClub?.id]); // Depend directly on selectedClub.id
 
   const renderPostItem = (post) => (
     <Card className="mb-4 p-3" key={post.id}>
@@ -97,12 +109,12 @@ const Dashboard = () => {
       </div>
 
       {post.imageUrl && (
-        <Image
-          src={`https://localhost:7091${post.imageUrl}`}
-          alt={post.title}
-          width="100%"
-          preview
-          style={{ objectFit: 'cover', borderRadius: '10px', marginBottom: '1rem' }}
+        <Image 
+          src={`https://localhost:7091${post.imageUrl}`} 
+          alt={post.title} 
+          width="100%" 
+          preview 
+          style={{ objectFit: 'cover', borderRadius: '10px', marginBottom: '1rem' }} 
         />
       )}
 
@@ -110,10 +122,6 @@ const Dashboard = () => {
       <p>{post.description}</p>
     </Card>
   );
-
-  if (loading) {
-    return <div className="flex justify-content-center">Įkeliami duomenys...</div>;
-  }
 
   return (
     <ClubGuard>
@@ -124,14 +132,21 @@ const Dashboard = () => {
           <div className="card">
             <div className="flex justify-content-between align-items-center mb-3">
               <h5>Klubo įrašai</h5>
-              <Button
-                label="Sukurti įrašą"
-                icon="pi pi-plus"
-                onClick={handleCreatePost}
-                className="p-button-sm"
-              />
+              <div className="flex gap-2">
+                <Button
+                  label="Sukurti įrašą"
+                  icon="pi pi-plus"
+                  onClick={handleCreatePost}
+                  className="p-button-sm"
+                />
+              </div>
             </div>
-            {posts && posts.length > 0 ? (
+            {loading ? (
+              <div className="p-4 text-center">
+                <i className="pi pi-spin pi-spinner text-3xl text-primary mb-3"></i>
+                <p>Įkeliami duomenys...</p>
+              </div>
+            ) : posts && posts.length > 0 ? (
               <div className="flex flex-column" style={{ maxHeight: '650px', overflowY: 'auto' }}>
                 {posts.map((post) => renderPostItem(post))}
               </div>
@@ -153,7 +168,11 @@ const Dashboard = () => {
         <div className="col-12 xl:col-6">
           <div className="card mb-4">
             <h5>Daugiausiai sumedžioję medžiotojai</h5>
-            {topHunters && topHunters.length > 0 ? (
+            {loading ? (
+              <div className="p-3 text-center">
+                <i className="pi pi-spin pi-spinner text-2xl text-primary"></i>
+              </div>
+            ) : topHunters && topHunters.length > 0 ? (
               <DataTable value={topHunters}>
                 <Column field="name" header="Medžiotojas" />
                 <Column field="count" header="Sumedžiota žvėrių" />
@@ -171,7 +190,11 @@ const Dashboard = () => {
 
           <div className="card">
             <h5>Sumedžioti žvėrys</h5>
-            {statistics && statistics.animalsHunted && Object.keys(statistics.animalsHunted).length > 0 ? (
+            {loading ? (
+              <div className="p-3 text-center">
+                <i className="pi pi-spin pi-spinner text-2xl text-primary"></i>
+              </div>
+            ) : statistics && statistics.animalsHunted && Object.keys(statistics.animalsHunted).length > 0 ? (
               <div className="flex justify-content-center">
                 <div style={{ width: '300px', height: '300px' }}>
                   <Chart type="pie" data={chartData} />
